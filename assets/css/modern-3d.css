@@ -1,0 +1,481 @@
+/**
+ * Modern 3D design layer — depth, glass, perspective, motion.
+ * Loaded after public-site.css; scope with body.modern-ui
+ */
+
+body.modern-ui {
+    --perspective: 1200px;
+    --lift-sm: translateY(-6px) translateZ(12px);
+    --lift-md: translateY(-10px) translateZ(24px) rotateX(2deg);
+    --shadow-3d:
+        0 2px 0 rgba(255, 255, 255, 0.06) inset,
+        0 18px 40px rgba(15, 35, 60, 0.12),
+        0 42px 80px rgba(15, 35, 60, 0.18);
+    --shadow-3d-hover:
+        0 2px 0 rgba(255, 255, 255, 0.1) inset,
+        0 28px 56px rgba(42, 181, 160, 0.22),
+        0 48px 100px rgba(15, 35, 60, 0.28);
+    --glass: rgba(255, 255, 255, 0.08);
+    --glass-border: rgba(255, 255, 255, 0.18);
+    perspective: var(--perspective);
+    background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, rgba(42, 181, 160, 0.14), transparent 50%),
+        radial-gradient(ellipse 60% 40% at 95% 20%, rgba(245, 166, 35, 0.08), transparent 45%),
+        linear-gradient(180deg, #f8fafc 0%, #eef3f8 100%);
+    background-attachment: fixed;
+}
+
+/* ─── Nav: floating glass bar ─── */
+body.modern-ui .navbar-campus {
+    background: linear-gradient(180deg, rgba(20, 38, 58, 0.92) 0%, rgba(26, 47, 74, 0.88) 100%);
+    backdrop-filter: blur(20px) saturate(1.4);
+    border-bottom: 1px solid rgba(42, 181, 160, 0.25);
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.06) inset,
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        0 8px 24px rgba(42, 181, 160, 0.12);
+    transform: translateZ(0);
+}
+
+body.modern-ui .navbar-campus.scrolled {
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.08) inset,
+        0 24px 60px rgba(0, 0, 0, 0.42),
+        0 12px 32px rgba(42, 181, 160, 0.18);
+}
+
+body.modern-ui .brand-mark {
+    box-shadow:
+        0 0 0 3px rgba(42, 181, 160, 0.35),
+        0 12px 28px rgba(0, 0, 0, 0.25),
+        0 4px 12px rgba(42, 181, 160, 0.2);
+    transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.35s ease;
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .brand-mark:hover {
+    transform: rotateY(-12deg) scale(1.04);
+    box-shadow:
+        0 0 0 4px rgba(42, 181, 160, 0.5),
+        0 20px 40px rgba(42, 181, 160, 0.35);
+}
+
+body.modern-ui .campus-dropdown-menu {
+    border-radius: 14px;
+    border: 1px solid rgba(42, 181, 160, 0.15);
+    box-shadow: var(--shadow-3d-hover);
+    transform: translateY(16px) translateZ(-20px);
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .campus-dropdown:hover .campus-dropdown-menu {
+    transform: translateY(4px) translateZ(0);
+}
+
+body.modern-ui .portal-btn,
+body.modern-ui .btn-teal {
+    position: relative;
+    box-shadow:
+        0 4px 0 #1f8f7f,
+        0 14px 32px rgba(42, 181, 160, 0.4);
+    transform: translateY(0) translateZ(0);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+body.modern-ui .portal-btn:hover,
+body.modern-ui .btn-teal:hover {
+    transform: translateY(-3px) translateZ(8px);
+    box-shadow:
+        0 6px 0 #1f8f7f,
+        0 22px 48px rgba(42, 181, 160, 0.5);
+}
+
+body.modern-ui .portal-btn:active,
+body.modern-ui .btn-teal:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #1f8f7f, 0 8px 20px rgba(42, 181, 160, 0.3);
+}
+
+body.modern-ui .nav-search-btn {
+    box-shadow: 0 6px 20px rgba(42, 181, 160, 0.25);
+    transform: translateZ(4px);
+}
+
+/* ─── Page heroes ─── */
+body.modern-ui .hero,
+body.modern-ui header.hero {
+    position: relative;
+    isolation: isolate;
+}
+
+body.modern-ui .hero::before,
+body.modern-ui header.hero::before {
+    content: "";
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(42, 181, 160, 0.35), transparent 70%);
+    top: -80px;
+    right: -60px;
+    filter: blur(40px);
+    animation: floatOrb 8s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.modern-ui .hero::after,
+body.modern-ui header.hero::after {
+    content: "";
+    position: absolute;
+    width: 240px;
+    height: 240px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(245, 166, 35, 0.2), transparent 70%);
+    bottom: -40px;
+    left: 8%;
+    filter: blur(50px);
+    animation: floatOrb 10s ease-in-out infinite reverse;
+    pointer-events: none;
+    z-index: 0;
+}
+
+body.modern-ui .hero .container,
+body.modern-ui header.hero .container {
+    position: relative;
+    z-index: 2;
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .hero h1,
+body.modern-ui header.hero h1 {
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+    transform: translateZ(30px);
+}
+
+body.modern-ui .eyebrow {
+    background: rgba(42, 181, 160, 0.15);
+    border: 1px solid rgba(42, 181, 160, 0.35);
+    border-radius: 999px;
+    padding: 8px 14px;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 8px 24px rgba(42, 181, 160, 0.2);
+}
+
+/* ─── 3D cards (shared) ─── */
+body.modern-ui .value-card,
+body.modern-ui .campus-card,
+body.modern-ui .leader-card,
+body.modern-ui .program-card,
+body.modern-ui .office-card,
+body.modern-ui .contact-card,
+body.modern-ui .form-card,
+body.modern-ui .track-card,
+body.modern-ui .step-card,
+body.modern-ui .news-action-card,
+body.modern-ui .soon-card {
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.45s ease, border-color 0.3s ease;
+    box-shadow: var(--shadow-3d);
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+body.modern-ui .value-card::before,
+body.modern-ui .campus-card::before,
+body.modern-ui .leader-card::before,
+body.modern-ui .program-card::before,
+body.modern-ui .office-card::before,
+body.modern-ui .contact-card::before,
+body.modern-ui .track-card::before,
+body.modern-ui .step-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--teal), var(--gold));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+    z-index: 2;
+}
+
+body.modern-ui .value-card:hover,
+body.modern-ui .campus-card:hover,
+body.modern-ui .leader-card:hover,
+body.modern-ui .program-card:hover,
+body.modern-ui .office-card:hover,
+body.modern-ui .contact-card:hover,
+body.modern-ui .track-card:hover,
+body.modern-ui .step-card:hover,
+body.modern-ui .news-action-card:hover,
+body.modern-ui .soon-card:hover {
+    transform: var(--lift-md);
+    box-shadow: var(--shadow-3d-hover);
+    border-color: rgba(42, 181, 160, 0.45) !important;
+}
+
+body.modern-ui .value-card:hover::before,
+body.modern-ui .campus-card:hover::before,
+body.modern-ui .leader-card:hover::before,
+body.modern-ui .program-card:hover::before,
+body.modern-ui .office-card:hover::before,
+body.modern-ui .contact-card:hover::before,
+body.modern-ui .track-card:hover::before,
+body.modern-ui .step-card:hover::before {
+    transform: scaleX(1);
+}
+
+body.modern-ui .icon-box,
+body.modern-ui .program-icon {
+    box-shadow:
+        0 8px 20px rgba(42, 181, 160, 0.25),
+        0 2px 0 rgba(255, 255, 255, 0.5) inset;
+    transform: translateZ(16px);
+    transition: transform 0.4s ease;
+}
+
+body.modern-ui .program-card:hover .program-icon,
+body.modern-ui .value-card:hover .icon-box {
+    transform: translateZ(28px) rotateY(-8deg);
+}
+
+/* ─── Campus page ─── */
+body.modern-ui.campus-page {
+    background: linear-gradient(180deg, #f4f7fb 0%, #e8eef5 100%);
+}
+
+body.modern-ui .hero-campus {
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .hero-campus .container > * {
+    transform: translateZ(40px);
+}
+
+body.modern-ui .stat-card,
+body.modern-ui .hero-stat,
+body.modern-ui .hero-metric,
+body.modern-ui .hero-stat-grid .hero-stat {
+    transform-style: preserve-3d;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.12) inset,
+        0 16px 40px rgba(0, 0, 0, 0.25);
+    transition: transform 0.35s ease, box-shadow 0.35s ease;
+}
+
+body.modern-ui .stat-card:hover,
+body.modern-ui .hero-stat:hover,
+body.modern-ui .hero-metric:hover {
+    transform: translateY(-4px) translateZ(12px) rotateX(4deg);
+    box-shadow: 0 20px 48px rgba(42, 181, 160, 0.3);
+}
+
+body.modern-ui .gold-badge,
+body.modern-ui .program-pill {
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.2);
+    transform: translateZ(8px);
+}
+
+body.modern-ui .leader-card {
+    border-top: none !important;
+}
+
+body.modern-ui .leader-photo {
+    box-shadow:
+        0 0 0 4px rgba(42, 181, 160, 0.3),
+        0 16px 40px rgba(0, 0, 0, 0.25);
+    transition: transform 0.5s ease;
+}
+
+body.modern-ui .leader-card:hover .leader-photo {
+    transform: translateZ(20px) scale(1.05);
+}
+
+body.modern-ui .video-box {
+    box-shadow: var(--shadow-3d-hover);
+    border: 1px solid rgba(42, 181, 160, 0.2);
+    transform: perspective(800px) rotateY(-2deg);
+    transition: transform 0.5s ease;
+}
+
+body.modern-ui .video-box:hover {
+    transform: perspective(800px) rotateY(0deg) translateZ(12px);
+}
+
+body.modern-ui .filter-btn {
+    box-shadow: 0 4px 14px rgba(26, 47, 74, 0.12);
+}
+
+body.modern-ui .filter-btn.active {
+    box-shadow: 0 8px 24px rgba(42, 181, 160, 0.4);
+    transform: translateY(-2px);
+}
+
+body.modern-ui .campus-other-links a {
+    box-shadow: var(--shadow-3d);
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .campus-other-links a:hover {
+    transform: var(--lift-sm);
+    box-shadow: var(--shadow-3d-hover);
+}
+
+/* ─── Homepage ─── */
+body.modern-ui .campus-banner,
+body.modern-ui .ticker-wrap {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+}
+
+body.modern-ui .college-hero,
+body.modern-ui .qgc-hero {
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .qs-headline {
+    text-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+    transform: translateZ(50px);
+}
+
+body.modern-ui .qs-stat {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    padding: 12px 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    transition: transform 0.35s ease;
+}
+
+body.modern-ui .qs-stat:hover {
+    transform: translateZ(16px) translateY(-4px);
+}
+
+body.modern-ui .qs-btn-primary {
+    box-shadow: 0 4px 0 #1f8f7f, 0 16px 36px rgba(42, 181, 160, 0.45) !important;
+}
+
+body.modern-ui .qs-btn-primary:hover {
+    transform: translateY(-3px) translateZ(8px) !important;
+}
+
+body.modern-ui .hero-bridge-inner,
+body.modern-ui .stat-box,
+body.modern-ui .why-card {
+    box-shadow: var(--shadow-3d);
+    border-radius: 16px !important;
+    transform-style: preserve-3d;
+    transition: transform 0.4s ease, box-shadow 0.4s ease;
+}
+
+body.modern-ui .stat-box:hover,
+body.modern-ui .why-card:hover {
+    transform: var(--lift-sm);
+    box-shadow: var(--shadow-3d-hover);
+}
+
+body.modern-ui .navttc-card {
+    transform-style: preserve-3d;
+    transition: transform 0.45s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.45s ease;
+    box-shadow: var(--shadow-3d) !important;
+}
+
+body.modern-ui .navttc-card:hover {
+    transform: translateY(-12px) translateZ(28px) rotateX(4deg) !important;
+    box-shadow: var(--shadow-3d-hover) !important;
+}
+
+body.modern-ui .navttc-card-icon {
+    transform: translateZ(20px);
+    transition: transform 0.4s ease;
+}
+
+body.modern-ui .navttc-card:hover .navttc-card-icon {
+    transform: translateZ(36px) rotateY(-15deg) scale(1.08);
+}
+
+body.modern-ui .news-card {
+    transform-style: preserve-3d;
+    box-shadow: var(--shadow-3d) !important;
+    transition: transform 0.45s ease, box-shadow 0.45s ease !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+}
+
+body.modern-ui .news-card:hover {
+    transform: translateY(-10px) translateZ(20px) rotateX(2deg) !important;
+    box-shadow: var(--shadow-3d-hover) !important;
+}
+
+body.modern-ui .campus-showcase-card,
+body.modern-ui #campuses .campus-card {
+    transform-style: preserve-3d;
+}
+
+body.modern-ui .search-overlay.active .search-box {
+    box-shadow: var(--shadow-3d-hover);
+    transform: translateZ(40px);
+    border: 1px solid rgba(42, 181, 160, 0.35);
+}
+
+body.modern-ui .search-result-item:hover {
+    transform: translateX(8px) translateZ(8px);
+}
+
+/* ─── Footer depth ─── */
+body.modern-ui .public-footer {
+    position: relative;
+    box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.2);
+}
+
+body.modern-ui .public-footer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--teal), var(--gold), transparent);
+}
+
+/* ─── CTA bands ─── */
+body.modern-ui .cta,
+body.modern-ui .admission-cta {
+    position: relative;
+    overflow: hidden;
+}
+
+body.modern-ui .cta::before,
+body.modern-ui .admission-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(circle at 20% 50%, rgba(42, 181, 160, 0.15), transparent 40%),
+        radial-gradient(circle at 80% 30%, rgba(245, 166, 35, 0.1), transparent 35%);
+    pointer-events: none;
+}
+
+@keyframes floatOrb {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50% { transform: translate(20px, -15px) scale(1.08); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.modern-ui *,
+    body.modern-ui *::before,
+    body.modern-ui *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+    body.modern-ui .value-card:hover,
+    body.modern-ui .program-card:hover,
+    body.modern-ui .navttc-card:hover {
+        transform: translateY(-4px);
+    }
+}

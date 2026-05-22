@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Playfair Display", Georgia, serif;
+}
+
+@layer base {
+  body {
+    @apply m-0 min-h-svh bg-black font-sans text-white antialiased;
+  }
+
+  #root {
+    @apply min-h-svh w-full;
+  }
+}
+
+.instrument {
+  font-family: var(--font-display);
+  font-style: italic;
+}

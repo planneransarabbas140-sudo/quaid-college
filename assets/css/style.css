@@ -1,0 +1,198 @@
+/* 
+    File: assets/css/style.css 
+    Description: Modern, professional ERP theme for Quaid-e-Azam Group of Colleges
+    Theme: Teal (#4ec2b5) & Navy (#0f2d48)
+*/
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+    --teal: #4ec2b5;
+    --teal-dark: #35a99c;
+    --navy: #0f2d48;
+    --navy-mid: #1a4060;
+    --bg-light: #f8fafc;
+    --sidebar-width: 260px;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg-light);
+    margin: 0;
+}
+
+/* Make images and media scale down on small devices */
+img, video, embed, iframe {
+    max-width: 100%;
+    height: auto;
+    display: block;
+}
+
+h1, h2, h3, .page-title {
+    font-family: 'Playfair Display', serif;
+}
+
+.wrapper {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+}
+
+/* Sidebar */
+#sidebar {
+    min-width: 260px;
+    max-width: 260px;
+    background: #0f2d48 !important;
+    color: #fff;
+    transition: all 0.3s;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1100; /* Above navbar */
+    display: flex;
+    flex-direction: column;
+}
+
+#sidebar.active {
+    margin-left: -260px;
+}
+
+/* Content Area */
+#content {
+    width: 100%;
+    margin-left: 260px;
+    min-height: 100vh;
+    transition: all 0.3s;
+    background: #f8fafc;
+}
+
+#content.active {
+    margin-left: 0;
+}
+
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+    padding: 15px 25px;
+    border-bottom: 1px solid #e2e8f0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+
+@media (max-width: 768px) {
+    #sidebar {
+        /* collapse sidebar off-canvas by default on small screens */
+        transform: translateX(-100%);
+        transition: transform 0.28s ease;
+    }
+    #sidebar.active {
+        transform: translateX(0);
+    }
+    #content {
+        margin-left: 0 !important;
+    }
+}
+
+/* Wider breakpoint: make sidebar collapsible for tablets */
+@media (max-width: 991px) {
+    #sidebar {
+        transform: translateX(-100%);
+    }
+    #sidebar.active {
+        transform: translateX(0);
+    }
+    #content {
+        margin-left: 0 !important;
+    }
+    /* add an overlay when sidebar is visible via JS (class .show-overlay on body)
+       The markup/JS can toggle `body.show-overlay::before` to dim page. */
+    body.show-overlay::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        z-index: 1050;
+    }
+}
+
+/* Tables: allow horizontal scroll on small screens */
+.table-responsive-custom {
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Sidebar Scroll */
+.sidebar-scroll {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.1);
+    border-radius: 10px;
+}
+
+#sidebar ul.components {
+    padding: 10px 0;
+}
+
+#sidebar ul li a {
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+#sidebar ul li a i {
+    width: 25px;
+    margin-right: 10px;
+    color: var(--teal);
+}
+
+#sidebar ul li a:hover, #sidebar ul li.active > a {
+    color: #fff;
+    background: rgba(78, 194, 181, 0.1);
+    border-left: 4px solid var(--teal);
+}
+
+/* Cards & Stats */
+.dashboard-card {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.card-icon.green { background: rgba(78, 194, 181, 0.1); color: #4ec2b5; }
+.card-icon.blue { background: rgba(15, 45, 72, 0.1); color: #0f2d48; }
+
+.navbar {
+    background: #fff;
+    padding: 15px 25px;
+    border-bottom: 1px solid #eee;
+}

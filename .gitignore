@@ -1,0 +1,7 @@
+node_modules/
+vendor/
+.env
+config/whatsapp.local.php
+*.log
+*.zip
+*.rar
