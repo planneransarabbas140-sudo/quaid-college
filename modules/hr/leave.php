@@ -14,36 +14,51 @@ $error = '';
 $success = '';
 
 // Handle Leave Approval/Rejection
-if (isset($_GET['action']) && isset($_GET['id'])) {
-    $action = $_GET['action'] === 'approve' ? 'Approved' : 'Rejected';
-    $id = $_GET['id'];
-    
-    $stmt = $db->prepare("UPDATE leave_applications SET status = :status, approved_by = :approved_by WHERE id = :id");
-    $stmt->execute([
-        ':status' => $action,
-        ':approved_by' => $_SESSION['user_id'],
-        ':id' => $id
-    ]);
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['leave_action'])) {
+    try {
+        requireCsrfToken();
+        $status = $_POST['leave_action'] === 'approve' ? 'Approved' : 'Rejected';
+        $id = (int)($_POST['leave_id'] ?? 0);
+
+        $stmt = $db->prepare("UPDATE leave_applications SET status = :status, approved_by = :approved_by WHERE id = :id AND status = 'Pending'");
+        $stmt->execute([
+            ':status' => $status,
+            ':approved_by' => getUserId(),
+            ':id' => $id
+        ]);
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Leave request is not pending.');
+        }
+        setFlashMessage('success', 'Leave request updated.');
+    } catch (Exception $e) {
+        error_log('Leave decision failed: ' . $e->getMessage());
+        setFlashMessage('error', 'Leave request could not be updated. Please try again.');
+    }
+
     redirect('leave.php');
 }
 
 // Handle Add Leave
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
-    $staff_id = $_POST['staff_id'];
-    $leave_type = $_POST['leave_type'];
-    $start_date = $_POST['start_date'];
-    $end_date = $_POST['end_date'];
-    $reason = sanitizeInput($_POST['reason']);
-    
-    $stmt = $db->prepare("INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, reason) VALUES (:staff_id, :leave_type, :start_date, :end_date, :reason)");
-    $stmt->execute([
-        ':staff_id' => $staff_id,
-        ':leave_type' => $leave_type,
-        ':start_date' => $start_date,
-        ':end_date' => $end_date,
-        ':reason' => $reason
-    ]);
-    $success = "Leave application submitted!";
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && !isset($_POST['leave_action'])) {
+    if (!verifyCsrfToken()) {
+        $error = 'Security check failed. Please refresh the page and try again.';
+    } else {
+        $staff_id = $_POST['staff_id'];
+        $leave_type = $_POST['leave_type'];
+        $start_date = $_POST['start_date'];
+        $end_date = $_POST['end_date'];
+        $reason = sanitizeInput($_POST['reason']);
+
+        $stmt = $db->prepare("INSERT INTO leave_applications (staff_id, leave_type, start_date, end_date, reason) VALUES (:staff_id, :leave_type, :start_date, :end_date, :reason)");
+        $stmt->execute([
+            ':staff_id' => $staff_id,
+            ':leave_type' => $leave_type,
+            ':start_date' => $start_date,
+            ':end_date' => $end_date,
+            ':reason' => $reason
+        ]);
+        $success = "Leave application submitted!";
+    }
 }
 
 $leaves = $db->query("
@@ -144,8 +159,16 @@ include '../../includes/header.php';
                                 <td><?php echo $leave['approver'] ? htmlspecialchars($leave['approver']) : '-'; ?></td>
                                 <td>
                                     <?php if ($leave['status'] === 'Pending'): ?>
-                                        <a href="leave.php?action=approve&id=<?php echo $leave['id']; ?>" class="btn btn-sm btn-success"><i class="fas fa-check"></i></a>
-                                        <a href="leave.php?action=reject&id=<?php echo $leave['id']; ?>" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></a>
+                                        <form method="POST" class="d-inline">
+                                            <?= csrfTokenInput() ?>
+                                            <input type="hidden" name="leave_id" value="<?php echo (int)$leave['id']; ?>">
+                                            <button type="submit" name="leave_action" value="approve" class="btn btn-sm btn-success"><i class="fas fa-check"></i></button>
+                                        </form>
+                                        <form method="POST" class="d-inline">
+                                            <?= csrfTokenInput() ?>
+                                            <input type="hidden" name="leave_id" value="<?php echo (int)$leave['id']; ?>">
+                                            <button type="submit" name="leave_action" value="reject" class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                                        </form>
                                     <?php else: ?>
                                         <button class="btn btn-sm btn-secondary" disabled><i class="fas fa-lock"></i></button>
                                     <?php endif; ?>
@@ -165,6 +188,7 @@ include '../../includes/header.php';
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="">
+                <?= csrfTokenInput() ?>
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">Apply for Leave</h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>

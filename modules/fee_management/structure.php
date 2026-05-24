@@ -37,7 +37,9 @@ if (!$fee_types_missing) {
 
 // Handle form submission (only if table exists)
 if (!$fee_types_missing && $_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['add_fee'])) {
+    if (!verifyCsrfToken()) {
+        $error = 'Security check failed. Please refresh the page and try again.';
+    } elseif (isset($_POST['add_fee'])) {
         $fee_name    = sanitizeInput($_POST['fee_name']);
         $amount      = floatval($_POST['amount']);
 
@@ -52,7 +54,8 @@ if (!$fee_types_missing && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $success = 'Fee type added successfully!';
         } catch (Exception $e) {
-            $error = 'Error adding fee type: ' . $e->getMessage();
+            error_log('Fee type add failed: ' . $e->getMessage());
+            $error = 'Fee type could not be added. Please try again.';
         }
     } elseif (isset($_POST['update_fee'])) {
         $id       = (int)$_POST['fee_id'];
@@ -70,22 +73,20 @@ if (!$fee_types_missing && $_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             $success = 'Fee type updated successfully!';
         } catch (Exception $e) {
-            $error = 'Error updating fee type: ' . $e->getMessage();
+            error_log('Fee type update failed: ' . $e->getMessage());
+            $error = 'Fee type could not be updated. Please try again.';
         }
+    } elseif (isset($_POST['delete_fee'])) {
+        try {
+            $stmt = $db->prepare("DELETE FROM fee_types WHERE id = ?");
+            $stmt->execute([(int)($_POST['fee_id'] ?? 0)]);
+            setFlashMessage('success', 'Fee type deleted successfully!');
+        } catch (Exception $e) {
+            error_log('Fee type delete failed: ' . $e->getMessage());
+            setFlashMessage('error', 'Fee type could not be deleted. Please try again.');
+        }
+        redirect('structure.php');
     }
-}
-
-// Handle delete
-if (!$fee_types_missing && isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    try {
-        $stmt = $db->prepare("DELETE FROM fee_types WHERE id = ?");
-        $stmt->execute([$_GET['delete']]);
-        $success = 'Fee type deleted successfully!';
-    } catch (Exception $e) {
-        $error = 'Error deleting fee type: ' . $e->getMessage();
-    }
-    setFlashMessage($error ? 'error' : 'success', $error ?: $success);
-    redirect('structure.php');
 }
 
 // Get all fee types — only request columns that actually exist
@@ -116,6 +117,8 @@ include '../../includes/header.php';
     .btn-teal:hover { background-color: #3da89b; color: white; }
     .table thead { background-color: #f8f9fc; color: var(--navy); }
 </style>
+
+<?php include 'fee_tabs.php'; ?>
 
 <div class="container-fluid py-4">
     <div class="card shadow mb-4 border-0">
@@ -225,9 +228,13 @@ include '../../includes/header.php';
                                         )">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger" onclick="confirmDelete(<?php echo (int)$fee['id']; ?>)">
-                                        <i class="fas fa-trash"></i> Delete
-                                    </button>
+                                    <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this fee type? This will not affect existing collection records but will remove it from future selections.');">
+                                        <?= csrfTokenInput() ?>
+                                        <input type="hidden" name="fee_id" value="<?php echo (int)$fee['id']; ?>">
+                                        <button type="submit" name="delete_fee" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i> Delete
+                                        </button>
+                                    </form>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -248,6 +255,7 @@ include '../../includes/header.php';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="">
+                <?= csrfTokenInput() ?>
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Fee Name *</label>
@@ -283,6 +291,7 @@ include '../../includes/header.php';
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form method="POST" action="">
+                <?= csrfTokenInput() ?>
                 <div class="modal-body p-4">
                     <input type="hidden" name="fee_id" id="edit_fee_id">
                     <div class="mb-3">
@@ -311,12 +320,6 @@ include '../../includes/header.php';
 </div>
 
 <script>
-function confirmDelete(id) {
-    if (confirm('Are you sure you want to delete this fee type? This will not affect existing collection records but will remove it from future selections.')) {
-        window.location.href = 'structure.php?delete=' + id;
-    }
-}
-
 function editFee(id, name, amount, description) {
     document.getElementById('edit_fee_id').value          = id;
     document.getElementById('edit_fee_name').value        = name;

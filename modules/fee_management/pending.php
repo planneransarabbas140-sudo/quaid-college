@@ -66,6 +66,8 @@ $page_title = "Pending Fees";
 include '../../includes/header.php';
 ?>
 
+<?php include 'fee_tabs.php'; ?>
+
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">

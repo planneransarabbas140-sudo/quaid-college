@@ -1,0 +1,24 @@
+.wrapper{display:flex;min-height:100vh;width:100%}
+#sidebar{position:fixed;left:0;top:0;bottom:0;width:var(--sidebar-width);min-width:var(--sidebar-width);max-width:var(--sidebar-width);height:100vh;background:#0f2d48!important;color:#fff;display:flex;flex-direction:column;z-index:var(--z-sidebar);overflow:hidden;border-right:1px solid rgba(255,255,255,.08);transition:width var(--duration-slow) var(--ease-out),transform var(--duration-slow) var(--ease-out),margin var(--duration-slow) var(--ease-out)}
+#sidebar::before{content:"";position:absolute;top:-120px;left:-110px;width:390px;height:390px;background:radial-gradient(circle,rgba(78,194,181,.16),transparent 68%);pointer-events:none;animation:ambientPulse 8s ease-in-out infinite}
+@keyframes ambientPulse{0%,100%{transform:scale(1);opacity:.75}50%{transform:scale(1.18);opacity:1}}
+.sidebar-header{position:relative;min-height:78px;padding:var(--space-5) var(--space-4);gap:var(--space-3);border-bottom:1px solid var(--sidebar-border);background:linear-gradient(180deg,rgba(255,255,255,.04),transparent)}
+.sidebar-header img{width:42px!important;height:42px!important;object-fit:contain;border-radius:14px;padding:5px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.16)}
+@keyframes logoGlow{0%,100%{box-shadow:0 0 18px rgba(78,194,181,.18)}50%{box-shadow:0 0 28px rgba(78,194,181,.34)}}
+.logo-text{font-size:.88rem!important;font-weight:800;color:#fff;letter-spacing:0;line-height:1.15}
+.logo-info div:last-child{font-size:10px!important;color:#b7efe8!important;font-weight:800}
+.sidebar-scroll{position:relative;flex:1;height:auto;overflow-y:auto;padding:var(--space-3) var(--space-2);scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.16) transparent}
+#sidebar ul.components{padding:0!important;margin:0}
+#sidebar ul li{list-style:none;margin:2px 0}
+#sidebar ul li a{position:relative;display:flex;align-items:center;gap:var(--space-3);padding:.7rem .82rem;margin:0;border-radius:var(--radius-lg);color:var(--gray-400);font-size:var(--text-sm);font-weight:650;text-decoration:none;border:1px solid transparent;transition:all var(--duration-fast) var(--ease-smooth);overflow:hidden}
+#sidebar ul li a i{width:22px;margin-right:0;color:#b7efe8;font-size:1rem;text-align:center;transition:transform var(--duration-fast) var(--ease-spring)}
+#sidebar ul li a:hover{color:white;background:rgba(255,255,255,.06);border-left-color:transparent;transform:translateX(2px)}
+#sidebar ul li a:hover i{transform:scale(1.12)}
+#sidebar ul li.active>a{color:white;background:rgba(78,194,181,.16);border-color:rgba(78,194,181,.24);box-shadow:inset 0 0 0 1px rgba(78,194,181,.08)}
+#sidebar ul li.active>a::after{content:"";position:absolute;left:0;top:22%;bottom:22%;width:3px;border-radius:0 var(--radius-full) var(--radius-full) 0;background:#4ec2b5}
+#sidebar .border-top{border-color:rgba(255,255,255,.08)!important}
+#sidebar.active{width:var(--sidebar-collapsed);min-width:var(--sidebar-collapsed);max-width:var(--sidebar-collapsed);margin-left:0}
+#sidebar.active .logo-info,#sidebar.active ul li a span{display:none}
+#sidebar.active ul li a{justify-content:center;padding:.75rem}
+.sidebar-backdrop{display:none;position:fixed;inset:0;background:rgba(2,6,23,.55);backdrop-filter:blur(5px);z-index:calc(var(--z-sidebar) - 1)}
+.sidebar-backdrop.visible{display:block}

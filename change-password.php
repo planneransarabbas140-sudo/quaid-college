@@ -33,12 +33,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (strlen($new_password) < 8) {
             $error = 'Password must be at least 8 characters long.';
         } else {
-            $stmt = $db->prepare('UPDATE users SET password = :password WHERE id = :id');
+            $updatePasswordSql = columnExists($db, 'users', 'must_change_password')
+                ? 'UPDATE users SET password = :password, must_change_password = 0 WHERE id = :id'
+                : 'UPDATE users SET password = :password WHERE id = :id';
+            $stmt = $db->prepare($updatePasswordSql);
             $stmt->execute([
                 ':password' => password_hash($new_password, PASSWORD_DEFAULT),
                 ':id' => $user_id,
             ]);
 
+            $_SESSION['must_change_password'] = 0;
             setFlashMessage('success', 'Password changed successfully.');
             redirect('change-password.php');
         }

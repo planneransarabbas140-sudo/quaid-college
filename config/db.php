@@ -7,6 +7,31 @@ function startSecureSession() {
         return;
     }
 
+    // Fix for environments where PHP cannot write to the default session.save_path (e.g. XAMPP tmp perms).
+    // Prefer a writable folder inside the project.
+    $currentSavePath = (string)ini_get('session.save_path');
+    $projectSessions = realpath(__DIR__ . '/../storage/sessions') ?: (__DIR__ . '/../storage/sessions');
+
+    $isSavePathWritable = false;
+    if ($currentSavePath !== '') {
+        $checkPath = $currentSavePath;
+        // session.save_path can contain extra directives (e.g. "5;path"), keep last segment as path
+        if (strpos($checkPath, ';') !== false) {
+            $parts = array_filter(array_map('trim', explode(';', $checkPath)));
+            $checkPath = end($parts) ?: $checkPath;
+        }
+        $isSavePathWritable = is_dir($checkPath) && is_writable($checkPath);
+    }
+
+    if (!$isSavePathWritable) {
+        if (!is_dir($projectSessions)) {
+            @mkdir($projectSessions, 0775, true);
+        }
+        if (is_dir($projectSessions) && is_writable($projectSessions)) {
+            ini_set('session.save_path', $projectSessions);
+        }
+    }
+
     $isHttps = (
         (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
         (($_SERVER['SERVER_PORT'] ?? null) === '443')
@@ -75,7 +100,27 @@ function redirect($url) {
     exit();
 }
 
+function isPasswordChangeRequired() {
+    return !empty($_SESSION['must_change_password']);
+}
+
+function enforcePasswordChange() {
+    if (!isPasswordChangeRequired()) {
+        return;
+    }
+
+    $currentScript = basename((string)($_SERVER['PHP_SELF'] ?? ''));
+    if (in_array($currentScript, ['change-password.php', 'logout.php'], true)) {
+        return;
+    }
+
+    setFlashMessage('info', 'Please change your temporary password before continuing.');
+    redirect(BASE_URL . 'change-password.php');
+}
+
 function requireRole($roles) {
+    enforcePasswordChange();
+
     $roles = is_array($roles) ? $roles : [$roles];
     $role = getUserRole();
     if (!$role || !in_array($role, $roles, true)) {
@@ -600,6 +645,31 @@ function saveUploadedFile(array $file, $uploadDir, $prefix, array $allowedExtens
         throw new Exception('Uploaded file must be a valid image.');
     }
 
+    $allowedMimeTypes = [
+        'jpg' => ['image/jpeg'],
+        'jpeg' => ['image/jpeg'],
+        'png' => ['image/png'],
+        'webp' => ['image/webp'],
+        'pdf' => ['application/pdf'],
+        'doc' => ['application/msword', 'application/vnd.ms-office'],
+        'docx' => ['application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/zip'],
+        'ppt' => ['application/vnd.ms-powerpoint', 'application/vnd.ms-office'],
+        'pptx' => ['application/vnd.openxmlformats-officedocument.presentationml.presentation', 'application/zip'],
+        'zip' => ['application/zip', 'application/x-zip-compressed'],
+    ];
+
+    if (isset($allowedMimeTypes[$extension]) && function_exists('finfo_open')) {
+        $fileInfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mimeType = $fileInfo ? finfo_file($fileInfo, $file['tmp_name']) : false;
+        if ($fileInfo) {
+            finfo_close($fileInfo);
+        }
+
+        if ($mimeType && !in_array($mimeType, $allowedMimeTypes[$extension], true)) {
+            throw new Exception('Uploaded file content does not match its extension.');
+        }
+    }
+
     if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
         throw new Exception('Upload folder could not be created.');
     }
@@ -857,6 +927,254 @@ function getStudentDisplayId(array $student) {
     }
 
     return 'STU-' . str_pad((string)($student['id'] ?? 0), 4, '0', STR_PAD_LEFT);
+}
+
+function getStudentList($class_id = null, PDO $db = null) {
+    $db = $db ?: (new Database())->getConnection();
+    if (!tableExists($db, 'students')) {
+        return [];
+    }
+
+    $studentCodeParts = [];
+    foreach (['student_id', 'registration_number', 'roll_number'] as $column) {
+        if (columnExists($db, 'students', $column)) {
+            $studentCodeParts[] = "NULLIF(s.`$column`, '')";
+        }
+    }
+    $studentCodeExpr = $studentCodeParts
+        ? 'COALESCE(' . implode(', ', $studentCodeParts) . ", CONCAT('STU-', LPAD(s.id, 4, '0')))"
+        : "CONCAT('STU-', LPAD(s.id, 4, '0'))";
+
+    $classExpr = columnExists($db, 'students', 'class')
+        ? 's.class'
+        : (columnExists($db, 'students', 'class_id') ? 'CAST(s.class_id AS CHAR)' : 'NULL');
+    $familyExpr = columnExists($db, 'students', 'family_id') ? 's.family_id' : 'NULL';
+    $where = [];
+    $params = [];
+
+    if (columnExists($db, 'students', 'status')) {
+        $where[] = "LOWER(COALESCE(s.status, 'Active')) = 'active'";
+    }
+
+    $class_id = trim((string)($class_id ?? ''));
+    if ($class_id !== '') {
+        if (columnExists($db, 'students', 'class_id')) {
+            $where[] = 's.class_id = :class_id';
+        } elseif (columnExists($db, 'students', 'class')) {
+            $where[] = 's.class = :class_id';
+        }
+        $params[':class_id'] = $class_id;
+    }
+
+    $stmt = $db->prepare("
+        SELECT s.*,
+               CONCAT_WS(' ', s.first_name, s.last_name) AS student_name,
+               $studentCodeExpr AS display_student_id,
+               $classExpr AS class_name,
+               $familyExpr AS family_id
+        FROM students s
+        " . ($where ? 'WHERE ' . implode(' AND ', $where) : '') . "
+        ORDER BY class_name ASC, s.first_name ASC, s.last_name ASC
+    ");
+    $stmt->execute($params);
+    return $stmt->fetchAll();
+}
+
+function getClassList(PDO $conn) {
+    foreach (['classes', 'class_list', 'tbl_classes'] as $table) {
+        if (!tableExists($conn, $table)) {
+            continue;
+        }
+
+        $idColumn = firstExistingColumn($conn, $table, ['id', 'class_id']);
+        $nameColumn = firstExistingColumn($conn, $table, ['class_name', 'name', 'class']);
+        if (!$nameColumn) {
+            continue;
+        }
+
+        $idExpr = $idColumn ? "`$idColumn`" : "`$nameColumn`";
+        $stmt = $conn->query("SELECT $idExpr AS id, `$nameColumn` AS class_name FROM `$table` ORDER BY `$nameColumn` ASC");
+        return $stmt->fetchAll();
+    }
+
+    if (tableExists($conn, 'students') && columnExists($conn, 'students', 'class')) {
+        $stmt = $conn->query("
+            SELECT DISTINCT class AS id, class AS class_name
+            FROM students
+            WHERE class IS NOT NULL AND class <> ''
+            ORDER BY class ASC
+        ");
+        return $stmt->fetchAll();
+    }
+
+    return [];
+}
+
+function feeTransactionStructureJoin(PDO $conn, $collectionAlias = 'fc', $structureAlias = 'fs', $studentAlias = 's') {
+    if (!tableExists($conn, 'fee_structure')) {
+        return '';
+    }
+
+    if (columnExists($conn, 'fee_collections', 'fee_structure_id')) {
+        return "LEFT JOIN fee_structure $structureAlias ON $structureAlias.id = $collectionAlias.fee_structure_id";
+    }
+
+    if (columnExists($conn, 'fee_collections', 'fee_type')
+        && columnExists($conn, 'fee_structure', 'fee_type')
+        && columnExists($conn, 'fee_structure', 'class')
+        && columnExists($conn, 'students', 'class')) {
+        return "LEFT JOIN fee_structure $structureAlias ON $structureAlias.fee_type = $collectionAlias.fee_type AND $structureAlias.class = $studentAlias.class";
+    }
+
+    return '';
+}
+
+function feeTransactionDebitExpression(PDO $conn, $collectionAlias = 'fc', $structureAlias = 'fs') {
+    $debitColumn = firstExistingColumn($conn, 'fee_collections', ['amount']);
+    if ($debitColumn) {
+        return "COALESCE($collectionAlias.`$debitColumn`, 0)";
+    }
+
+    if (tableExists($conn, 'fee_structure') && columnExists($conn, 'fee_structure', 'amount')) {
+        return "COALESCE($structureAlias.amount, 0)";
+    }
+
+    $paymentColumn = firstExistingColumn($conn, 'fee_collections', ['paid_amount', 'amount_paid']);
+    return $paymentColumn ? "COALESCE($collectionAlias.`$paymentColumn`, 0)" : '0';
+}
+
+function feeTransactionCreditExpression(PDO $conn, $collectionAlias = 'fc') {
+    $paymentColumn = firstExistingColumn($conn, 'fee_collections', ['paid_amount', 'amount_paid', 'amount']);
+    if (!$paymentColumn) {
+        return '0';
+    }
+
+    $creditExpr = "COALESCE($collectionAlias.`$paymentColumn`, 0)";
+    if (!columnExists($conn, 'fee_collections', 'status')) {
+        return $creditExpr;
+    }
+
+    return "CASE WHEN LOWER(COALESCE($collectionAlias.status, '')) IN ('paid', 'partially paid', 'partial') THEN $creditExpr ELSE 0 END";
+}
+
+function getTotalStudentsWithTransactions(PDO $conn) {
+    if (!tableExists($conn, 'students') || !tableExists($conn, 'fee_collections')) {
+        return 0;
+    }
+
+    $stmt = $conn->query("
+        SELECT COUNT(DISTINCT s.id)
+        FROM students s
+        JOIN fee_collections fc ON fc.student_id = s.id
+    ");
+    return (int)$stmt->fetchColumn();
+}
+
+function getTransactionSummary(PDO $conn) {
+    $summary = ['debit' => 0, 'credit' => 0, 'pending' => 0, 'total_tx' => 0];
+    if (!tableExists($conn, 'students') || !tableExists($conn, 'fee_collections')) {
+        return $summary;
+    }
+
+    $debitExpr = feeTransactionDebitExpression($conn);
+    $creditExpr = feeTransactionCreditExpression($conn);
+    $structureJoin = feeTransactionStructureJoin($conn);
+    $stmt = $conn->query("
+        SELECT COALESCE(SUM($debitExpr), 0) AS debit,
+               COALESCE(SUM($creditExpr), 0) AS credit,
+               COUNT(DISTINCT fc.id) AS total_tx
+        FROM fee_collections fc
+        JOIN students s ON s.id = fc.student_id
+        $structureJoin
+    ");
+    $row = $stmt->fetch() ?: [];
+
+    $summary['debit'] = (float)($row['debit'] ?? 0);
+    $summary['credit'] = (float)($row['credit'] ?? 0);
+    $summary['pending'] = $summary['debit'] - $summary['credit'];
+    $summary['total_tx'] = (int)($row['total_tx'] ?? 0);
+    return $summary;
+}
+
+function getStudentTransactionRegister(PDO $conn, $class_id = null, $search = '') {
+    if (!tableExists($conn, 'students') || !tableExists($conn, 'fee_collections')) {
+        return [];
+    }
+
+    $studentCodeParts = [];
+    foreach (['student_id', 'registration_number', 'roll_number'] as $column) {
+        if (columnExists($conn, 'students', $column)) {
+            $studentCodeParts[] = "NULLIF(s.`$column`, '')";
+        }
+    }
+    $studentCodeExpr = $studentCodeParts
+        ? 'COALESCE(' . implode(', ', $studentCodeParts) . ", CONCAT('STU-', LPAD(s.id, 4, '0')))"
+        : "CONCAT('STU-', LPAD(s.id, 4, '0'))";
+    $classExpr = columnExists($conn, 'students', 'class')
+        ? 's.class'
+        : (columnExists($conn, 'students', 'class_id') ? 'CAST(s.class_id AS CHAR)' : 'NULL');
+    $familyExpr = columnExists($conn, 'students', 'family_id') ? 's.family_id' : 'NULL';
+    $debitExpr = feeTransactionDebitExpression($conn);
+    $creditExpr = feeTransactionCreditExpression($conn);
+    $structureJoin = feeTransactionStructureJoin($conn);
+    $where = [];
+    $params = [];
+
+    if (columnExists($conn, 'students', 'status')) {
+        $where[] = "LOWER(COALESCE(s.status, 'Active')) = 'active'";
+    }
+
+    $class_id = trim((string)($class_id ?? ''));
+    if ($class_id !== '') {
+        if (columnExists($conn, 'students', 'class_id')) {
+            $where[] = 's.class_id = :class_id';
+        } elseif (columnExists($conn, 'students', 'class')) {
+            $where[] = 's.class = :class_id';
+        }
+        $params[':class_id'] = $class_id;
+    }
+
+    $search = trim((string)$search);
+    if ($search !== '') {
+        $searchColumns = ['s.first_name LIKE :search', 's.last_name LIKE :search'];
+        foreach (['student_id', 'registration_number', 'roll_number'] as $column) {
+            if (columnExists($conn, 'students', $column)) {
+                $searchColumns[] = "s.`$column` LIKE :search";
+            }
+        }
+        $where[] = '(' . implode(' OR ', $searchColumns) . ')';
+        $params[':search'] = '%' . $search . '%';
+    }
+
+    $groupBy = ['s.id', 's.first_name', 's.last_name'];
+    foreach (['student_id', 'registration_number', 'roll_number', 'class', 'class_id', 'section', 'admission_date', 'family_id'] as $column) {
+        if (columnExists($conn, 'students', $column)) {
+            $groupBy[] = "s.`$column`";
+        }
+    }
+
+    $stmt = $conn->prepare("
+        SELECT s.id AS student_pk,
+               $studentCodeExpr AS student_id,
+               CONCAT_WS(' ', s.first_name, s.last_name) AS student_name,
+               $classExpr AS class_name,
+               " . (columnExists($conn, 'students', 'section') ? 's.section' : 'NULL') . " AS section,
+               " . (columnExists($conn, 'students', 'admission_date') ? 's.admission_date' : 'NULL') . " AS admission_date,
+               $familyExpr AS family_id,
+               0 AS opening_balance,
+               COALESCE(SUM($debitExpr), 0) AS total_debit,
+               COALESCE(SUM($creditExpr), 0) AS total_credit,
+               COALESCE(SUM($debitExpr - $creditExpr), 0) AS live_pending,
+               COUNT(DISTINCT fc.id) AS transaction_count
+        FROM students s
+        JOIN fee_collections fc ON fc.student_id = s.id
+        $structureJoin
+        " . ($where ? 'WHERE ' . implode(' AND ', $where) : '') . "
+        GROUP BY " . implode(', ', array_unique($groupBy)) . "
+        ORDER BY family_id ASC, class_name ASC, s.first_name ASC, s.last_name ASC
+    ");
+    $stmt->execute($params);
+    return $stmt->fetchAll();
 }
 
 function getCollegeCampuses() {
@@ -1390,7 +1708,15 @@ function syncFinancialModuleData(PDO $db) {
 }
 
 if (!defined('BASE_URL')) {
-    define('BASE_URL', '/quaid-college-system-main/');
+    $projectFolder = basename(dirname(__DIR__));
+    $scriptName = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $basePath = '/';
+
+    if ($projectFolder !== '' && strpos($scriptName, '/' . $projectFolder . '/') !== false) {
+        $basePath = substr($scriptName, 0, strpos($scriptName, '/' . $projectFolder . '/') + strlen('/' . $projectFolder . '/'));
+    }
+
+    define('BASE_URL', $basePath);
 }
 
 startSecureSession();

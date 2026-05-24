@@ -30,7 +30,9 @@ try {
 }
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = (int)$_POST['student_id'];
     $fee_type_name = sanitizeInput($_POST['fee_type']);
     $paid_amount = floatval($_POST['paid_amount']);
@@ -76,7 +78,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST = []; // Clear form
         } catch (Exception $e) {
             $db->rollBack();
-            $error = 'Error collecting fee: ' . $e->getMessage();
+            error_log('Fee collection failed: ' . $e->getMessage());
+            $error = 'Fee collection could not be saved. Please try again.';
         }
     }
 }
@@ -135,6 +138,7 @@ include '../../includes/header.php';
                     <?php endif; ?>
 
                     <form method="POST" action="" id="feeForm">
+                        <?= csrfTokenInput() ?>
                         <div class="row g-3">
                             <!-- Student Selection -->
                             <div class="col-md-6">

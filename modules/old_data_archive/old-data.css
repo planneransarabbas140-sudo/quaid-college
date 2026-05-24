@@ -1,0 +1,233 @@
+/**
+ * File: modules/old_data_archive/old-data.css
+ * Old Data Archive (scoped styles)
+ */
+
+.old-data-archive {
+    --oda-primary: #4f46e5;
+    --oda-primary-dark: #4338ca;
+    --oda-bg: #f8fafc;
+    --oda-white: #ffffff;
+    --oda-border: #e2e8f0;
+    --oda-text: #1e293b;
+    --oda-muted: #64748b;
+
+    --oda-student: #3b82f6;
+    --oda-fee: #f59e0b;
+    --oda-attendance: #10b981;
+    --oda-exam: #6b7280;
+    --oda-income: #059669;
+    --oda-expense: #ef4444;
+    --oda-transaction: #8b5cf6;
+}
+
+.old-data-archive .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+@media (max-width: 1200px) {
+    .old-data-archive .cards-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+    .old-data-archive .cards-grid { grid-template-columns: 1fr; }
+}
+
+.old-data-archive .stat-card {
+    background: var(--oda-white);
+    border-radius: 12px;
+    padding: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border-left: 4px solid var(--oda-border);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.old-data-archive .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+.old-data-archive .border-student { border-left-color: var(--oda-student); }
+.old-data-archive .border-fee { border-left-color: var(--oda-fee); }
+.old-data-archive .border-attendance { border-left-color: var(--oda-attendance); }
+.old-data-archive .border-exam { border-left-color: var(--oda-exam); }
+.old-data-archive .border-transaction { border-left-color: var(--oda-transaction); }
+
+.old-data-archive .stat-label {
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    font-size: 12px;
+    color: var(--oda-muted);
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.old-data-archive .card-value {
+    min-height: 34px;
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--oda-text);
+    display: flex;
+    align-items: center;
+}
+
+.old-data-archive .border-student .card-value { color: var(--oda-student); }
+.old-data-archive .border-attendance .card-value { color: var(--oda-attendance); }
+.old-data-archive .border-fee .card-value { color: var(--oda-fee); }
+.old-data-archive .border-transaction .card-value { color: var(--oda-transaction); }
+.old-data-archive .border-exam .card-value { color: var(--oda-exam); }
+
+.old-data-archive .search-filters {
+    background: var(--oda-white);
+    border: 1px solid var(--oda-border);
+    border-radius: 12px;
+    padding: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.old-data-archive .old-data-download.btn-primary {
+    background: var(--oda-primary);
+    border-color: var(--oda-primary);
+}
+.old-data-archive .old-data-download.btn-primary:hover {
+    background: var(--oda-primary-dark);
+    border-color: var(--oda-primary-dark);
+}
+
+.old-data-archive .type-tabs {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.old-data-archive .filter-tab {
+    border: 1px solid var(--oda-border);
+    background: #fff;
+    color: var(--oda-text);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .12s ease;
+}
+
+.old-data-archive .filter-tab:hover {
+    border-color: rgba(79,70,229,0.35);
+    background: rgba(79,70,229,0.06);
+}
+
+.old-data-archive .filter-tab.active {
+    background: var(--oda-primary);
+    border-color: var(--oda-primary);
+    color: #fff;
+}
+
+.old-data-archive .table-container {
+    background: var(--oda-white);
+    border: 1px solid var(--oda-border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+
+.old-data-archive .old-data-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: #f1f5f9;
+    border-bottom: 1px solid var(--oda-border);
+    font-size: 12px;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: #475569;
+    padding: 12px 14px;
+    white-space: nowrap;
+}
+
+.old-data-archive .old-data-table tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+}
+
+.old-data-archive .old-data-table tbody tr:nth-child(even) {
+    background: #fbfdff;
+}
+
+.old-data-archive .old-data-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+.old-data-archive .table-footer {
+    padding: 12px 14px;
+    border-top: 1px solid var(--oda-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.old-data-archive .type-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: capitalize;
+    white-space: nowrap;
+}
+
+.old-data-archive .type-badge.student { background: rgba(59,130,246,.15); color: var(--oda-student); }
+.old-data-archive .type-badge.fee { background: rgba(245,158,11,.18); color: var(--oda-fee); }
+.old-data-archive .type-badge.attendance { background: rgba(16,185,129,.16); color: var(--oda-attendance); }
+.old-data-archive .type-badge.exam { background: rgba(107,114,128,.14); color: var(--oda-exam); }
+.old-data-archive .type-badge.income { background: rgba(5,150,105,.16); color: var(--oda-income); }
+.old-data-archive .type-badge.expense { background: rgba(239,68,68,.14); color: var(--oda-expense); }
+.old-data-archive .type-badge.transaction { background: rgba(139,92,246,.14); color: var(--oda-transaction); }
+
+.old-data-archive .skeleton {
+    display: inline-block;
+    background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+    background-size: 200% 100%;
+    animation: oda_loading 1.4s infinite;
+    border-radius: 8px;
+}
+
+.old-data-archive .skeleton-lg {
+    width: 90px;
+    height: 28px;
+}
+
+@keyframes oda_loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+.old-data-archive .oda-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(148, 163, 184, 0.35);
+    border-top-color: var(--oda-primary);
+    border-radius: 50%;
+    animation: oda_spin .8s linear infinite;
+    display: inline-block;
+}
+
+@keyframes oda_spin {
+    to { transform: rotate(360deg); }
+}
+
+.old-data-archive .empty-state {
+    padding: 36px 16px;
+    text-align: center;
+    color: var(--oda-muted);
+}
+
+.old-data-archive .empty-state .title {
+    font-weight: 800;
+    color: var(--oda-text);
+    margin-bottom: 6px;
+}

@@ -305,7 +305,7 @@ include '../../includes/header.php';
     <?php endif; ?>
 
     <!-- Quick Actions -->
-    <div class="row g-3 mb-4 no-print">
+    <div class="row g-3 mb-4 no-print" id="quick-actions">
         <div class="col-md-4">
             <button class="btn btn-warning w-100 py-3 rounded-4 shadow-sm fw-bold d-flex align-items-center justify-content-center gap-2" onclick="loadQuickTemplate('Fee Reminder')">
                 <i class="fas fa-money-bill-wave"></i> Send Fee Reminder to All
@@ -324,7 +324,7 @@ include '../../includes/header.php';
     </div>
 
     <!-- Main Tabs -->
-    <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
+    <div class="card border-0 shadow-sm rounded-4 overflow-hidden" id="communication-tools">
         <div class="card-header bg-white border-0 pt-4 px-4">
             <ul class="nav nav-tabs card-header-tabs" id="commTabs" role="tablist">
                 <li class="nav-item">
@@ -342,7 +342,7 @@ include '../../includes/header.php';
             <div class="tab-content">
                 
                 <!-- Send Message Tab -->
-                <div class="tab-pane fade show active" id="send-pane" role="tabpanel">
+                <div class="tab-pane fade show active scroll-anchor" id="send-pane" role="tabpanel">
                     <form action="" method="POST" id="mainSendForm">
                         <input type="hidden" name="action" value="send_message">
                         <div class="row g-4">
@@ -427,7 +427,7 @@ include '../../includes/header.php';
                 </div>
 
                 <!-- History Tab -->
-                <div class="tab-pane fade" id="history-pane" role="tabpanel">
+                <div class="tab-pane fade scroll-anchor" id="history-pane" role="tabpanel">
                     <div class="table-responsive">
                         <table class="table table-hover align-middle datatable">
                             <thead class="bg-light">
@@ -469,7 +469,7 @@ include '../../includes/header.php';
                 </div>
 
                 <!-- Templates Tab -->
-                <div class="tab-pane fade" id="templates-pane" role="tabpanel">
+                <div class="tab-pane fade scroll-anchor" id="templates-pane" role="tabpanel">
                     <div class="d-flex justify-content-between mb-4">
                         <h5 class="fw-bold mb-0">Message Templates</h5>
                         <button class="btn btn-primary btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#templateModal">
@@ -650,6 +650,12 @@ include '../../includes/header.php';
     .modal { z-index: 99999 !important; }
     .modal-backdrop { z-index: 99998 !important; }
     .modal-dialog { z-index: 100000 !important; }
+    html { scroll-behavior: smooth; }
+    .scroll-anchor,
+    #quick-actions,
+    #communication-tools {
+        scroll-margin-top: 90px;
+    }
 </style>
 
 <script>
@@ -717,15 +723,26 @@ function deleteTemplate(id) {
     new bootstrap.Modal(document.getElementById('deleteTemplateModal')).show();
 }
 
-// Handle URL hash for tabs
-// Handle URL hash for tabs
-window.addEventListener('DOMContentLoaded', () => {
-    const hash = window.location.hash;
-    if (hash) {
-        const tabEl = document.querySelector(`button[data-bs-target="${hash}-pane"]`);
-        if (tabEl) bootstrap.Tab.getOrCreateInstance(tabEl).show();
+function openHashTarget(hash) {
+    if (!hash) return;
+    const aliases = {
+        '#send': '#send-pane',
+        '#history': '#history-pane',
+        '#templates': '#templates-pane',
+        '#whatsapp-center': '#send-pane'
+    };
+    const targetHash = aliases[hash] || hash;
+    const tabEl = document.querySelector(`button[data-bs-target="${targetHash}"]`);
+    if (tabEl) {
+        bootstrap.Tab.getOrCreateInstance(tabEl).show();
+        document.querySelector('#communication-tools')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        return;
     }
-});
+    document.querySelector(targetHash)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+window.addEventListener('DOMContentLoaded', () => openHashTarget(window.location.hash));
+window.addEventListener('hashchange', () => openHashTarget(window.location.hash));
 
 function openAll(){
     var links = <?= json_encode(array_column($whatsapp_links, 'link')) ?>;

@@ -1,11 +1,20 @@
 <?php
 // File: dashboard.php - Role-based ERP Dashboard
+// INTEGRATION DEPENDENCIES:
+// Reads from: students, staff, fee_collections, approval_requests, income, expenses, campuses, fee_structure, exam_schedule
+// Writes to: approval_requests
+// Shared functions: includes/shared_functions.php
+// AJAX: ajax/shared-ajax.php
+// JS: assets/js/shared.js
 require_once 'config/db.php';
+require_once 'includes/shared_functions.php';
 
 if (!isLoggedIn()) {
     header("Location: modules/auth/login.php");
     exit();
 }
+
+enforcePasswordChange();
 
 $database = new Database();
 $db = $database->getConnection();
@@ -58,6 +67,7 @@ function formatRequestLabel($module, $action) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['dashboard_action'])) {
     try {
+        requireCsrfToken();
         $action = $_POST['dashboard_action'];
 
         if (!$isAdminRole && in_array($action, ['approve_request', 'reject_request'], true)) {
@@ -193,6 +203,55 @@ $adminStats = [
     'pending' => count($pendingRequests),
     'pending_admissions' => tableExists($db, 'admission_applications') ? getStat($db, "SELECT COUNT(*) FROM admission_applications WHERE status = 'pending'") : 0,
 ];
+
+$setupChecklist = [];
+if ($isAdminRole) {
+    $schoolInfo = getSchoolInfo($db);
+    $classesForSetup = getAllClasses($db);
+    $classesMissingSections = 0;
+    foreach ($classesForSetup as $classForSetup) {
+        if (count(getSectionsByClass($db, $classForSetup['id'])) === 0) {
+            $classesMissingSections++;
+        }
+    }
+    $setupChecklist = [
+        [
+            'label' => 'School info configured',
+            'done' => !empty($schoolInfo['name']),
+            'url' => 'dashboard.php',
+        ],
+        [
+            'label' => 'Active academic session available',
+            'done' => (bool)getCurrentSessionYear($db),
+            'url' => 'dashboard.php',
+        ],
+        [
+            'label' => 'Campus records available',
+            'done' => count(getAllCampuses($db)) > 0,
+            'url' => 'dashboard.php',
+        ],
+        [
+            'label' => 'At least one class added',
+            'done' => count($classesForSetup) > 0,
+            'url' => 'modules/student_profile/add.php',
+        ],
+        [
+            'label' => 'Sections found for configured classes',
+            'done' => count($classesForSetup) === 0 || $classesMissingSections === 0,
+            'url' => 'modules/student_profile/add.php',
+        ],
+        [
+            'label' => 'Fee heads configured',
+            'done' => count(getAllFeeHeads($db)) > 0,
+            'url' => 'modules/fee_management/structure.php',
+        ],
+        [
+            'label' => 'Staff or teachers added',
+            'done' => count(getAllStaff($db)) > 0,
+            'url' => 'modules/hr/staff.php',
+        ],
+    ];
+}
 
 ensureFinanceTables($db);
 syncFinancialModuleData($db);
@@ -354,6 +413,27 @@ include 'includes/header.php';
         <div class="col-md-6 col-xl-2"><div class="mini-card"><i class="fas fa-user-clock"></i><span>Pending Admissions</span><strong><?= number_format($adminStats['pending_admissions']) ?></strong></div></div>
     </div>
 
+    <?php if ($setupChecklist && count(array_filter($setupChecklist, fn($item) => !$item['done'])) > 0): ?>
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 p-4">
+                <h5 class="mb-1 fw-bold">Setup Checklist</h5>
+                <p class="text-muted mb-0 small">These shared data sources must exist before every module can show complete records.</p>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <?php foreach ($setupChecklist as $item): ?>
+                        <div class="col-md-6 col-xl-4">
+                            <a class="d-flex align-items-center gap-3 text-decoration-none border rounded-3 p-3 h-100 <?= $item['done'] ? 'border-success-subtle bg-success-subtle' : 'border-warning-subtle bg-warning-subtle' ?>" href="<?= h($item['url']) ?>">
+                                <i class="fas <?= $item['done'] ? 'fa-check-circle text-success' : 'fa-exclamation-triangle text-warning' ?>"></i>
+                                <span class="fw-semibold text-dark"><?= h($item['label']) ?></span>
+                            </a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
     <div class="card border-0 shadow-sm rounded-4 mb-4" id="financial-overview">
         <div class="card-header bg-white border-0 p-4 d-flex flex-column flex-lg-row justify-content-between gap-3">
             <div>
@@ -430,6 +510,7 @@ include 'includes/header.php';
                             <td><?= date('d M Y', strtotime($request['created_at'])) ?></td>
                             <td class="text-end pe-4">
                                 <form method="POST" class="d-inline-flex gap-2 align-items-center">
+                                    <?= csrfTokenInput() ?>
                                     <input type="hidden" name="request_id" value="<?= (int)$request['id'] ?>">
                                     <input type="text" name="admin_remarks" class="form-control form-control-sm" placeholder="Remarks" style="width:150px;">
                                     <button name="dashboard_action" value="approve_request" class="btn btn-sm btn-success"><i class="fas fa-check me-1"></i>Approve</button>
@@ -457,6 +538,7 @@ include 'includes/header.php';
                 <div class="card-header bg-white border-0 p-4"><h5 class="mb-0 fw-bold">Add Homework / Daily Diary</h5></div>
                 <div class="card-body p-4">
                     <form method="POST" class="row g-3">
+                        <?= csrfTokenInput() ?>
                         <input type="hidden" name="dashboard_action" value="teacher_homework">
                         <div class="col-md-6"><label class="form-label small fw-bold">Class</label><input name="class" class="form-control" required></div>
                         <div class="col-md-6"><label class="form-label small fw-bold">Subject</label><input name="subject" class="form-control" required></div>
@@ -479,6 +561,7 @@ include 'includes/header.php';
                         <a class="btn btn-outline-primary text-start" href="modules/diary_homework/index.php"><i class="fas fa-book-open me-2"></i>Add Daily Diary</a>
                     </div>
                     <form method="POST" class="mt-4">
+                        <?= csrfTokenInput() ?>
                         <input type="hidden" name="dashboard_action" value="teacher_lms">
                         <label class="form-label small fw-bold">Quick LMS Material Note</label>
                         <input name="title" class="form-control mb-2" placeholder="Material title" required>
@@ -509,6 +592,7 @@ include 'includes/header.php';
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/diary_homework/index.php"><i class="fas fa-book-open me-2"></i>My Homework</a></div>
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/lms/index.php"><i class="fas fa-folder-open me-2"></i>My LMS Material</a></div>
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/fee_management/index.php"><i class="fas fa-money-bill me-2"></i>My Fee Status</a></div>
+                        <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/fee_management/index.php#generate-challan"><i class="fas fa-file-invoice me-2"></i>Generate Fee Challan</a></div>
                     </div>
                     <div class="alert alert-info mt-4 mb-0">Students have view, download, assignment submission, and complaint submission access only. Edit and delete actions are hidden.</div>
                 </div>
@@ -519,6 +603,7 @@ include 'includes/header.php';
                 <div class="card-header bg-white border-0 p-4"><h5 class="mb-0 fw-bold">Send Complaint</h5></div>
                 <div class="card-body p-4">
                     <form method="POST">
+                        <?= csrfTokenInput() ?>
                         <input type="hidden" name="dashboard_action" value="student_complaint">
                         <label class="form-label small fw-bold">Subject / Issue</label>
                         <textarea name="subject" class="form-control mb-3" rows="5" required></textarea>

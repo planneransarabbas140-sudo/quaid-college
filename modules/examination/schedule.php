@@ -8,8 +8,10 @@ require_once '../../config/db.php';
 if (!isLoggedIn()) {
     redirect('../../index.php');
 }
+requireRole(['admin', 'owner', 'teacher']);
 
 $db = (new Database())->getConnection();
+$canManageSchedule = in_array(getUserRole(), ['admin', 'owner'], true);
 
 // --- ENSURE TABLE EXISTS ---
 $db->exec("CREATE TABLE IF NOT EXISTS exam_schedule (
@@ -35,6 +37,11 @@ $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_POST['action'])) {
         try {
+            requireCsrfToken();
+            if (!$canManageSchedule) {
+                throw new Exception('You are not allowed to change exam schedules.');
+            }
+
             if ($_POST['action'] === 'add' || $_POST['action'] === 'edit') {
                 $exam_title = sanitizeInput($_POST['exam_title']);
                 $exam_type = $_POST['exam_type'];
@@ -100,9 +107,11 @@ $exam_types = ['Mid Term', 'Final Term', 'Unit Test', 'Practical', 'Mock Test'];
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="page-title mb-0"><i class="fas fa-calendar-alt me-2" style="color: var(--teal);"></i>Exam Schedule</h2>
                 <div class="btn-group">
+                    <?php if ($canManageSchedule): ?>
                     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleModal">
                         <i class="fas fa-plus me-2"></i>Add Schedule
                     </button>
+                    <?php endif; ?>
                     <button class="btn btn-outline-navy" onclick="window.print()">
                         <i class="fas fa-print me-2"></i>Print Schedule
                     </button>
@@ -149,6 +158,7 @@ $exam_types = ['Mid Term', 'Final Term', 'Unit Test', 'Practical', 'Mock Test'];
                             <td><span class="fw-bold"><?= $row['total_marks'] ?></span></td>
                             <td><span class="badge bg-info-subtle text-info"><?= $row['campus'] ?></span></td>
                             <td class="text-end">
+                                <?php if ($canManageSchedule): ?>
                                 <div class="btn-group btn-group-sm">
                                     <button class="btn btn-outline-info" onclick='editSchedule(<?= json_encode($row) ?>)' title="Edit">
                                         <i class="fas fa-edit"></i>
@@ -157,6 +167,9 @@ $exam_types = ['Mid Term', 'Final Term', 'Unit Test', 'Practical', 'Mock Test'];
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>
+                                <?php else: ?>
+                                    <span class="text-muted small">View only</span>
+                                <?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -176,6 +189,7 @@ $exam_types = ['Mid Term', 'Final Term', 'Unit Test', 'Practical', 'Mock Test'];
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <form action="" method="POST" id="scheduleForm">
+                <?= csrfTokenInput() ?>
                 <input type="hidden" name="action" id="formAction" value="add">
                 <input type="hidden" name="id" id="schedule_id">
                 <div class="modal-body p-4">
@@ -260,6 +274,7 @@ $exam_types = ['Mid Term', 'Final Term', 'Unit Test', 'Practical', 'Mock Test'];
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <form action="" method="POST">
+                <?= csrfTokenInput() ?>
                 <input type="hidden" name="action" value="delete">
                 <input type="hidden" name="id" id="delete_id">
                 <div class="modal-body p-4 text-center">

@@ -18,6 +18,7 @@ $app_id  = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        requireCsrfToken();
 
         // -- 1. Validate required fields ----------------------
         $required = ['full_name','father_name','dob','gender',
@@ -408,6 +409,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <?php endif; ?>
 
                         <form id="admissionForm" method="POST" enctype="multipart/form-data">
+                            <?= csrfTokenInput() ?>
                             
                             <!-- STEP 1: PERSONAL -->
                             <div class="form-step active" id="step-1">

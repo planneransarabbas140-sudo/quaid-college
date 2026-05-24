@@ -1,0 +1,9 @@
+@media print{
+  body{background:#fff!important;color:#000!important;font-family:Arial,sans-serif!important;font-size:12px!important}
+  #sidebar,.navbar,.topbar,.no-print,#chatbot-bubble,#chatbot-window{display:none!important}
+  #content{margin:0!important;width:100%!important}
+  .print-voucher,.result-card-print{display:block!important;border:1px solid #000!important;box-shadow:none!important;color:#000!important}
+  .card,.table{box-shadow:none!important;border-color:#999!important}
+  a{color:#000!important;text-decoration:none!important}
+  .page-break{page-break-after:always}
+}

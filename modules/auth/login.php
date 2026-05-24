@@ -31,7 +31,9 @@ function ensurePendingSignupsTable(PDO $db) {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4")->execute();
 }
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $database = new Database();
     $db = $database->getConnection();
     $action = $_POST['action'] ?? 'login';
@@ -110,13 +112,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['role'] = strtolower($user['role']);
                     $_SESSION['user_role'] = strtolower($user['role']);
                     $_SESSION['user_campus'] = $user['campus'] ?? 'Rajanpur';
+                    $_SESSION['must_change_password'] = (int)($user['must_change_password'] ?? 0);
 
-                    redirect('../../dashboard.php');
+                    redirect($_SESSION['must_change_password'] ? '../../change-password.php' : '../../dashboard.php');
                 } else {
                     $error = "Invalid username/password or your student admission is not approved yet.";
                 }
             } catch (PDOException $e) {
-                $error = "Database Error: " . $e->getMessage();
+                error_log('Login lookup failed: ' . $e->getMessage());
+                $error = 'Login is temporarily unavailable. Please try again.';
             }
         }
     }
@@ -396,6 +400,10 @@ $roleMeta = [
                 <?php endif; ?>
 
                 <div id="role-selection" class="step-panel">
+                    <button type="button" class="btn btn-sm btn-light border rounded-pill mb-4" onclick="window.location.href='<?= login_h(BASE_URL) ?>'">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </button>
+                    <img src="<?= login_h(BASE_URL) ?>assets/images/qgc-logo.png" alt="Quaid-e-Azam Group of Colleges" style="width: 64px; height: 64px; object-fit: contain; background: #e8eef5; border-radius: 12px; padding: 6px; margin-bottom: 16px;">
                     <h2 class="auth-heading">Choose Portal</h2>
                     <p class="auth-subtitle">Select your role to continue.</p>
                     <div class="role-grid">
@@ -420,6 +428,7 @@ $roleMeta = [
                     <p class="auth-subtitle">Sign in to your <span id="role-subtitle">Student</span> account</p>
 
                     <form method="POST">
+                        <?= csrfTokenInput() ?>
                         <input type="hidden" name="action" value="login">
                         <input type="hidden" name="selected_role" id="selected_role" value="<?= login_h($selected_role) ?>">
                         <div class="mb-3">
@@ -455,6 +464,7 @@ $roleMeta = [
                             Admin/Staff accounts are created by the administrator. Contact: admin@quaid.edu.pk
                         </div>
                         <form method="POST" id="signup-form">
+                            <?= csrfTokenInput() ?>
                             <input type="hidden" name="action" value="signup">
                             <input type="hidden" name="signup_role" id="signup_role" value="student">
                             <div class="row g-3">

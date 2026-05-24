@@ -510,7 +510,7 @@ include '../../includes/header.php';
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left me-1"></i> Back</button>
                     <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-1"></i> <?= $isTeacher ? 'Submit for Approval' : 'Save Homework' ?></button>
                 </div>
             </form>
@@ -575,7 +575,7 @@ include '../../includes/header.php';
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="fas fa-arrow-left me-1"></i> Back</button>
                     <button type="submit" class="btn btn-navy px-4"><i class="fas fa-save me-1"></i> Update Homework</button>
                 </div>
             </form>
@@ -675,6 +675,25 @@ include '../../includes/header.php';
 
     .modal-backdrop {
         z-index: 1290 !important;
+    }
+
+    #homeworkModal .modal-content,
+    #editHomeworkModal .modal-content {
+        max-height: calc(100vh - 48px);
+    }
+
+    #homeworkModal .modal-body,
+    #editHomeworkModal .modal-body {
+        overflow-y: auto;
+    }
+
+    #homeworkModal .modal-footer,
+    #editHomeworkModal .modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        border-top: 1px solid #e5e7eb;
+        box-shadow: 0 -10px 24px rgba(15, 45, 72, 0.08);
     }
 
     @media (max-width: 767px) {

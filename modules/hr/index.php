@@ -219,8 +219,16 @@ include '../../includes/header.php';
                                 <div class="small text-muted"><?= htmlspecialchars($leave['leave_type']) ?> (<?= date('d M', strtotime($leave['start_date'])) ?> - <?= date('d M', strtotime($leave['end_date'])) ?>)</div>
                             </div>
                             <div class="ms-2">
-                                <a href="leave.php?action=approve&id=<?= $leave['id'] ?>" class="btn btn-sm btn-success rounded-circle" title="Approve"><i class="fas fa-check"></i></a>
-                                <a href="leave.php?action=reject&id=<?= $leave['id'] ?>" class="btn btn-sm btn-danger rounded-circle" title="Reject"><i class="fas fa-times"></i></a>
+                                <form method="POST" action="leave.php" class="d-inline">
+                                    <?= csrfTokenInput() ?>
+                                    <input type="hidden" name="leave_id" value="<?= (int)$leave['id'] ?>">
+                                    <button type="submit" name="leave_action" value="approve" class="btn btn-sm btn-success rounded-circle" title="Approve"><i class="fas fa-check"></i></button>
+                                </form>
+                                <form method="POST" action="leave.php" class="d-inline">
+                                    <?= csrfTokenInput() ?>
+                                    <input type="hidden" name="leave_id" value="<?= (int)$leave['id'] ?>">
+                                    <button type="submit" name="leave_action" value="reject" class="btn btn-sm btn-danger rounded-circle" title="Reject"><i class="fas fa-times"></i></button>
+                                </form>
                             </div>
                         </div>
                         <?php endforeach; ?>

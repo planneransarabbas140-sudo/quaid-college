@@ -33,6 +33,7 @@ $studentDisplayId = getStudentDisplayId($student);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student ID Card - <?php echo $student['first_name'] . ' ' . $student['last_name']; ?></title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/print.css">
     <style>
         @media print {
             .no-print { display: none; }

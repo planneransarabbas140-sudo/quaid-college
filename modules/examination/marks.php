@@ -2,12 +2,20 @@
 /**
  * File: modules/examination/marks.php
  * Examination Marks Entry System for Quaid-e-Azam Group of Colleges
+ * INTEGRATION DEPENDENCIES:
+ * Reads from: students, exam_schedule, exam_marks
+ * Writes to: exam_marks
+ * Shared functions: includes/shared_functions.php
+ * AJAX: ajax/shared-ajax.php
+ * JS: assets/js/shared.js
  */
 require_once '../../config/db.php';
+require_once '../../includes/shared_functions.php';
 
 if (!isLoggedIn()) {
     redirect('../../index.php');
 }
+requireRole(['admin', 'owner', 'teacher']);
 
 $db = (new Database())->getConnection();
 
@@ -30,6 +38,7 @@ $db->exec("CREATE TABLE IF NOT EXISTS exam_marks (
 // --- HANDLE POST ACTIONS (Save Marks) ---
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'save_marks') {
     try {
+        requireCsrfToken();
         $exam_id = $_POST['exam_id'];
         $subject = $_POST['subject'];
         $class = $_POST['class'];
@@ -72,12 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 }
 
 // --- FETCH DATA FOR FILTERS ---
-$classes_list = [
-    'Intermediate' => ['FSc Pre-Medical', 'FSc Pre-Engineering', 'ICS', 'I.Com', 'FA', 'Taleem-ul-Islam'],
-    'Degree' => ['ADP Arts', 'ADP Science', 'BSCS', 'BS IT', 'BS Zoology', 'BS Mathematics', 'BS Urdu', 'BS Chemistry'],
-    'NAVTTC' => ['CCA', 'Web Development', 'Graphic Designing', 'Digital Marketing', 'UX/UI Design', 'AI', 'Vibe Coding']
-];
-$sections_list = ['A', 'B', 'C', 'D', 'Morning', 'Evening', 'Weekend', 'Batch 1', 'Batch 2', 'Batch 3', 'Batch 4'];
+$classes_list = getAllClasses($db);
 
 // Fetch available exams from schedule
 $exams = $db->query("SELECT id, exam_title, subject, class, section, total_marks FROM exam_schedule ORDER BY exam_date DESC")->fetchAll();
@@ -86,6 +90,7 @@ $exams = $db->query("SELECT id, exam_title, subject, class, section, total_marks
 $selected_class = $_GET['class'] ?? '';
 $selected_section = $_GET['section'] ?? '';
 $selected_exam_id = $_GET['exam_id'] ?? '';
+$sections_list = $selected_class ? getSectionsByClass($db, $selected_class) : [];
 
 $students = [];
 $exam_info = null;
@@ -132,23 +137,22 @@ include '../../includes/header.php';
             <form action="" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label fw-bold small">Select Class</label>
-                    <select name="class" class="form-select" required>
+                    <select name="class" id="class_id" class="form-select" required>
                         <option value="">Choose Class...</option>
-                        <?php foreach ($classes_list as $group => $list): ?>
-                            <optgroup label="<?= $group ?>">
-                                <?php foreach ($list as $c): ?>
-                                    <option value="<?= $c ?>" <?= $selected_class == $c ? 'selected' : '' ?>><?= $c ?></option>
-                                <?php endforeach; ?>
-                            </optgroup>
+                        <?php foreach ($classes_list as $class): ?>
+                            <option value="<?= htmlspecialchars($class['id']) ?>" <?= $selected_class == $class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['class_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
+                    <?php if (!$classes_list): ?>
+                        <div class="form-text text-warning">No classes found. <a href="../student_profile/add.php">Add students first</a>.</div>
+                    <?php endif; ?>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label fw-bold small">Select Section</label>
-                    <select name="section" class="form-select" required>
+                    <select name="section" id="section_id" class="form-select" <?= $selected_class ? '' : 'disabled' ?>>
                         <option value="">Choose...</option>
                         <?php foreach ($sections_list as $s): ?>
-                            <option value="<?= $s ?>" <?= $selected_section == $s ? 'selected' : '' ?>><?= $s ?></option>
+                            <option value="<?= htmlspecialchars($s['id']) ?>" <?= $selected_section == $s['id'] ? 'selected' : '' ?>><?= htmlspecialchars($s['section_name']) ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -174,6 +178,7 @@ include '../../includes/header.php';
 
     <?php if ($exam_info && !empty($students)): ?>
     <form action="" method="POST">
+        <?= csrfTokenInput() ?>
         <input type="hidden" name="action" value="save_marks">
         <input type="hidden" name="exam_id" value="<?= $exam_info['id'] ?>">
         <input type="hidden" name="subject" value="<?= $exam_info['subject'] ?>">
@@ -230,6 +235,9 @@ include '../../includes/header.php';
                 </div>
             </div>
             <div class="card-footer bg-light p-3 text-end">
+                <a href="../../result-cards.php?exam_id=<?= (int)$exam_info['id'] ?>&class_id=<?= urlencode($selected_class) ?>" class="btn btn-outline-primary px-4 py-2 fw-bold shadow-sm me-2">
+                    <i class="fas fa-certificate me-2"></i>Generate Result Cards for This Exam
+                </a>
                 <button type="submit" class="btn btn-success px-5 py-2 fw-bold shadow-sm">
                     <i class="fas fa-save me-2"></i>Save All Marks
                 </button>
@@ -270,6 +278,12 @@ include '../../includes/header.php';
 </style>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.bindClassSectionCascade) {
+        bindClassSectionCascade('class_id', 'section_id');
+    }
+});
+
 function calculateGrade(input, total) {
     const obtained = parseFloat(input.value);
     const row = input.closest('tr');

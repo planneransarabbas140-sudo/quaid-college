@@ -15,7 +15,7 @@ $database = new Database();
 $db = $database->getConnection();
 
 $userRole = getUserRole();
-$isManager = ($userRole === 'admin' || $userRole === 'teacher');
+$isManager = in_array($userRole, ['admin', 'owner', 'teacher'], true);
 
 $message = '';
 $messageType = '';
@@ -26,16 +26,22 @@ if (isset($_GET['download_id'])) {
     $stmt = $db->prepare("SELECT file_path, file_name FROM downloads WHERE id = :id");
     $stmt->execute([':id' => $id]);
     $file = $stmt->fetch();
-    
-    if ($file && file_exists('../../' . $file['file_path'])) {
+
+    $downloadsRoot = realpath(__DIR__ . '/../../uploads/downloads');
+    $filePath = $file ? realpath(__DIR__ . '/../../' . $file['file_path']) : false;
+    $safeDownloadPath = $downloadsRoot
+        && $filePath
+        && strpos($filePath, $downloadsRoot . DIRECTORY_SEPARATOR) === 0
+        && is_file($filePath);
+
+    if ($file && $safeDownloadPath) {
         // Increment counter
         $db->prepare("UPDATE downloads SET download_count = download_count + 1 WHERE id = :id")->execute([':id' => $id]);
         
         // Serve file
-        $filePath = '../../' . $file['file_path'];
         header('Content-Description: File Transfer');
         header('Content-Type: application/octet-stream');
-        header('Content-Disposition: attachment; filename="' . $file['file_name'] . '"');
+        header('Content-Disposition: attachment; filename="' . basename((string)$file['file_name']) . '"');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
         header('Pragma: public');
@@ -52,6 +58,8 @@ if (isset($_GET['download_id'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isManager) {
     if (isset($_POST['action'])) {
         try {
+            requireCsrfToken();
+
             if ($_POST['action'] === 'upload') {
                 $title = sanitizeInput($_POST['title']);
                 $description = sanitizeInput($_POST['description']);
@@ -120,8 +128,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $isManager) {
                 $file = $stmt->fetch();
                 
                 if ($file) {
-                    if (file_exists('../../' . $file['file_path'])) {
-                        unlink('../../' . $file['file_path']);
+                    $downloadsRoot = realpath(__DIR__ . '/../../uploads/downloads');
+                    $filePath = realpath(__DIR__ . '/../../' . $file['file_path']);
+                    $safeDeletePath = $downloadsRoot
+                        && $filePath
+                        && strpos($filePath, $downloadsRoot . DIRECTORY_SEPARATOR) === 0
+                        && is_file($filePath);
+
+                    if ($safeDeletePath) {
+                        unlink($filePath);
                     }
                     $db->prepare("DELETE FROM downloads WHERE id = :id")->execute([':id' => $id]);
                     $message = "File deleted successfully!";
@@ -312,6 +327,7 @@ include '../../includes/header.php';
                                             <i class="fas fa-edit me-1"></i>Edit
                                         </button>
                                         <form method="POST" class="w-100" onsubmit="return confirm('Delete this file permanently?')">
+                                            <?= csrfTokenInput() ?>
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="id" value="<?php echo $dl['id']; ?>">
                                             <button type="submit" class="btn btn-sm btn-outline-danger w-100">
@@ -339,6 +355,7 @@ include '../../includes/header.php';
             </div>
             <form method="POST" enctype="multipart/form-data">
                 <div class="modal-body">
+                    <?= csrfTokenInput() ?>
                     <input type="hidden" name="action" value="upload">
                     <div class="row g-3">
                         <div class="col-md-12">
@@ -407,6 +424,7 @@ include '../../includes/header.php';
             </div>
             <form method="POST">
                 <div class="modal-body">
+                    <?= csrfTokenInput() ?>
                     <input type="hidden" name="action" value="edit">
                     <input type="hidden" name="id" id="edit_id">
                     <div class="row g-3">

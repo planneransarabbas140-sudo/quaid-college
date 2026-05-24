@@ -18,7 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $attendance = $_POST['attendance'] ?? [];
 
     try {
-        if (!in_array($role, ['admin', 'teacher'], true)) {
+        requireCsrfToken();
+
+        if (!in_array($role, ['admin', 'owner', 'teacher'], true)) {
             throw new Exception('You are not allowed to mark attendance.');
         }
 

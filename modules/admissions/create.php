@@ -13,7 +13,9 @@ $db = $database->getConnection();
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $first_name = sanitizeInput($_POST['first_name']);
     $last_name = sanitizeInput($_POST['last_name']);
     $date_of_birth = $_POST['date_of_birth'];
@@ -122,6 +124,7 @@ include '../../includes/header.php';
                 <?php endif; ?>
                 
                 <form method="POST" action="">
+                    <?= csrfTokenInput() ?>
                     <h5 class="text-primary mb-3">Personal Details</h5>
                     <div class="row">
                         <div class="col-md-4 mb-3">

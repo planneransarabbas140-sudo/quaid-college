@@ -11,6 +11,13 @@
     <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        window.BASE_URL = <?= json_encode(BASE_URL) ?>;
+    </script>
+    <script src="<?= BASE_URL ?>assets/js/shared.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/sidebar.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/animations.js"></script>
     
     <!-- AI Chatbot Widget -->
     <link rel="stylesheet" href="<?= BASE_URL ?>modules/chatbot/chatbot.css">
@@ -27,15 +34,13 @@
         </div>
     </div>
     <script src="<?= BASE_URL ?>modules/chatbot/chatbot.js"></script>
+    <div class="toast-container-modern"></div>
 
     <script>
         $(document).ready(function() {
-            // Sidebar Toggle
-            $('#sidebarCollapse').on('click', function () {
-                $('#sidebar').toggleClass('active');
-                $('#content').toggleClass('active');
-            });
-
+            if (window.lucide) {
+                lucide.createIcons();
+            }
             // Sidebar Submenu State Persistence
             // Restore state on page load
             var activeSubmenu = localStorage.getItem('activeSidebarSubmenu');

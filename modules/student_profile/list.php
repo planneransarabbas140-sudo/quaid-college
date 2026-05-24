@@ -11,12 +11,23 @@ $database = new Database();
 $db = $database->getConnection();
 
 // Handle Delete
-if (isset($_GET['delete']) && is_numeric($_GET['delete'])) {
-    $stmt = $db->prepare("DELETE FROM students WHERE id = :id");
-    if ($stmt->execute([':id' => $_GET['delete']])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_student'])) {
+    try {
+        requireCsrfToken();
+        $studentId = (int)($_POST['student_id'] ?? 0);
+        if ($studentId <= 0) {
+            throw new Exception('Invalid student record.');
+        }
+
+        $stmt = $db->prepare("DELETE FROM students WHERE id = :id");
+        $stmt->execute([':id' => $studentId]);
         setFlashMessage('success', 'Student deleted successfully!');
-        redirect('list.php');
+    } catch (Exception $e) {
+        error_log('Student delete failed: ' . $e->getMessage());
+        setFlashMessage('error', 'Student could not be deleted. Please try again.');
     }
+
+    redirect('list.php');
 }
 
 // Get all students
@@ -122,9 +133,13 @@ include '../../includes/header.php';
                             <a href="edit.php?id=<?php echo $student['id']; ?>" class="btn btn-sm btn-warning">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <a href="javascript:void(0)" onclick="confirmDelete(<?php echo $student['id']; ?>)" class="btn btn-sm btn-danger">
-                                <i class="fas fa-trash"></i>
-                            </a>
+                            <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this student? This action cannot be undone.');">
+                                <?= csrfTokenInput() ?>
+                                <input type="hidden" name="student_id" value="<?php echo (int)$student['id']; ?>">
+                                <button type="submit" name="delete_student" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
                             <a href="id_card.php?id=<?php echo $student['id']; ?>" target="_blank" class="btn btn-sm btn-success">
                                 <i class="fas fa-id-card"></i>
                             </a>
@@ -136,13 +151,5 @@ include '../../includes/header.php';
         </div>
     </div>
 </div>
-
-<script>
-function confirmDelete(id) {
-    if (confirm('Are you sure you want to delete this student? This action cannot be undone.')) {
-        window.location.href = 'list.php?delete=' + id;
-    }
-}
-</script>
 
 <?php include '../../includes/footer.php'; ?>

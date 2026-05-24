@@ -63,7 +63,7 @@ if (!function_exists('qgc_campus_nav_current')) {
                 <i class="fa-solid fa-search"></i>
             </button>
             <?php endif; ?>
-            <a class="portal-btn mt-3 mt-lg-0" href="modules/auth/login.php"><i class="fa-solid fa-user-graduate"></i> Student Portal</a>
+            <a class="portal-btn mt-3 mt-lg-0" href="modules/auth/login.php"><i class="fa-solid fa-lock"></i><span>Portal Login</span></a>
         </div>
     </div>
 </nav>

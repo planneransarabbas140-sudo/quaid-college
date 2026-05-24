@@ -15,62 +15,78 @@ $success = '';
 
 // Generate payroll
 if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'generate') {
-    $staff_id = $_POST['staff_id'];
-    $salary_month = $_POST['salary_month'];
-    $basic_salary = $_POST['basic_salary'];
-    $allowances = $_POST['allowances'] ?: 0;
-    $deductions = $_POST['deductions'] ?: 0;
-    $net_salary = $basic_salary + $allowances - $deductions;
-    
-    try {
-        $stmt = $db->prepare("INSERT INTO payroll (staff_id, salary_month, basic_salary, allowances, deductions, net_salary) VALUES (:staff_id, :salary_month, :basic_salary, :allowances, :deductions, :net_salary)");
-        $stmt->execute([
-            ':staff_id' => $staff_id,
-            ':salary_month' => $salary_month,
-            ':basic_salary' => $basic_salary,
-            ':allowances' => $allowances,
-            ':deductions' => $deductions,
-            ':net_salary' => $net_salary
-        ]);
-        $payrollId = (int)$db->lastInsertId();
+    if (!verifyCsrfToken()) {
+        $error = 'Security check failed. Please refresh the page and try again.';
+    } else {
+        $staff_id = $_POST['staff_id'];
+        $salary_month = $_POST['salary_month'];
+        $basic_salary = $_POST['basic_salary'];
+        $allowances = $_POST['allowances'] ?: 0;
+        $deductions = $_POST['deductions'] ?: 0;
+        $net_salary = $basic_salary + $allowances - $deductions;
 
-        $staffStmt = $db->prepare("
-            SELECT s.full_name, c.name AS campus
-            FROM staff s
-            LEFT JOIN campuses c ON c.id = s.campus_id
-            WHERE s.id = ?
-            LIMIT 1
-        ");
-        $staffStmt->execute([$staff_id]);
-        $staff = $staffStmt->fetch() ?: [];
+        try {
+            $stmt = $db->prepare("INSERT INTO payroll (staff_id, salary_month, basic_salary, allowances, deductions, net_salary) VALUES (:staff_id, :salary_month, :basic_salary, :allowances, :deductions, :net_salary)");
+            $stmt->execute([
+                ':staff_id' => $staff_id,
+                ':salary_month' => $salary_month,
+                ':basic_salary' => $basic_salary,
+                ':allowances' => $allowances,
+                ':deductions' => $deductions,
+                ':net_salary' => $net_salary
+            ]);
+            $payrollId = (int)$db->lastInsertId();
 
-        recordExpense($db, [
-            'module_name' => 'hr_payroll',
-            'reference_id' => $payrollId,
-            'campus' => $staff['campus'] ?? null,
-            'category' => 'Salaries',
-            'description' => 'Salary for ' . ($staff['full_name'] ?? 'Staff') . ' - ' . $salary_month,
-            'amount' => $net_salary,
-            'expense_type' => 'auto',
-            'status' => 'pending',
-            'created_by' => getUserId()
-        ]);
+            $staffStmt = $db->prepare("
+                SELECT s.full_name, c.name AS campus
+                FROM staff s
+                LEFT JOIN campuses c ON c.id = s.campus_id
+                WHERE s.id = ?
+                LIMIT 1
+            ");
+            $staffStmt->execute([$staff_id]);
+            $staff = $staffStmt->fetch() ?: [];
 
-        $success = "Payroll generated successfully and salary expense sent for approval.";
-    } catch (PDOException $e) {
-        if ($e->getCode() == 23000) {
-            $error = "Payroll for this month already exists for the selected staff.";
-        } else {
-            $error = "Error generating payroll: " . $e->getMessage();
+            recordExpense($db, [
+                'module_name' => 'hr_payroll',
+                'reference_id' => $payrollId,
+                'campus' => $staff['campus'] ?? null,
+                'category' => 'Salaries',
+                'description' => 'Salary for ' . ($staff['full_name'] ?? 'Staff') . ' - ' . $salary_month,
+                'amount' => $net_salary,
+                'expense_type' => 'auto',
+                'status' => 'pending',
+                'created_by' => getUserId()
+            ]);
+
+            $success = "Payroll generated successfully and salary expense sent for approval.";
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {
+                $error = "Payroll for this month already exists for the selected staff.";
+            } else {
+                error_log('Payroll generation failed: ' . $e->getMessage());
+                $error = "Payroll could not be generated. Please try again.";
+            }
         }
     }
 }
 
 // Mark as paid
-if (isset($_GET['action']) && $_GET['action'] === 'pay' && isset($_GET['id'])) {
-    $stmt = $db->prepare("UPDATE payroll SET status = 'Paid', payment_date = NOW() WHERE id = :id");
-    $stmt->execute([':id' => $_GET['id']]);
-    updateExpenseStatusByReference($db, 'hr_payroll', (int)$_GET['id'], 'paid', getUserId());
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'pay') {
+    try {
+        requireCsrfToken();
+        $payrollId = (int)($_POST['id'] ?? 0);
+        $stmt = $db->prepare("UPDATE payroll SET status = 'Paid', payment_date = NOW() WHERE id = :id AND status = 'Pending'");
+        $stmt->execute([':id' => $payrollId]);
+        if ($stmt->rowCount() === 0) {
+            throw new Exception('Payroll record is not pending.');
+        }
+        updateExpenseStatusByReference($db, 'hr_payroll', $payrollId, 'paid', getUserId());
+        setFlashMessage('success', 'Payroll marked as paid.');
+    } catch (Exception $e) {
+        error_log('Payroll payment update failed: ' . $e->getMessage());
+        setFlashMessage('error', 'Payroll could not be marked as paid. Please try again.');
+    }
     redirect('payroll.php');
 }
 
@@ -172,7 +188,12 @@ include '../../includes/header.php';
                                 <td><?php echo $record['payment_date'] ? date('d M Y', strtotime($record['payment_date'])) : '-'; ?></td>
                                 <td>
                                     <?php if ($record['status'] === 'Pending'): ?>
-                                        <a href="payroll.php?action=pay&id=<?php echo $record['id']; ?>" class="btn btn-sm btn-success" onclick="return confirm('Mark as Paid?');"><i class="fas fa-check"></i> Pay Now</a>
+                                        <form method="POST" class="d-inline" onsubmit="return confirm('Mark as Paid?');">
+                                            <?= csrfTokenInput() ?>
+                                            <input type="hidden" name="action" value="pay">
+                                            <input type="hidden" name="id" value="<?php echo (int)$record['id']; ?>">
+                                            <button type="submit" class="btn btn-sm btn-success"><i class="fas fa-check"></i> Pay Now</button>
+                                        </form>
                                     <?php else: ?>
                                         <button class="btn btn-sm btn-info text-white"><i class="fas fa-print"></i> Payslip</button>
                                     <?php endif; ?>
@@ -192,6 +213,7 @@ include '../../includes/header.php';
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="">
+                <?= csrfTokenInput() ?>
                 <input type="hidden" name="action" value="generate">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">Generate Payroll</h5>

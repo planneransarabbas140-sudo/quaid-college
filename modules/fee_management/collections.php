@@ -82,6 +82,8 @@ $page_title = "Fee Collections";
 include '../../includes/header.php';
 ?>
 
+<?php include 'fee_tabs.php'; ?>
+
 <div class="card shadow mb-4">
     <div class="card-header py-3 d-flex justify-content-between align-items-center">
         <h6 class="m-0 font-weight-bold text-primary">Fee Collections (<?php echo $total_collections; ?> records, Total: PKR <?php echo number_format($total_amount, 2); ?>)</h6>

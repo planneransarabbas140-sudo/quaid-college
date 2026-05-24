@@ -1,6 +1,7 @@
 <?php
 // File: modules/fee_management/collect.php - Collect Fee Payment
 require_once '../../config/db.php';
+require_once '../../includes/voucher_functions.php';
 
 if (!isLoggedIn()) {
     redirect('../../index.php');
@@ -13,14 +14,16 @@ $db = $database->getConnection();
 $error = '';
 $success = '';
 
-// Get students for dropdown
-$students = $db->query("SELECT id, student_id, first_name, last_name, class, section FROM students ORDER BY first_name, last_name")->fetchAll();
+// Get active students for dropdown through the shared student helper.
+$students = getStudentList(null, $db);
 
 // Get active fee structures
 $fee_structures = $db->query("SELECT * FROM fee_structure WHERE is_active = 1 ORDER BY class, fee_type")->fetchAll();
 
 // Handle form submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = (int)$_POST['student_id'];
     $fee_type = sanitizeInput($_POST['fee_type']);
     $paid_amount = floatval($_POST['paid_amount']);
@@ -49,15 +52,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         try {
             $db->beginTransaction();
 
-            // Insert fee collection
-            $stmt = $db->prepare("INSERT INTO fee_collections (student_id, fee_type, amount, paid_amount, payment_date, payment_method, transaction_id, status, remarks, collected_by) VALUES (?, ?, ?, ?, ?, ?, ?, 'Paid', ?, ?)");
-            $stmt->execute([$student_id, $fee_type, $fee_structure['amount'], $paid_amount, $payment_date, $payment_method, $transaction_id, $remarks, getUserId()]);
+            // Insert against the fee collection columns present in the installed schema.
+            $collectionColumns = [];
+            $collectionParams = [];
+            $addCollectionColumn = static function ($column, $value) use ($db, &$collectionColumns, &$collectionParams) {
+                if (columnExists($db, 'fee_collections', $column)) {
+                    $collectionColumns[] = "`$column`";
+                    $collectionParams[] = $value;
+                }
+            };
+
+            $addCollectionColumn('student_id', $student_id);
+            $addCollectionColumn('fee_structure_id', (int)$fee_structure['id']);
+            $addCollectionColumn('fee_type', $fee_type);
+            $addCollectionColumn('amount_paid', $paid_amount);
+            $addCollectionColumn('amount', (float)$fee_structure['amount']);
+            $addCollectionColumn('paid_amount', $paid_amount);
+            $addCollectionColumn('payment_date', $payment_date);
+            $addCollectionColumn('payment_method', $payment_method);
+            $addCollectionColumn('transaction_id', $transaction_id);
+            $addCollectionColumn('status', 'Paid');
+            $addCollectionColumn('academic_year', $academic_year);
+            $addCollectionColumn('remarks', $remarks);
+            $addCollectionColumn('collected_by', getUserId());
+
+            $placeholders = implode(', ', array_fill(0, count($collectionColumns), '?'));
+            $stmt = $db->prepare("INSERT INTO fee_collections (" . implode(', ', $collectionColumns) . ") VALUES ($placeholders)");
+            $stmt->execute($collectionParams);
 
             $collection_id = $db->lastInsertId();
 
             // Insert transaction record
             $stmt = $db->prepare("INSERT INTO fee_transactions (fee_collection_id, transaction_type, amount, description, processed_by) VALUES (?, 'Payment', ?, ?, ?)");
             $stmt->execute([$collection_id, $paid_amount, "Fee payment: {$fee_type}", getUserId()]);
+
+            // Non-breaking voucher sync: mark this month's unpaid voucher as paid when a fee is collected.
+            $voucher = getVoucherByStudentAndMonth($db, $student_id, date('Y-m', strtotime($payment_date ?: date('Y-m-d'))));
+            if ($voucher && $voucher['status'] === 'unpaid') {
+                updateVoucherStatus($db, (int)$voucher['id'], 'paid');
+            }
 
             $db->commit();
             $success = 'Fee collected successfully!';
@@ -66,14 +99,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $_POST = [];
         } catch (Exception $e) {
             $db->rollBack();
-            $error = 'Error collecting fee: ' . $e->getMessage();
+            error_log('Fee collection failed: ' . $e->getMessage());
+            $error = 'Fee collection could not be saved. Please try again.';
         }
     }
 }
 
+$selectedStudentId = isset($_POST['student_id'])
+    ? (int)$_POST['student_id']
+    : (int)($_GET['student_id'] ?? 0);
+
 $page_title = "Collect Fee Payment";
 include '../../includes/header.php';
 ?>
+
+<?php include 'fee_tabs.php'; ?>
 
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -90,6 +130,7 @@ include '../../includes/header.php';
                 <?php endif; ?>
 
                 <form method="POST" action="">
+                    <?= csrfTokenInput() ?>
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -97,8 +138,15 @@ include '../../includes/header.php';
                                 <select name="student_id" class="form-select" id="student_select" required>
                                     <option value="">Select Student</option>
                                     <?php foreach ($students as $student): ?>
-                                        <option value="<?php echo $student['id']; ?>" <?php echo (isset($_POST['student_id']) && $_POST['student_id'] == $student['id']) ? 'selected' : ''; ?>>
-                                            <?php echo $student['first_name'] . ' ' . $student['last_name'] . ' (' . $student['student_id'] . ' - ' . $student['class'] . '-' . $student['section'] . ')'; ?>
+                                        <option value="<?php echo (int)$student['id']; ?>" <?php echo $selectedStudentId === (int)$student['id'] ? 'selected' : ''; ?>>
+                                            <?php
+                                            echo htmlspecialchars(
+                                                ($student['student_name'] ?? trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')))
+                                                . ' (' . ($student['display_student_id'] ?? $student['student_id'] ?? ('STU-' . $student['id']))
+                                                . ' - ' . ($student['class_name'] ?? $student['class'] ?? '-')
+                                                . '-' . ($student['section'] ?? '-') . ')'
+                                            );
+                                            ?>
                                         </option>
                                     <?php endforeach; ?>
                                 </select>

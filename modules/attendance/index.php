@@ -1,6 +1,13 @@
 <?php
 // File: modules/attendance/index.php
+// INTEGRATION DEPENDENCIES:
+// Reads from: students, student_attendance
+// Writes to: student_attendance through save_attendance.php
+// Shared functions: includes/shared_functions.php
+// AJAX: ajax/shared-ajax.php
+// JS: assets/js/shared.js
 require_once '../../config/db.php';
+require_once '../../includes/shared_functions.php';
 
 if (!isLoggedIn()) {
     redirect('../../index.php');
@@ -9,7 +16,7 @@ if (!isLoggedIn()) {
 $database = new Database();
 $db = $database->getConnection();
 $role = getUserRole();
-$canMarkAttendance = in_array($role, ['admin', 'teacher'], true);
+$canMarkAttendance = in_array($role, ['admin', 'owner', 'teacher'], true);
 
 $class_groups = [
     '── Intermediate Programs ──' => [
@@ -32,29 +39,12 @@ $selected_class = $_GET['class'] ?? '';
 $selected_section = $_GET['section'] ?? '';
 $date = $_GET['date'] ?? date('Y-m-d');
 $students = [];
+$classes = getAllClasses($db);
+$sections = $selected_class ? getSectionsByClass($db, $selected_class) : [];
 
 // 1. Fetch students based on class and section
-if ($selected_class && $selected_section) {
-    $stmt = $db->prepare("
-        SELECT * FROM students 
-        WHERE (
-            class = ? 
-            OR class = REPLACE(?, ' ', '')
-            OR class LIKE ?
-        )
-        AND (
-            section = ? 
-            OR section = CONCAT('Section ', ?)
-            OR section LIKE ?
-        )
-        AND status = 'Active'
-        ORDER BY first_name, last_name
-    ");
-    $stmt->execute([
-        $selected_class, $selected_class, '%'.$selected_class.'%',
-        $selected_section, $selected_section, '%'.$selected_section.'%'
-    ]);
-    $students = $stmt->fetchAll();
+if ($selected_class) {
+    $students = getStudentsByClass($db, $selected_class, $selected_section);
 }
 
 $page_title = "Student Attendance";
@@ -132,24 +122,23 @@ include '../../includes/header.php';
         <form method="GET" class="row g-3 align-items-end">
             <div class="col-md-4">
                 <label class="form-label fw-bold">Select Class</label>
-                <select name="class" class="form-select" required>
+                <select name="class" id="class_id" class="form-select" required>
                     <option value="">Choose Class...</option>
-                    <?php foreach($class_groups as $group => $list): ?>
-                        <optgroup label="<?= $group ?>">
-                            <?php foreach($list as $cls): ?>
-                                <option value="<?= $cls ?>" <?= $selected_class == $cls ? 'selected' : '' ?>><?= $cls ?></option>
-                            <?php endforeach; ?>
-                        </optgroup>
+                    <?php foreach($classes as $class): ?>
+                        <option value="<?= htmlspecialchars($class['id']) ?>" <?= $selected_class == $class['id'] ? 'selected' : '' ?>><?= htmlspecialchars($class['class_name']) ?></option>
                     <?php endforeach; ?>
                 </select>
+                <?php if (!$classes): ?>
+                    <div class="form-text text-warning">No classes found. <a href="../student_profile/add.php">Add students first</a>.</div>
+                <?php endif; ?>
             </div>
             <div class="col-md-3">
                 <label class="form-label fw-bold">Section</label>
-                <select name="section" class="form-select" required>
-                    <option value="">Choose Section...</option>
-                    <option value="A" <?= $selected_section == 'A' ? 'selected' : '' ?>>Section A</option>
-                    <option value="B" <?= $selected_section == 'B' ? 'selected' : '' ?>>Section B</option>
-                    <option value="C" <?= $selected_section == 'C' ? 'selected' : '' ?>>Section C</option>
+                <select name="section" id="section_id" class="form-select" <?= $selected_class ? '' : 'disabled' ?>>
+                    <option value="">All Sections</option>
+                    <?php foreach($sections as $section): ?>
+                        <option value="<?= htmlspecialchars($section['id']) ?>" <?= $selected_section == $section['id'] ? 'selected' : '' ?>><?= htmlspecialchars($section['section_name']) ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div>
             <div class="col-md-3">
@@ -174,6 +163,7 @@ include '../../includes/header.php';
             <?php if(!empty($students)): ?>
                 <?php if ($canMarkAttendance): ?>
                 <form method="POST" action="save_attendance.php">
+                    <?= csrfTokenInput() ?>
                     <input type="hidden" name="class" value="<?= htmlspecialchars($selected_class) ?>">
                     <input type="hidden" name="section" value="<?= htmlspecialchars($selected_section) ?>">
                     <input type="hidden" name="date" value="<?= htmlspecialchars($date) ?>">
@@ -226,5 +216,13 @@ include '../../includes/header.php';
         </div>
     </div>
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    if (window.bindClassSectionCascade) {
+        bindClassSectionCascade('class_id', 'section_id');
+    }
+});
+</script>
 
 <?php include '../../includes/footer.php'; ?>

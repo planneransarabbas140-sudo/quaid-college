@@ -8,6 +8,267 @@ if (!isLoggedIn()) {
 
 $database = new Database();
 $db = $database->getConnection();
+$role = getUserRole();
+
+if ($role === 'student') {
+    $student = null;
+    $my_payments = [];
+    $my_challans = [];
+    $fee_heads = [];
+    $total_paid = 0;
+    $currentMonth = date('Y-m');
+    $currentMonthStart = date('Y-m-01');
+    $currentDueDate = date('Y-m-t');
+    $academicYear = function_exists('getCurrentAcademicYear') ? getCurrentAcademicYear() : date('Y') . '-' . ((int)date('Y') + 1);
+
+    if (columnExists($db, 'students', 'user_id')) {
+        $stmt = $db->prepare("SELECT id, first_name, last_name, student_id, roll_number, class, section FROM students WHERE user_id = ? LIMIT 1");
+        $stmt->execute([getUserId()]);
+        $student = $stmt->fetch();
+    }
+
+    if ($student && tableExists($db, 'fee_structure')) {
+        $stmt = $db->prepare("SELECT * FROM fee_structure WHERE class = ? AND is_active = 1 ORDER BY fee_type ASC");
+        $stmt->execute([$student['class']]);
+        $fee_heads = $stmt->fetchAll();
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'generate_student_challan') {
+        try {
+            requireCsrfToken();
+            if (!$student) {
+                throw new Exception('Your student profile is not linked to this portal account yet.');
+            }
+            if (empty($fee_heads)) {
+                throw new Exception('No fee policy is configured for your class yet.');
+            }
+
+            $created = 0;
+            $db->beginTransaction();
+            foreach ($fee_heads as $fee) {
+                $checkSql = "SELECT id FROM fee_collections WHERE student_id = ? AND fee_type = ? AND DATE_FORMAT(payment_date, '%Y-%m') = ? LIMIT 1";
+                $checkParams = [(int)$student['id'], $fee['fee_type'], $currentMonth];
+                if (columnExists($db, 'fee_collections', 'fee_structure_id')) {
+                    $checkSql = "SELECT id FROM fee_collections WHERE student_id = ? AND fee_structure_id = ? AND DATE_FORMAT(payment_date, '%Y-%m') = ? LIMIT 1";
+                    $checkParams = [(int)$student['id'], (int)$fee['id'], $currentMonth];
+                }
+                $check = $db->prepare($checkSql);
+                $check->execute($checkParams);
+                if ($check->fetchColumn()) {
+                    continue;
+                }
+
+                $columns = [];
+                $params = [];
+                $addColumn = static function ($column, $value) use ($db, &$columns, &$params) {
+                    if (columnExists($db, 'fee_collections', $column)) {
+                        $columns[] = "`$column`";
+                        $params[] = $value;
+                    }
+                };
+
+                $addColumn('student_id', (int)$student['id']);
+                $addColumn('fee_structure_id', (int)$fee['id']);
+                $addColumn('fee_type', $fee['fee_type']);
+                $addColumn('amount', (float)$fee['amount']);
+                $addColumn('amount_paid', 0);
+                $addColumn('paid_amount', 0);
+                $addColumn('payment_date', $currentMonthStart);
+                $addColumn('payment_method', 'Challan');
+                $addColumn('transaction_id', 'CH-' . date('Ym') . '-' . (int)$student['id'] . '-' . (int)$fee['id']);
+                $addColumn('status', 'Pending');
+                $addColumn('due_date', $currentDueDate);
+                $addColumn('academic_year', $academicYear);
+                $addColumn('remarks', 'Self-generated student fee challan');
+                $addColumn('collected_by', null);
+
+                $placeholders = implode(', ', array_fill(0, count($columns), '?'));
+                $stmt = $db->prepare("INSERT INTO fee_collections (" . implode(', ', $columns) . ") VALUES ($placeholders)");
+                $stmt->execute($params);
+                $created++;
+            }
+            $db->commit();
+
+            setFlashMessage($created > 0 ? 'success' : 'info', $created > 0 ? 'Fee challan generated successfully.' : 'Current month challan already exists.');
+            redirect('index.php');
+        } catch (Exception $e) {
+            if ($db->inTransaction()) {
+                $db->rollBack();
+            }
+            error_log('Student Challan Error: ' . $e->getMessage());
+            setFlashMessage('error', $e->getMessage());
+            redirect('index.php');
+        }
+    }
+
+    if ($student && tableExists($db, 'fee_collections')) {
+        $studentFeeAmountColumn = firstExistingColumn($db, 'fee_collections', ['amount_paid', 'paid_amount', 'amount']) ?: 'amount_paid';
+        $studentFeeTypeColumn = firstExistingColumn($db, 'fee_collections', ['fee_type', 'fee_name']);
+        $studentFeeLabelExpr = $studentFeeTypeColumn ? "fc.`$studentFeeTypeColumn`" : "'Fee'";
+        $debitColumn = firstExistingColumn($db, 'fee_collections', ['amount']) ?: $studentFeeAmountColumn;
+        $paidColumn = firstExistingColumn($db, 'fee_collections', ['paid_amount', 'amount_paid']) ?: $studentFeeAmountColumn;
+
+        $stmt = $db->prepare("
+            SELECT fc.payment_date, fc.payment_method, fc.status,
+                   $studentFeeLabelExpr AS fee_label,
+                   fc.`$studentFeeAmountColumn` AS collected_amount
+            FROM fee_collections fc
+            WHERE fc.student_id = ?
+            ORDER BY fc.payment_date DESC, fc.created_at DESC
+            LIMIT 50
+        ");
+        $stmt->execute([(int)$student['id']]);
+        $my_payments = $stmt->fetchAll();
+
+        foreach ($my_payments as $payment) {
+            if (($payment['status'] ?? '') === 'Paid') {
+                $total_paid += (float)($payment['collected_amount'] ?? 0);
+            }
+        }
+
+        $stmt = $db->prepare("
+            SELECT fc.id, fc.payment_date, fc.due_date, fc.payment_method, fc.status,
+                   $studentFeeLabelExpr AS fee_label,
+                   fc.`$debitColumn` AS challan_amount,
+                   fc.`$paidColumn` AS paid_amount
+            FROM fee_collections fc
+            WHERE fc.student_id = ?
+            ORDER BY fc.payment_date DESC, fc.created_at DESC
+            LIMIT 50
+        ");
+        $stmt->execute([(int)$student['id']]);
+        $my_challans = $stmt->fetchAll();
+    }
+
+    $page_title = "My Fee Status";
+    include '../../includes/header.php';
+    ?>
+
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="page-title">My Fee Status</h2>
+        </div>
+    </div>
+
+    <?php if (!$student): ?>
+        <div class="alert alert-warning">Your student profile is not linked to this portal account yet.</div>
+    <?php else: ?>
+        <div class="row mb-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="dashboard-card">
+                    <div class="card-info">
+                        <p>Student</p>
+                        <h3><?php echo htmlspecialchars(trim($student['first_name'] . ' ' . $student['last_name'])); ?></h3>
+                    </div>
+                    <div class="card-icon blue">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="dashboard-card">
+                    <div class="card-info">
+                        <p>Total Paid</p>
+                        <h3>PKR <?php echo number_format($total_paid, 2); ?></h3>
+                    </div>
+                    <div class="card-icon green">
+                        <i class="fas fa-receipt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm mb-4 border-0 rounded-4" id="generate-challan">
+            <div class="card-header bg-white border-0 p-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                <div>
+                    <h5 class="mb-1 fw-bold">Generate Fee Challan</h5>
+                    <div class="text-muted small">Create your current month fee challan from the active fee policy for your class.</div>
+                </div>
+                <form method="POST" class="d-inline">
+                    <?= csrfTokenInput() ?>
+                    <input type="hidden" name="action" value="generate_student_challan">
+                    <button type="submit" class="btn btn-primary" <?= empty($fee_heads) ? 'disabled' : '' ?>>
+                        <i class="fas fa-file-invoice me-1"></i> Generate Challan
+                    </button>
+                </form>
+            </div>
+            <div class="card-body p-4">
+                <?php if (empty($fee_heads)): ?>
+                    <div class="alert alert-warning mb-0">No fee policy is configured for your class yet. Please contact accounts office.</div>
+                <?php else: ?>
+                    <div class="row g-3">
+                        <?php foreach ($fee_heads as $fee): ?>
+                            <div class="col-md-4">
+                                <div class="border rounded-3 p-3 h-100 bg-light">
+                                    <div class="fw-bold"><?php echo htmlspecialchars($fee['fee_type']); ?></div>
+                                    <div class="fs-5 fw-bold text-navy">PKR <?php echo number_format((float)$fee['amount'], 2); ?></div>
+                                    <div class="small text-muted"><?php echo htmlspecialchars($fee['frequency'] ?? 'Monthly'); ?></div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <a class="btn btn-outline-primary mt-3" target="_blank" href="challan.php?month=<?php echo urlencode($currentMonth); ?>">
+                        <i class="fas fa-print me-1"></i> Print Current Month Challan
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">My Fee Challans & Payments</h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>Fee Type</th>
+                                <th>Amount</th>
+                                <th>Paid</th>
+                                <th>Due Date</th>
+                                <th>Date</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th class="text-end">Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($my_challans as $payment): ?>
+                                <?php
+                                    $paymentMonth = !empty($payment['payment_date']) ? date('Y-m', strtotime($payment['payment_date'])) : $currentMonth;
+                                ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($payment['fee_label'] ?? 'Fee'); ?></td>
+                                    <td>PKR <?php echo number_format((float)($payment['challan_amount'] ?? 0), 2); ?></td>
+                                    <td>PKR <?php echo number_format((float)($payment['paid_amount'] ?? 0), 2); ?></td>
+                                    <td><?php echo !empty($payment['due_date']) ? date('d M Y', strtotime($payment['due_date'])) : '-'; ?></td>
+                                    <td><?php echo !empty($payment['payment_date']) ? date('d M Y', strtotime($payment['payment_date'])) : '-'; ?></td>
+                                    <td><?php echo htmlspecialchars($payment['payment_method'] ?? '-'); ?></td>
+                                    <td><span class="badge bg-<?php echo ($payment['status'] ?? '') === 'Paid' ? 'success' : 'warning text-dark'; ?>"><?php echo htmlspecialchars($payment['status'] ?? 'Pending'); ?></span></td>
+                                    <td class="text-end">
+                                        <a class="btn btn-sm btn-outline-primary" target="_blank" href="challan.php?month=<?php echo urlencode($paymentMonth); ?>">
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                            <?php if (empty($my_challans)): ?>
+                                <tr><td colspan="8" class="text-center text-muted">No fee challans or collections found for your profile.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    <?php endif; ?>
+
+    <?php
+    include '../../includes/footer.php';
+    exit;
+}
+
+requireRole(['admin', 'owner']);
 
 // Get fee statistics
 $stats = [];
@@ -155,6 +416,9 @@ include '../../includes/header.php';
                         </a>
                         <a href="structure.php" class="btn btn-primary">
                             <i class="fas fa-cogs"></i> Manage Fee Structure
+                        </a>
+                        <a href="total_transactions.php" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-right-arrow-left"></i> Total Transactions
                         </a>
                         <a href="reports.php" class="btn btn-info">
                             <i class="fas fa-chart-bar"></i> View Reports

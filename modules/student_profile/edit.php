@@ -23,7 +23,9 @@ if (!$student) {
 
 $error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $student_id = $student['id'];
 
     // 1. Photo upload
@@ -132,6 +134,7 @@ include '../../includes/header.php';
         <?php endif; ?>
 
         <form method="POST" action="" class="row g-3" enctype="multipart/form-data">
+            <?= csrfTokenInput() ?>
             <div class="col-md-12 mb-4">
                 <div class="p-4 border rounded-3 bg-light">
                     <h5 class="text-navy fw-bold mb-3">Student Media & Documents</h5>

@@ -11,17 +11,25 @@ if (!isLoggedIn()) {
     exit();
 }
 
+enforcePasswordChange();
+
 $page_title = $page_title ?? "Admin Panel";
 $currentRole = getUserRole();
 $roleModules = [
     'admin' => [
         ['modules/admissions/index.php', 'fas fa-user-plus', 'Admissions'],
         ['modules/fee_management/index.php', 'fas fa-money-bill-wave', 'Fee Management'],
+        ['modules/fee_management/total_transactions.php', 'fas fa-arrow-right-arrow-left', 'Total Transactions'],
+        ['school-growth.php', 'fas fa-chart-line', 'School Growth'],
+        ['vouchers.php', 'fas fa-file-invoice-dollar', 'Vouchers'],
+        ['modules/old_data_archive/old-data.php', 'fas fa-box-archive', 'Old Data Archive'],
+        ['settings-class-billing-rules.php', 'fas fa-sliders', 'Class Billing Rules'],
         ['modules/accounts/index.php', 'fas fa-calculator', 'Accounts'],
         ['modules/ledger/index.php', 'fas fa-book', 'Ledger'],
         ['modules/lms/index.php', 'fas fa-book-reader', 'LMS'],
         ['modules/attendance/index.php', 'fas fa-calendar-check', 'Attendance'],
         ['modules/examination/index.php', 'fas fa-file-signature', 'Examination'],
+        ['result-cards.php', 'fas fa-certificate', 'Result Cards'],
         ['modules/hr/index.php', 'fas fa-user-tie', 'HR Management'],
         ['modules/library/index.php', 'fas fa-book', 'Library'],
         ['modules/transport/index.php', 'fas fa-bus', 'Transport'],
@@ -43,11 +51,17 @@ $roleModules = [
     'owner' => [
         ['modules/admissions/index.php', 'fas fa-user-plus', 'Admissions'],
         ['modules/fee_management/index.php', 'fas fa-money-bill-wave', 'Fee Management'],
+        ['modules/fee_management/total_transactions.php', 'fas fa-arrow-right-arrow-left', 'Total Transactions'],
+        ['school-growth.php', 'fas fa-chart-line', 'School Growth'],
+        ['vouchers.php', 'fas fa-file-invoice-dollar', 'Vouchers'],
+        ['modules/old_data_archive/old-data.php', 'fas fa-box-archive', 'Old Data Archive'],
+        ['settings-class-billing-rules.php', 'fas fa-sliders', 'Class Billing Rules'],
         ['modules/accounts/index.php', 'fas fa-calculator', 'Accounts'],
         ['modules/ledger/index.php', 'fas fa-book', 'Ledger'],
         ['modules/lms/index.php', 'fas fa-book-reader', 'LMS'],
         ['modules/attendance/index.php', 'fas fa-calendar-check', 'Attendance'],
         ['modules/examination/index.php', 'fas fa-file-signature', 'Examination'],
+        ['result-cards.php', 'fas fa-certificate', 'Result Cards'],
         ['modules/hr/index.php', 'fas fa-user-tie', 'HR Management'],
         ['modules/library/index.php', 'fas fa-book', 'Library'],
         ['modules/transport/index.php', 'fas fa-bus', 'Transport'],
@@ -67,6 +81,8 @@ $roleModules = [
     ],
     'teacher' => [
         ['modules/attendance/index.php', 'fas fa-calendar-check', 'Mark Attendance'],
+        ['modules/examination/index.php', 'fas fa-file-signature', 'Examination'],
+        ['result-cards.php', 'fas fa-certificate', 'Result Cards'],
         ['modules/diary_homework/index.php', 'fas fa-book-open', 'Diary & Homework'],
         ['modules/lms/index.php', 'fas fa-book-reader', 'LMS Uploads'],
         ['modules/student_profile/index.php', 'fas fa-id-card', 'My Students'],
@@ -83,6 +99,7 @@ $roleModules = [
     ],
 ];
 $visibleModules = $roleModules[$currentRole] ?? [];
+$currentScriptPath = str_replace('\\', '/', (string)($_SERVER['PHP_SELF'] ?? ''));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -94,12 +111,18 @@ $visibleModules = $roleModules[$currentRole] ?? [];
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/design-system.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/sidebar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/topbar.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/layout.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/components.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/responsive.css">
     
     <style>
         /* Layout Fixes for No Overlap */
@@ -111,18 +134,18 @@ $visibleModules = $roleModules[$currentRole] ?? [];
             background: #f8fafc;
         }
         #sidebar.active {
-            margin-left: -260px;
+            margin-left: 0;
         }
         #sidebar.active + #content {
-            margin-left: 0;
-            width: 100%;
+            margin-left: var(--sidebar-collapsed);
+            width: calc(100% - var(--sidebar-collapsed));
         }
         
         @media (max-width: 992px) {
-            #sidebar { margin-left: -260px; }
+            #sidebar { margin-left: 0; }
             #sidebar.active { margin-left: 0; }
             #content { margin-left: 0; width: 100%; }
-            #content.active { margin-left: 260px; }
+            #content.active { margin-left: 0; }
         }
 
         .nav-item-label {
@@ -154,6 +177,7 @@ $visibleModules = $roleModules[$currentRole] ?? [];
 <body>
 
     <div class="wrapper">
+        <div class="sidebar-backdrop"></div>
         <!-- ─── SIDEBAR ────────────────────────────────────────── -->
         <nav id="sidebar">
             <div class="sidebar-header d-flex align-items-center">
@@ -172,8 +196,81 @@ $visibleModules = $roleModules[$currentRole] ?? [];
                         <a href="<?= BASE_URL ?>dashboard.php"><i class="fas fa-home"></i> <span>Dashboard</span></a>
                     </li>
                     <?php foreach ($visibleModules as [$path, $icon, $label]): ?>
-                        <li><a href="<?= BASE_URL . $path ?>"><i class="<?= htmlspecialchars($icon) ?>"></i> <span><?= htmlspecialchars($label) ?></span></a></li>
+                        <?php
+                        $modulePath = '/' . ltrim(str_replace('\\', '/', $path), '/');
+                        $moduleActive = substr($currentScriptPath, -strlen($modulePath)) === $modulePath;
+                        ?>
+                        <li class="<?= $moduleActive ? 'active' : '' ?>"><a href="<?= BASE_URL . $path ?>"><i class="<?= htmlspecialchars($icon) ?>"></i> <span><?= htmlspecialchars($label) ?></span></a></li>
                     <?php endforeach; ?>
+                    <?php
+                    // Add WhatsApp Center under Communication when Communication module is visible
+                    $hasComm = false;
+                    foreach ($visibleModules as $vm) {
+                        if (strpos($vm[0], 'modules/communication') !== false) { $hasComm = true; break; }
+                    }
+                    if ($hasComm) {
+                        $waActive = strpos($currentScriptPath, '/modules/communication/whatsapp-center.php') !== false ? 'active' : '';
+                        ?>
+                        <li class="<?= $waActive ?>"><a href="<?= BASE_URL ?>modules/communication/whatsapp-center.php"><i class="fas fa-comment-dots"></i> <span>WhatsApp Center</span></a></li>
+                    <?php } ?>
+
+                    <?php if ($currentRole === 'student'): ?>
+                        <?php
+                        $clrStatus = null;
+                        try {
+                            $clrDb = (new Database())->getConnection();
+                            if (tableExists($clrDb, 'degree_clearance')) {
+                                $clrStmt = $clrDb->prepare("
+                                    SELECT status
+                                    FROM degree_clearance
+                                    WHERE student_id = (SELECT id FROM students WHERE user_id = :uid LIMIT 1)
+                                    ORDER BY applied_at DESC
+                                    LIMIT 1
+                                ");
+                                $clrStmt->execute([':uid' => getUserId()]);
+                                $clrStatus = $clrStmt->fetchColumn();
+                            }
+                        } catch (Exception $e) {
+                            $clrStatus = null;
+                        }
+                        $clrActive = strpos($currentScriptPath, '/modules/student/clearance.php') !== false ? 'active' : '';
+                        ?>
+                        <li class="<?= $clrActive ?>">
+                            <a href="<?= BASE_URL ?>modules/student/clearance.php">
+                                <i class="fas fa-graduation-cap" style="color:#4ec2b5;"></i>
+                                <span>Degree Clearance</span>
+                                <?php if ($clrStatus === 'approved'): ?>
+                                    <span class="badge bg-success ms-auto rounded-pill" style="font-size:.6rem;">✓</span>
+                                <?php elseif ($clrStatus === 'under_review'): ?>
+                                    <span class="badge bg-warning ms-auto rounded-pill text-dark" style="font-size:.6rem;">⏳</span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                    <?php endif; ?>
+
+                    <?php if (in_array($currentRole, ['admin', 'owner'], true)): ?>
+                        <?php
+                        $pendingClearance = 0;
+                        try {
+                            $clrDb = (new Database())->getConnection();
+                            if (tableExists($clrDb, 'degree_clearance')) {
+                                $pendingClearance = (int)$clrDb->query("SELECT COUNT(*) FROM degree_clearance WHERE status = 'under_review'")->fetchColumn();
+                            }
+                        } catch (Exception $e) {
+                            $pendingClearance = 0;
+                        }
+                        $adminClrActive = strpos($currentScriptPath, '/modules/admin/clearance_requests.php') !== false ? 'active' : '';
+                        ?>
+                        <li class="<?= $adminClrActive ?>">
+                            <a href="<?= BASE_URL ?>modules/admin/clearance_requests.php">
+                                <i class="fas fa-graduation-cap" style="color:#4ec2b5;"></i>
+                                <span>Degree Clearance</span>
+                                <?php if ($pendingClearance > 0): ?>
+                                    <span class="badge rounded-pill ms-auto" style="background:#f0b429;color:#0f2d48;font-size:.6rem;"><?= (int)$pendingClearance ?></span>
+                                <?php endif; ?>
+                            </a>
+                        </li>
+                    <?php endif; ?>
                     
                     <li class="mt-4 pt-3 border-top border-secondary">
                         <a href="<?= BASE_URL ?>logout.php" class="text-danger"><i class="fas fa-sign-out-alt"></i> <span>Logout</span></a>
@@ -185,26 +282,39 @@ $visibleModules = $roleModules[$currentRole] ?? [];
         <!-- ─── MAIN CONTENT ────────────────────────────────────── -->
         <div id="content">
             <!-- Top Navbar -->
-            <nav class="navbar navbar-expand-lg sticky-top">
+            <nav class="navbar navbar-expand-lg sticky-top topbar">
                 <div class="container-fluid">
                     <button type="button" id="sidebarCollapse" class="btn btn-light shadow-sm">
-                        <i class="fas fa-bars"></i>
+                        <i data-lucide="panel-left"></i>
                     </button>
                     
-                    <div class="mx-auto">
-                        <h4 class="mb-0 fw-bold" style="font-family: var(--font-display); color: var(--teal);">QAC</h4>
+                    <div class="topbar-breadcrumb d-none d-md-flex align-items-center gap-2 ms-3">
+                        <a href="<?= BASE_URL ?>dashboard.php" class="text-small fw-bold">Dashboard</a>
+                        <span class="text-muted">/</span>
+                        <span class="fw-bold text-dark"><?= htmlspecialchars($page_title) ?></span>
                     </div>
 
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="position-relative">
-                            <i class="fas fa-bell fs-5 text-muted"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.5rem;">3</span>
-                        </div>
+                    <div class="d-flex align-items-center gap-3 ms-auto topbar-actions">
+                        <button type="button" class="topbar-search" data-open-search>
+                            <i data-lucide="search"></i>
+                            <span>Search...</span>
+                            <kbd>Ctrl K</kbd>
+                        </button>
+                        <button type="button" class="topbar-icon-btn position-relative" data-tooltip="Notifications">
+                            <i data-lucide="bell"></i>
+                            <span class="notif-dot"></span>
+                        </button>
+                        <button type="button" class="topbar-icon-btn" data-tooltip="User Guide">
+                            <i data-lucide="circle-help"></i>
+                        </button>
                         
                         <div class="dropdown">
-                            <button class="btn border-0 d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-                                <div class="fw-bold" style="font-size: 0.85rem; color: var(--navy);"><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></div>
-                                <i class="fas fa-user-circle fs-4 text-primary"></i>
+                            <button class="btn border-0 topbar-admin" data-bs-toggle="dropdown">
+                                <span class="admin-avatar"><?= htmlspecialchars(strtoupper(substr($_SESSION['username'] ?? 'AD', 0, 2))) ?></span>
+                                <span class="admin-info text-start">
+                                    <span class="admin-name"><?= htmlspecialchars($_SESSION['username'] ?? 'Admin') ?></span>
+                                    <span class="admin-date"><?= date('D, d M Y') ?></span>
+                                </span>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
                                 <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
@@ -215,5 +325,25 @@ $visibleModules = $roleModules[$currentRole] ?? [];
                     </div>
                 </div>
             </nav>
+
+            <div class="search-modal-overlay" id="searchOverlay">
+                <div class="search-modal glass">
+                    <div class="search-modal-input-wrap">
+                        <i data-lucide="search"></i>
+                        <input type="text" id="globalSearchInput" placeholder="Search students, fees, classes...">
+                        <kbd>ESC</kbd>
+                    </div>
+                    <div class="search-modal-results" id="searchResults">
+                        <a href="<?= BASE_URL ?>modules/student_profile/index.php"><i data-lucide="users"></i><span>Students</span></a>
+                        <a href="<?= BASE_URL ?>modules/fee_management/index.php"><i data-lucide="credit-card"></i><span>Fee Management</span></a>
+                        <a href="<?= BASE_URL ?>modules/attendance/index.php"><i data-lucide="calendar-check"></i><span>Attendance</span></a>
+                        <a href="<?= BASE_URL ?>result-cards.php"><i data-lucide="award"></i><span>Result Cards</span></a>
+                    </div>
+                    <div class="search-modal-footer">
+                        <span><kbd>ESC</kbd> close</span>
+                        <span><kbd>Enter</kbd> open</span>
+                    </div>
+                </div>
+            </div>
 
             <div class="p-4 p-md-5">

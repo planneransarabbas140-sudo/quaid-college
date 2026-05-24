@@ -8,6 +8,7 @@ require_once '../../config/db.php';
 if (!isLoggedIn()) {
     redirect('../../index.php');
 }
+requireRole(['admin', 'owner', 'teacher']);
 
 $db = (new Database())->getConnection();
 
@@ -123,9 +124,15 @@ include '../../includes/header.php';
             <div class="d-flex justify-content-between align-items-center">
                 <h2 class="page-title mb-0"><i class="fas fa-award me-2" style="color: var(--teal);"></i>Results & Report Cards</h2>
                 <?php if (!empty($results_data)): ?>
-                <button class="btn btn-outline-navy" onclick="window.print()">
-                    <i class="fas fa-print me-2"></i>Print All Results
-                </button>
+                <div class="d-flex gap-2">
+                    <?php $firstExamId = !empty($subjects[0]['id']) ? (int)$subjects[0]['id'] : 0; ?>
+                    <a class="btn btn-success" href="../../result-cards.php?exam_id=<?= $firstExamId ?>&class_id=<?= urlencode($selected_class) ?>">
+                        <i class="fas fa-certificate me-2"></i>Generate Result Cards
+                    </a>
+                    <button class="btn btn-outline-navy" onclick="window.print()">
+                        <i class="fas fa-print me-2"></i>Print All Results
+                    </button>
+                </div>
                 <?php endif; ?>
             </div>
         </div>

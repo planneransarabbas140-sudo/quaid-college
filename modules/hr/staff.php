@@ -14,7 +14,9 @@ $error = '';
 $success = '';
 
 // Handle add staff
-if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && $_POST['action'] === 'add') {
     $full_name = sanitizeInput($_POST['full_name']);
     $designation = sanitizeInput($_POST['role']);
     $email = sanitizeInput($_POST['email']);
@@ -49,14 +51,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
             $existingUser = $userStmt->fetchColumn();
         }
 
+        $createdUserCredentials = null;
         if ($existingUser) {
             $userId = (int)$existingUser;
         } else {
-            $defaultPassword = password_hash('Qgc@12345', PASSWORD_DEFAULT);
+            $temporaryPassword = 'Qgc@' . bin2hex(random_bytes(6));
+            $defaultPassword = password_hash($temporaryPassword, PASSWORD_DEFAULT);
             $roleForUser = strtolower($designation) === 'teacher' ? 'teacher' : 'staff';
             $stmt = $db->prepare("INSERT INTO users (full_name, username, email, password, role, phone, is_active, must_change_password) VALUES (?, ?, ?, ?, ?, ?, 1, 1)");
             $stmt->execute([$full_name, $username, $emailForUser, $defaultPassword, $roleForUser, $phone]);
             $userId = (int)$db->lastInsertId();
+            $createdUserCredentials = [
+                'username' => $username,
+                'password' => $temporaryPassword,
+            ];
         }
 
         $year = date('Y');
@@ -82,6 +90,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && isset($_POST['action']) && 
 
         $db->commit();
         $success = "Staff member added successfully! Employee Code: " . $employeeCode;
+        if ($createdUserCredentials) {
+            $success .= " Portal username: " . $createdUserCredentials['username'] . ". Temporary password: " . $createdUserCredentials['password'];
+        }
     } catch (Exception $e) {
         if ($db->inTransaction()) {
             $db->rollBack();
@@ -199,6 +210,7 @@ include '../../includes/header.php';
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="">
+                <?= csrfTokenInput() ?>
                 <input type="hidden" name="action" value="add">
                 <div class="modal-header bg-primary text-white">
                     <h5 class="modal-title">Add New Staff</h5>
@@ -237,7 +249,7 @@ include '../../includes/header.php';
                         </select>
                     </div>
                     <div class="alert alert-info small mb-0">
-                        A portal user is created automatically. Default password: <strong>Qgc@12345</strong>
+                        A portal user is created automatically. New users receive a one-time temporary password after save.
                     </div>
                 </div>
                 <div class="modal-footer">

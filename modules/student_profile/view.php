@@ -66,6 +66,7 @@ include '../../includes/header.php';
                     <a href="../attendance/mark.php?student_id=<?php echo $student['id']; ?>" class="btn btn-info btn-sm">Mark Attendance</a>
                     <a href="../fee_management/collections.php?student_id=<?php echo $student['id']; ?>" class="btn btn-primary btn-sm">View Fee Details</a>
                     <a href="../examination/marks.php?student_id=<?php echo $student['id']; ?>" class="btn btn-success btn-sm">View Results</a>
+                    <a href="../../result-cards.php?student_id=<?php echo $student['id']; ?>&class_id=<?php echo urlencode((string)$student['class']); ?>" class="btn btn-outline-success btn-sm">View Result Cards</a>
                     <a href="../library/issue.php?student_id=<?php echo $student['id']; ?>" class="btn btn-warning btn-sm">Library History</a>
                 </div>
             </div>

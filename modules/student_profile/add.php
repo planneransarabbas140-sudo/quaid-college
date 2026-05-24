@@ -13,7 +13,9 @@ $db = $database->getConnection();
 $error = '';
 $success = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
+    $error = 'Security check failed. Please refresh the page and try again.';
+} elseif ($_SERVER['REQUEST_METHOD'] === 'POST') {
     // Generate unique student ID
     $student_id = generateUniqueId('STU');
 
@@ -90,6 +92,7 @@ include '../../includes/header.php';
         <?php endif; ?>
         
         <form method="POST" action="" enctype="multipart/form-data">
+            <?= csrfTokenInput() ?>
             <div class="row">
                 <div class="col-md-6">
                     <h6 class="mb-3">Personal Information</h6>

@@ -8,6 +8,7 @@ require_once '../../config/db.php';
 if (!isLoggedIn()) {
     redirect('../../index.php');
 }
+requireRole(['admin', 'owner', 'teacher']);
 
 $db = (new Database())->getConnection();
 
@@ -165,6 +166,20 @@ include '../../includes/header.php';
                         <p class="small text-muted">Generate result sheets and print student report cards.</p>
                         <div class="mt-4">
                             <span class="btn btn-sm btn-outline-navy fw-bold px-3 rounded-pill">View Results <i class="fas fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4">
+            <a href="../../result-cards.php" class="text-decoration-none">
+                <div class="card border-0 shadow-sm rounded-4 action-card h-100 bg-white border overflow-hidden">
+                    <div class="card-body p-4 position-relative">
+                        <i class="fas fa-certificate fa-3x text-success opacity-25 position-absolute end-0 bottom-0 mb-3 me-3"></i>
+                        <h4 class="fw-bold mb-2 text-navy">Result Cards</h4>
+                        <p class="small text-muted">Generate persistent, printable academic report cards.</p>
+                        <div class="mt-4">
+                            <span class="btn btn-sm btn-outline-navy fw-bold px-3 rounded-pill">Generate Result Cards <i class="fas fa-arrow-right ms-1"></i></span>
                         </div>
                     </div>
                 </div>
