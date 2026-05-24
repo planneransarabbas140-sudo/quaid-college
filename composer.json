@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "start": "php -S 0.0.0.0:$PORT -t ."
+    "start": "bash start.sh"
   }
 }
