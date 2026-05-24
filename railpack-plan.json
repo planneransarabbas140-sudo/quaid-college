@@ -1,0 +1,10 @@
+{
+  "phases": {
+    "build": [],
+    "deploy": [
+      {
+        "cmd": "bash start.sh"
+      }
+    ]
+  }
+}
