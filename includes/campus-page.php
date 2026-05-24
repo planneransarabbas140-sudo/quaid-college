@@ -86,12 +86,16 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
             <div class="row align-items-center g-5">
                 <div class="col-lg-7 reveal">
                     <div class="video-box">
+                        <?php if (file_exists($c['video'])): ?>
                         <video class="campus-video" controls preload="metadata" playsinline poster="<?= htmlspecialchars($c['video_poster']) ?>">
                             <source src="<?= htmlspecialchars($c['video']) ?>" type="video/mp4">
                             <p style="color:#fff;padding:20px;">Video not supported.
                                 <a href="<?= htmlspecialchars($c['video']) ?>" style="color:var(--teal)">Download</a>
                             </p>
                         </video>
+                        <?php else: ?>
+                        <img src="<?= htmlspecialchars($c['video_poster']) ?>" alt="<?= htmlspecialchars($c['name']) ?> Campus" class="campus-video-fallback" style="width:100%;height:auto;border-radius:12px;">
+                        <?php endif; ?>
                     </div>
                 </div>
                 <div class="col-lg-5 reveal">
