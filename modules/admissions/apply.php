@@ -16,7 +16,7 @@ $success = false;
 $error   = false;
 $app_id  = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     try {
         requireCsrfToken();
 

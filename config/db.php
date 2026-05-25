@@ -17,15 +17,20 @@ if (!defined('BASE_URL')) {
 
 if (!function_exists('startSecureSession')) {
     function startSecureSession() {
+        static $attempted = false;
         if (session_status() !== PHP_SESSION_NONE) {
             return;
         }
+        if ($attempted) {
+            return;
+        }
+        $attempted = true;
 
         $sessionPath = __DIR__ . '/../storage/sessions';
-        if (is_dir(dirname($sessionPath)) && !is_dir($sessionPath)) {
+        if (!is_dir($sessionPath)) {
             @mkdir($sessionPath, 0775, true);
         }
-        if (is_dir($sessionPath) && is_writable($sessionPath)) {
+        if (is_dir($sessionPath)) {
             session_save_path($sessionPath);
         }
 
@@ -39,9 +44,11 @@ if (!function_exists('startSecureSession')) {
             ]);
         }
 
-        session_start();
+        @session_start();
     }
 }
+
+startSecureSession();
 
 class Database {
     private $host     = 'switchyard.proxy.rlwy.net';
@@ -136,6 +143,12 @@ function verifyCsrfToken() {
     return is_string($token) && $token !== '' && hash_equals((string)($_SESSION['csrf_token'] ?? ''), $token);
 }
 
+function requireCsrfToken() {
+    if (!verifyCsrfToken()) {
+        throw new Exception('Security check failed. Please refresh the page and try again.');
+    }
+}
+
 function tableExists(PDO $db, string $table): bool {
     try {
         $stmt = $db->prepare("SHOW TABLES LIKE ?");
@@ -156,6 +169,184 @@ function columnExists(PDO $db, string $table, string $column): bool {
         error_log('columnExists failed: ' . $e->getMessage());
         return false;
     }
+}
+
+function ensureAdmissionApplicationsTable(PDO $db): void {
+    $db->exec("CREATE TABLE IF NOT EXISTS admission_applications (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        application_id VARCHAR(30) NOT NULL UNIQUE,
+        full_name VARCHAR(150) NOT NULL,
+        father_name VARCHAR(150) NOT NULL,
+        dob DATE NOT NULL,
+        gender VARCHAR(20) NOT NULL,
+        cnic VARCHAR(30) NOT NULL,
+        religion VARCHAR(50) DEFAULT 'Islam',
+        nationality VARCHAR(50) DEFAULT 'Pakistani',
+        phone VARCHAR(30) NOT NULL,
+        whatsapp VARCHAR(30) DEFAULT NULL,
+        email VARCHAR(150) DEFAULT NULL,
+        address TEXT NOT NULL,
+        prev_institution VARCHAR(255) NOT NULL,
+        matric_roll VARCHAR(50) DEFAULT NULL,
+        matric_year VARCHAR(20) DEFAULT NULL,
+        matric_total INT DEFAULT 1100,
+        matric_obtained INT DEFAULT NULL,
+        matric_grade VARCHAR(20) DEFAULT NULL,
+        board_name VARCHAR(120) DEFAULT NULL,
+        program VARCHAR(120) NOT NULL,
+        campus VARCHAR(120) NOT NULL,
+        session VARCHAR(30) DEFAULT '2026-2028',
+        photo VARCHAR(255) NOT NULL,
+        matric_certificate VARCHAR(255) NOT NULL,
+        cnic_copy VARCHAR(255) NOT NULL,
+        payment_method VARCHAR(50) DEFAULT 'Cash',
+        transaction_id VARCHAR(120) DEFAULT NULL,
+        admission_fee DECIMAL(10,2) DEFAULT 5000.00,
+        status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+        remarks TEXT DEFAULT NULL,
+        student_id INT DEFAULT NULL,
+        user_id INT DEFAULT NULL,
+        reviewed_by INT DEFAULT NULL,
+        reviewed_at DATETIME DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        KEY idx_admission_applications_status (status),
+        KEY idx_admission_applications_cnic (cnic)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function getAdmissionCampuses(): array {
+    return [
+        'Misbah Campus - Rajanpur' => [
+            '9th Grade Science',
+            '9th Grade Arts',
+            '10th Grade Science',
+            '10th Grade Arts',
+            'FSc Pre-Medical',
+            'FSc Pre-Engineering',
+            'ICS',
+            'FA',
+            'BSCS',
+            'BSIT',
+            'BBA',
+            'ADP',
+            'Web Development',
+            'Graphic Design',
+            'NAVTTC IT',
+        ],
+        'Hamid Campus - Fazilpur' => [
+            '9th Grade Science',
+            'FSc Pre-Medical',
+            'FSc Pre-Engineering',
+            'ICS',
+            'FA',
+            'BSCS',
+            'BSIT',
+            'BBA',
+            'Web Development',
+            'Graphic Design',
+            'NAVTTC IT',
+        ],
+        'Abul Rehman Campus - Kot Mithan' => [
+            '9th Grade Science',
+            '10th Grade Science',
+            'FSc Pre-Medical',
+            'ICS',
+            'FA',
+            'BSIT',
+            'Computer Applications',
+            'NAVTTC IT',
+        ],
+    ];
+}
+
+function getCampusPrograms(string $campus): array {
+    $campuses = getAdmissionCampuses();
+    $programs = $campuses[$campus] ?? reset($campuses);
+    return array_map(static function ($name) {
+        return ['name' => $name];
+    }, $programs ?: []);
+}
+
+function renderCampusOptions(string $selected = ''): void {
+    echo '<option value="">Select Campus</option>';
+    foreach (array_keys(getAdmissionCampuses()) as $campus) {
+        $isSelected = $campus === $selected ? ' selected' : '';
+        echo '<option value="' . htmlspecialchars($campus, ENT_QUOTES, 'UTF-8') . '"' . $isSelected . '>' . htmlspecialchars($campus, ENT_QUOTES, 'UTF-8') . '</option>';
+    }
+}
+
+function renderProgramOptions(string $selected = ''): void {
+    echo '<option value="">Select Program</option>';
+    $seen = [];
+    foreach (getAdmissionCampuses() as $programs) {
+        foreach ($programs as $program) {
+            $seen[$program] = true;
+        }
+    }
+    foreach (array_keys($seen) as $program) {
+        $isSelected = $program === $selected ? ' selected' : '';
+        echo '<option value="' . htmlspecialchars($program, ENT_QUOTES, 'UTF-8') . '"' . $isSelected . '>' . htmlspecialchars($program, ENT_QUOTES, 'UTF-8') . '</option>';
+    }
+}
+
+function getCampusProgramScript(string $campusSelectId, string $programSelectId): string {
+    $programs = json_encode(getAdmissionCampuses(), JSON_UNESCAPED_SLASHES);
+    return "<script>
+        const campusPrograms = $programs;
+        const campusSelect = document.getElementById(" . json_encode($campusSelectId) . ");
+        const programSelect = document.getElementById(" . json_encode($programSelectId) . ");
+        function refreshProgramOptions() {
+            if (!campusSelect || !programSelect) return;
+            const selected = programSelect.value;
+            const options = campusPrograms[campusSelect.value] || [];
+            programSelect.innerHTML = '<option value=\"\">Select Program</option>';
+            options.forEach(function(name) {
+                const option = document.createElement('option');
+                option.value = name;
+                option.textContent = name;
+                if (name === selected) option.selected = true;
+                programSelect.appendChild(option);
+            });
+        }
+        if (campusSelect && programSelect) {
+            campusSelect.addEventListener('change', refreshProgramOptions);
+            refreshProgramOptions();
+        }
+    </script>";
+}
+
+function generateUniqueId(string $prefix = 'QAC'): string {
+    return strtoupper($prefix) . '-' . date('Ymd') . '-' . strtoupper(bin2hex(random_bytes(3)));
+}
+
+function saveUploadedFile(array $file, string $uploadDir, string $prefix, array $allowedExtensions, int $maxBytes, bool $mustBeImage = false): string {
+    if (($file['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_OK) {
+        throw new Exception(str_replace('_', ' ', $prefix) . ' upload failed.');
+    }
+    if (($file['size'] ?? 0) > $maxBytes) {
+        throw new Exception(str_replace('_', ' ', $prefix) . ' file is too large.');
+    }
+
+    $extension = strtolower(pathinfo((string)($file['name'] ?? ''), PATHINFO_EXTENSION));
+    if (!in_array($extension, $allowedExtensions, true)) {
+        throw new Exception(str_replace('_', ' ', $prefix) . ' file type is not allowed.');
+    }
+    if ($mustBeImage && !@getimagesize((string)$file['tmp_name'])) {
+        throw new Exception(str_replace('_', ' ', $prefix) . ' must be a valid image.');
+    }
+
+    if (!is_dir($uploadDir) && !@mkdir($uploadDir, 0775, true) && !is_dir($uploadDir)) {
+        throw new Exception('Upload directory is not writable.');
+    }
+
+    $filename = $prefix . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $extension;
+    $target = rtrim($uploadDir, '/\\') . DIRECTORY_SEPARATOR . $filename;
+    if (!move_uploaded_file((string)$file['tmp_name'], $target)) {
+        throw new Exception('Could not save uploaded file.');
+    }
+
+    return 'uploads/admissions/' . $filename;
 }
 
 function sanitizeInput($data) {
