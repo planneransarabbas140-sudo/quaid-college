@@ -215,6 +215,65 @@ function ensureAdmissionApplicationsTable(PDO $db): void {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
+function ensureApprovalSystem(PDO $db): void {
+    $db->exec("CREATE TABLE IF NOT EXISTS approval_requests (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        requested_by INT DEFAULT NULL,
+        role VARCHAR(50) NOT NULL DEFAULT 'guest',
+        module_name VARCHAR(100) NOT NULL,
+        action_type VARCHAR(100) NOT NULL,
+        request_data LONGTEXT NOT NULL,
+        status ENUM('pending','approved','rejected') NOT NULL DEFAULT 'pending',
+        admin_remarks TEXT DEFAULT NULL,
+        reviewed_by INT DEFAULT NULL,
+        reviewed_at DATETIME DEFAULT NULL,
+        created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_approval_status (status),
+        KEY idx_approval_module (module_name),
+        KEY idx_approval_requested_by (requested_by)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function createApprovalRequest(PDO $db, string $moduleName, string $actionType, array $requestData = []): bool {
+    ensureApprovalSystem($db);
+    $stmt = $db->prepare("INSERT INTO approval_requests (requested_by, role, module_name, action_type, request_data) VALUES (?, ?, ?, ?, ?)");
+    return $stmt->execute([
+        getUserId(),
+        getUserRole(),
+        $moduleName,
+        $actionType,
+        json_encode($requestData, JSON_UNESCAPED_UNICODE),
+    ]);
+}
+
+function setFlashMessage(string $type, string $message): void {
+    if (session_status() === PHP_SESSION_NONE) {
+        startSecureSession();
+    }
+    $_SESSION['flash_messages'][] = [
+        'type' => $type,
+        'message' => $message,
+    ];
+}
+
+function getFlashMessages(): array {
+    if (session_status() === PHP_SESSION_NONE) {
+        startSecureSession();
+    }
+    $messages = $_SESSION['flash_messages'] ?? [];
+    unset($_SESSION['flash_messages']);
+    return is_array($messages) ? $messages : [];
+}
+
+function firstExistingColumn(PDO $db, string $table, array $columns): ?string {
+    foreach ($columns as $column) {
+        if (columnExists($db, $table, (string)$column)) {
+            return (string)$column;
+        }
+    }
+    return null;
+}
+
 function getAdmissionCampuses(): array {
     return [
         'Misbah Campus - Rajanpur' => [

@@ -85,7 +85,7 @@ if (!function_exists('getActiveSession')) {
 }
 
 if (!function_exists('getCurrentSessionYear')) {
-    function getCurrentSessionYear(PDO $conn = null) {
+    function getCurrentSessionYear(?PDO $conn = null) {
         return function_exists('getCurrentAcademicYear') ? getCurrentAcademicYear() : date('Y') . '-' . ((int)date('Y') + 1);
     }
 }
