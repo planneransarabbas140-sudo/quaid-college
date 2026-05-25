@@ -4,7 +4,7 @@ require_once '../../config/db.php';
 require_once '../../includes/whatsapp_helper.php';
 
 if (!isLoggedIn()) {
-    redirect('../../index.php');
+    redirect(BASE_URL . 'modules/auth/login.php');
 }
 requireRole(['admin', 'owner']);
 
