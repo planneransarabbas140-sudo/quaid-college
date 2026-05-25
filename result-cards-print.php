@@ -77,7 +77,7 @@ function rcOrdinal($number) {
 <head>
     <meta charset="UTF-8">
     <title>Academic Result Card</title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/print.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/print.css?v=2">
     <style>
         body { font-family: Arial, sans-serif; color: #000; background: #fff; margin: 0; font-size: 12px; }
         .print-shell { max-width: 850px; margin: 0 auto; padding: 18px; }

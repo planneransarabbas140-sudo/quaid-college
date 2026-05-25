@@ -76,7 +76,7 @@ unset($slide);
 
     <!-- AOS Animation -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link href="assets/css/public-site.css" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=2" rel="stylesheet">
 
     <style>
         /* ─── CSS Variables ──────────────────────────────────── */

@@ -46,7 +46,7 @@ try {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>WhatsApp Center</title>
-    <link rel="stylesheet" href="./whatsapp-center.css">
+    <link rel="stylesheet" href="./whatsapp-center.css?v=2">
 </head>
 <body>
 <?php if (file_exists(__DIR__ . '/../../includes/header.php')) include_once __DIR__ . '/../../includes/header.php'; ?>
@@ -188,6 +188,6 @@ try {
     </main>
 </div>
 
-<script src="./whatsapp-center.js"></script>
+<script src="./whatsapp-center.js?v=2"></script>
 </body>
 </html>

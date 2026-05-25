@@ -15,12 +15,12 @@
     <script>
         window.BASE_URL = <?= json_encode(BASE_URL) ?>;
     </script>
-    <script src="<?= BASE_URL ?>assets/js/shared.js"></script>
-    <script src="<?= BASE_URL ?>assets/js/sidebar.js"></script>
-    <script src="<?= BASE_URL ?>assets/js/animations.js"></script>
+    <script src="<?= BASE_URL ?>assets/js/shared.js?v=2"></script>
+    <script src="<?= BASE_URL ?>assets/js/sidebar.js?v=2"></script>
+    <script src="<?= BASE_URL ?>assets/js/animations.js?v=2"></script>
     
     <!-- AI Chatbot Widget -->
-    <link rel="stylesheet" href="<?= BASE_URL ?>modules/chatbot/chatbot.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>modules/chatbot/chatbot.css?v=2">
     <div id="chatbot-bubble" title="Click to chat with AI">💬</div>
     <div id="chatbot-window">
         <div id="chatbot-header">
@@ -33,7 +33,7 @@
             <button id="chatbot-send"><i class="fas fa-paper-plane"></i></button>
         </div>
     </div>
-    <script src="<?= BASE_URL ?>modules/chatbot/chatbot.js"></script>
+    <script src="<?= BASE_URL ?>modules/chatbot/chatbot.js?v=2"></script>
     <div class="toast-container-modern"></div>
 
     <script>

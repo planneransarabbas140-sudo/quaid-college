@@ -33,7 +33,7 @@ $school = getSchoolInfoForVoucher($conn);
 <head>
     <meta charset="UTF-8">
     <title>Fee Voucher - <?= htmlspecialchars($voucher['voucher_number']) ?></title>
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/print.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/print.css?v=2">
     <style>
         body {
             font-family: 'Arial', sans-serif;

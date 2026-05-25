@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
 $page_title = "New Admission";
 include '../../includes/header.php';
 ?>
-<script src="../../assets/js/payment_helper.js"></script>
+<script src="../../assets/js/payment_helper.js?v=2"></script>
 
 <div class="row mb-4">
     <div class="col-12 d-flex justify-content-between align-items-center">

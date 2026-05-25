@@ -116,13 +116,13 @@ $currentScriptPath = str_replace('\\', '/', (string)($_SERVER['PHP_SELF'] ?? '')
     <!-- CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/design-system.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/sidebar.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/topbar.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/layout.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/components.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/responsive.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/design-system.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/sidebar.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/topbar.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/layout.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/components.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/responsive.css?v=2">
     
     <style>
         /* Layout Fixes for No Overlap */

@@ -577,6 +577,6 @@ include __DIR__ . '/includes/header.php';
 
 <script id="sgAdmissionsData" type="application/json"><?= json_encode($admissionsVsWithdrawals) ?></script>
 <script id="sgFlowData" type="application/json"><?= json_encode($flowData) ?></script>
-<script src="<?= BASE_URL ?>assets/js/school-growth.js"></script>
+<script src="<?= BASE_URL ?>assets/js/school-growth.js?v=2"></script>
 
 <?php include __DIR__ . '/includes/footer.php'; ?>

@@ -1,5 +1,5 @@
 /* Shared public marketing pages — nav, footer, tokens */
-@import url('modern-3d.css');
+@import url('modern-3d.css?v=2');
 
 :root {
     --navy: #1a2f4a;

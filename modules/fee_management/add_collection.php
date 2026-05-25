@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !verifyCsrfToken()) {
 $page_title = "Add Fee Collection";
 include '../../includes/header.php';
 ?>
-<script src="../../assets/js/payment_helper.js"></script>
+<script src="../../assets/js/payment_helper.js?v=2"></script>
 
 <style>
     :root {

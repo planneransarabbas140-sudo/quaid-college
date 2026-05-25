@@ -119,7 +119,7 @@ $totalDailyRevenue = array_sum(array_column($dailySales, 'total_amount'));
 $page_title = "Cafeteria & Uniform POS";
 include '../../includes/header.php';
 ?>
-<script src="../../assets/js/payment_helper.js"></script>
+<script src="../../assets/js/payment_helper.js?v=2"></script>
 
 <div class="container-fluid">
     <!-- Top Stats & Navigation -->

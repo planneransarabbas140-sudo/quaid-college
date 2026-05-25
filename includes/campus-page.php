@@ -31,8 +31,8 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/public-site.css" rel="stylesheet">
-    <link href="assets/css/campus.css" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=2" rel="stylesheet">
+    <link href="assets/css/campus.css?v=2" rel="stylesheet">
 </head>
 <body class="campus-page modern-ui">
     <?php require __DIR__ . '/public-nav.php'; ?>
@@ -217,6 +217,6 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
     </section>
 
     <?php require __DIR__ . '/public-footer.php'; ?>
-    <script src="assets/js/campus.js"></script>
+    <script src="assets/js/campus.js?v=2"></script>
 </body>
 </html>

@@ -76,7 +76,7 @@ if (!in_array($selectedSession, $allowedSessions, true)) {
 include __DIR__ . '/../../includes/header.php';
 ?>
 
-<link rel="stylesheet" href="<?= BASE_URL ?>modules/old_data_archive/old-data.css">
+<link rel="stylesheet" href="<?= BASE_URL ?>modules/old_data_archive/old-data.css?v=2">
 
 <div class="container-fluid px-4 py-4 old-data-archive" data-base-url="<?= htmlspecialchars(BASE_URL, ENT_QUOTES, 'UTF-8') ?>">
     <div class="d-flex flex-column flex-lg-row justify-content-between align-items-start gap-3 mb-4">
@@ -180,7 +180,6 @@ include __DIR__ . '/../../includes/header.php';
     };
 </script>
 
-<script src="<?= BASE_URL ?>modules/old_data_archive/old-data.js"></script>
+<script src="<?= BASE_URL ?>modules/old_data_archive/old-data.js?v=2"></script>
 
 <?php include __DIR__ . '/../../includes/footer.php'; ?>
-
