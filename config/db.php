@@ -265,6 +265,41 @@ function getFlashMessages(): array {
     return is_array($messages) ? $messages : [];
 }
 
+function displayFlashMessage(): void {
+    foreach (getFlashMessages() as $flash) {
+        $type = in_array(($flash['type'] ?? ''), ['success', 'info', 'warning', 'danger', 'error'], true) ? $flash['type'] : 'info';
+        $class = $type === 'error' ? 'danger' : $type;
+        echo '<div class="alert alert-' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . ' alert-dismissible fade show" role="alert">';
+        echo htmlspecialchars((string)($flash['message'] ?? ''), ENT_QUOTES, 'UTF-8');
+        echo '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+        echo '</div>';
+    }
+}
+
+function applyApprovalRequest(PDO $db, array $request): bool {
+    $data = json_decode((string)($request['request_data'] ?? ''), true);
+    if (!is_array($data)) {
+        $data = [];
+    }
+
+    $module = (string)($request['module_name'] ?? '');
+    $action = (string)($request['action_type'] ?? '');
+
+    if ($module === 'complaints' && $action === 'create') {
+        if (!tableExists($db, 'complaints')) {
+            return true;
+        }
+        $stmt = $db->prepare("INSERT INTO complaints (complaint_number, subject, complainant_name, status, created_at) VALUES (?, ?, ?, 'Pending', NOW())");
+        return $stmt->execute([
+            $data['complaint_number'] ?? ('CMP-' . date('Ymd') . '-' . random_int(1000, 9999)),
+            $data['subject'] ?? 'Complaint',
+            $data['complainant_name'] ?? ($_SESSION['username'] ?? 'User'),
+        ]);
+    }
+
+    return true;
+}
+
 function firstExistingColumn(PDO $db, string $table, array $columns): ?string {
     foreach ($columns as $column) {
         if (columnExists($db, $table, (string)$column)) {
@@ -272,6 +307,77 @@ function firstExistingColumn(PDO $db, string $table, array $columns): ?string {
         }
     }
     return null;
+}
+
+function ensureFinanceTables(PDO $db): void {
+    $db->exec("CREATE TABLE IF NOT EXISTS income (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        source VARCHAR(100),
+        reference_id INT NULL,
+        campus VARCHAR(255),
+        description TEXT,
+        amount DECIMAL(12,2) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_income_source (source, reference_id),
+        KEY idx_income_campus (campus)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS expenses (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        module_name VARCHAR(100),
+        reference_id INT NULL,
+        campus VARCHAR(255),
+        category VARCHAR(255),
+        description TEXT,
+        amount DECIMAL(12,2) DEFAULT 0,
+        expense_type ENUM('manual','auto') DEFAULT 'manual',
+        status ENUM('pending','approved','rejected','paid') DEFAULT 'pending',
+        created_by INT,
+        approved_by INT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        KEY idx_expenses_module (module_name, reference_id),
+        KEY idx_expenses_status (status),
+        KEY idx_expenses_campus (campus),
+        KEY idx_expenses_category (category)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+}
+
+function syncFinancialModuleData(PDO $db): void {
+    ensureFinanceTables($db);
+
+    if (tableExists($db, 'fee_collections')) {
+        $amountColumn = firstExistingColumn($db, 'fee_collections', ['paid_amount', 'amount_paid', 'amount']);
+        if ($amountColumn) {
+            $campusExpr = columnExists($db, 'fee_collections', 'campus') ? 'fc.`campus`' : "''";
+            $dateColumn = firstExistingColumn($db, 'fee_collections', ['payment_date', 'paid_at', 'created_at']);
+            $dateExpr = $dateColumn ? "COALESCE(fc.`$dateColumn`, NOW())" : 'NOW()';
+            $idColumn = columnExists($db, 'fee_collections', 'id') ? 'id' : null;
+            if ($idColumn) {
+                $db->exec("
+                    INSERT INTO income (source, reference_id, campus, description, amount, created_at)
+                    SELECT 'fee_collections', fc.`$idColumn`, $campusExpr, 'Fee collection', COALESCE(fc.`$amountColumn`, 0), $dateExpr
+                    FROM fee_collections fc
+                    WHERE COALESCE(fc.`$amountColumn`, 0) > 0
+                      AND NOT EXISTS (
+                          SELECT 1 FROM income i WHERE i.source = 'fee_collections' AND i.reference_id = fc.`$idColumn`
+                      )
+                ");
+            }
+        }
+    }
+
+    if (tableExists($db, 'accounts_transactions')) {
+        $db->exec("
+            INSERT INTO income (source, reference_id, campus, description, amount, created_at)
+            SELECT 'accounts_transactions', tx.id, '', COALESCE(tx.description, tx.category), COALESCE(tx.amount, 0), COALESCE(tx.created_at, NOW())
+            FROM accounts_transactions tx
+            WHERE tx.transaction_type = 'Income'
+              AND COALESCE(tx.amount, 0) > 0
+              AND NOT EXISTS (
+                  SELECT 1 FROM income i WHERE i.source = 'accounts_transactions' AND i.reference_id = tx.id
+              )
+        ");
+    }
 }
 
 function getAdmissionCampuses(): array {
