@@ -76,7 +76,7 @@ unset($slide);
 
     <!-- AOS Animation -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link href="assets/css/public-site.css?v=2" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=3" rel="stylesheet">
 
     <style>
         /* ─── CSS Variables ──────────────────────────────────── */
@@ -160,6 +160,11 @@ unset($slide);
             padding: 3px 12px 3px 6px;
             font-size: .7rem;
         }
+        .campus-switcher-label {
+            color: rgba(255,255,255,.4);
+            font-size: .64rem;
+            margin-right: 4px;
+        }
         .campus-pill {
             display: inline-block;
             padding: 2px 10px;
@@ -168,6 +173,54 @@ unset($slide);
             letter-spacing: .05em;
             cursor: pointer;
             transition: var(--transition);
+        }
+        @media (max-width: 767px) {
+            .campus-banner {
+                font-size: .68rem;
+                letter-spacing: .04em;
+                padding: 8px 0;
+            }
+            .campus-banner .container > .d-flex {
+                align-items: flex-start !important;
+                gap: 8px !important;
+            }
+            .campus-banner .container > .d-flex > .d-flex:first-child {
+                width: 100%;
+                gap: 8px !important;
+                min-width: 0;
+            }
+            .campus-banner .container > .d-flex > .d-flex:first-child span {
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+            .campus-switcher {
+                width: 100%;
+                justify-content: flex-start;
+                overflow-x: auto;
+                gap: 6px;
+                border-radius: 12px;
+                padding: 6px;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+            }
+            .campus-switcher::-webkit-scrollbar {
+                display: none;
+            }
+            .campus-switcher-label {
+                flex: 0 0 auto;
+                align-self: center;
+            }
+            .campus-pill {
+                flex: 0 0 auto;
+                min-height: 30px;
+                display: inline-flex;
+                align-items: center;
+                padding: 5px 10px;
+                background: rgba(255,255,255,.06);
+                border: 1px solid rgba(255,255,255,.08);
+                white-space: nowrap;
+            }
         }
 
         /* ─── NAVBAR FIX ─── */
@@ -1609,7 +1662,7 @@ unset($slide);
                 <span class="d-none d-md-inline"><i class="fas fa-phone" style="color:var(--teal);"></i> &nbsp;<?= htmlspecialchars($site_phone) ?></span>
             </div>
             <div class="campus-switcher">
-                <span style="color:rgba(255,255,255,.4);font-size:.64rem;margin-right:4px;">CAMPUS:</span>
+                <span class="campus-switcher-label">CAMPUS:</span>
                 <a href="campus-rajanpur.php" class="campus-pill">Misbah Campus</a>
                 <a href="campus-fazilpur.php" class="campus-pill">Hamid Campus</a>
                 <a href="campus-kotmithan.php" class="campus-pill">Abul Rehman Campus</a>

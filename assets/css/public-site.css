@@ -25,7 +25,7 @@ body.show-overlay::before {
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.45);
-    z-index: 1040;
+    z-index: 990;
 }
 
 /* Ensure the expanded/collapsed mobile navbar is above the overlay so links remain clickable */
@@ -308,15 +308,95 @@ img.responsive, .responsive-img {
 }
 
 @media (max-width: 991px) {
-    .nav-link-campus { justify-content: flex-start; padding: 10px 0; }
-    .navbar-campus .navbar-nav { flex-wrap: wrap; }
+    .navbar-campus .navbar-collapse {
+        padding: 18px 0 20px;
+    }
+
+    .navbar-campus .navbar-nav {
+        align-items: stretch;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .nav-link-campus {
+        justify-content: flex-start;
+        width: 100%;
+        min-height: 44px;
+        padding: 12px 0;
+        border-radius: 10px;
+    }
+
+    .campus-dropdown {
+        width: 100%;
+    }
+
+    .campus-dropdown > .nav-link-campus {
+        justify-content: space-between;
+    }
+
+    .campus-dropdown > .nav-link-campus i {
+        transition: transform 200ms ease;
+    }
+
+    .campus-dropdown.is-open > .nav-link-campus i {
+        transform: rotate(180deg);
+    }
+
     .campus-dropdown-menu {
         position: static;
+        display: none;
         opacity: 1;
         visibility: visible;
         transform: none;
-        margin: 8px 0 12px;
+        min-width: 0;
+        width: 100%;
+        margin: 4px 0 10px;
+        padding: 8px;
+        border-radius: 12px;
+        background: rgba(255, 255, 255, 0.06);
+        border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: none;
     }
+
+    .campus-dropdown.is-open .campus-dropdown-menu {
+        display: grid;
+        gap: 6px;
+    }
+
+    .campus-dropdown:hover .campus-dropdown-menu {
+        display: none;
+    }
+
+    .campus-dropdown.is-open:hover .campus-dropdown-menu {
+        display: grid;
+    }
+
+    .campus-dropdown-menu a {
+        padding: 10px 12px;
+        color: rgba(255, 255, 255, 0.88);
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .campus-dropdown-menu a:hover,
+    .campus-dropdown-menu a.is-current {
+        color: #fff;
+        background: rgba(42, 181, 160, 0.16);
+        border-color: rgba(42, 181, 160, 0.26);
+    }
+
+    .campus-item-title {
+        gap: 8px;
+    }
+
+    .campus-item-meta {
+        color: rgba(255, 255, 255, 0.62);
+    }
+
+    .campus-type.main {
+        color: #f8c15d;
+    }
+
     .portal-btn { width: auto; }
 }

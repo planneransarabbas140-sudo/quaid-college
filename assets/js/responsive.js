@@ -9,6 +9,47 @@
     }
   } catch (e) { console.warn('Navbar overlay binding failed', e); }
 
+  // Tap-to-open campus menu on phones. Desktop keeps the normal hover menu.
+  function bindCampusDropdown() {
+    var dropdown = document.querySelector('.campus-dropdown');
+    if (!dropdown) return;
+
+    var toggle = dropdown.querySelector('.nav-link-campus');
+    if (!toggle) return;
+
+    var mobileQuery = window.matchMedia('(max-width: 991px)');
+
+    function setOpen(isOpen) {
+      dropdown.classList.toggle('is-open', isOpen);
+      toggle.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    }
+
+    toggle.setAttribute('aria-haspopup', 'true');
+    toggle.setAttribute('aria-expanded', 'false');
+
+    toggle.addEventListener('click', function(event) {
+      if (!mobileQuery.matches) return;
+      event.preventDefault();
+      setOpen(!dropdown.classList.contains('is-open'));
+    });
+
+    dropdown.querySelectorAll('.campus-dropdown-menu a').forEach(function(link) {
+      link.addEventListener('click', function() {
+        setOpen(false);
+      });
+    });
+
+    function handleViewportChange() {
+      if (!mobileQuery.matches) setOpen(false);
+    }
+
+    if (typeof mobileQuery.addEventListener === 'function') {
+      mobileQuery.addEventListener('change', handleViewportChange);
+    } else if (typeof mobileQuery.addListener === 'function') {
+      mobileQuery.addListener(handleViewportChange);
+    }
+  }
+
   // Hero lazy loader using IntersectionObserver
   function lazyLoadHero() {
     var slides = document.querySelectorAll('.qs-slide');
@@ -37,8 +78,12 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', lazyLoadHero);
+    document.addEventListener('DOMContentLoaded', function() {
+      bindCampusDropdown();
+      lazyLoadHero();
+    });
   } else {
+    bindCampusDropdown();
     lazyLoadHero();
   }
 })();
