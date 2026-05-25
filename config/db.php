@@ -114,6 +114,28 @@ function getUserRole() {
     return strtolower((string)($_SESSION['user_role'] ?? $_SESSION['role'] ?? 'guest'));
 }
 
+function requireRole($roles): void {
+    if (!is_array($roles)) {
+        $roles = [$roles];
+    }
+    $roles = array_map(static function ($role) {
+        return strtolower((string)$role);
+    }, $roles);
+
+    if (!isLoggedIn()) {
+        redirect(BASE_URL . 'modules/auth/login.php');
+    }
+
+    if (!in_array(getUserRole(), $roles, true)) {
+        http_response_code(403);
+        echo '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Access Denied</title></head><body style="font-family:Arial,sans-serif;padding:40px;">';
+        echo '<h1>Access Denied</h1><p>You do not have permission to open this page.</p>';
+        echo '<p><a href="' . htmlspecialchars(BASE_URL . 'dashboard.php', ENT_QUOTES, 'UTF-8') . '">Return to Dashboard</a></p>';
+        echo '</body></html>';
+        exit();
+    }
+}
+
 function enforcePasswordChange() {
     $current = str_replace('\\', '/', $_SERVER['SCRIPT_NAME'] ?? '');
     if (!empty($_SESSION['must_change_password']) && strpos($current, '/change-password.php') === false) {
