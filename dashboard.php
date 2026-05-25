@@ -10,7 +10,7 @@ require_once 'config/db.php';
 require_once 'includes/shared_functions.php';
 
 if (!isLoggedIn()) {
-    header("Location: modules/auth/login.php");
+    header("Location: " . BASE_URL . "modules/auth/login.php");
     exit();
 }
 
