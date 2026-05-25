@@ -1,0 +1,7 @@
+.git
+.cursor
+.vscode
+frontend/node_modules
+node_modules
+vendor
+*.log
