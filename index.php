@@ -2379,7 +2379,7 @@ unset($slide);
                         Apply Online Now
                     </a>
                     <br>
-                    <a href="#" class="btn-hero-secondary d-inline-flex" style="border-color:rgba(255,255,255,.15);">
+                    <a href="assets/downloads/prospectus.pdf" download="Quaid-e-Azam-College-Prospectus.pdf" class="btn-hero-secondary d-inline-flex" style="border-color:rgba(255,255,255,.15);">
                         <i class="fas fa-download"></i> Download Prospectus
                     </a>
                 </div>
