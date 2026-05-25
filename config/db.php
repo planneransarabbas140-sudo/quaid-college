@@ -402,6 +402,273 @@ function syncFinancialModuleData(PDO $db): void {
     }
 }
 
+function getCurrentAcademicYear(): string {
+    $year = (int)date('Y');
+    $month = (int)date('n');
+    $start = $month >= 4 ? $year : $year - 1;
+    return $start . '-' . ($start + 1);
+}
+
+function feeTransactionStructureJoin(PDO $db): string {
+    if (!tableExists($db, 'fee_structure')) {
+        return '';
+    }
+
+    if (columnExists($db, 'fee_collections', 'fee_structure_id') && columnExists($db, 'fee_structure', 'id')) {
+        return 'LEFT JOIN fee_structure fs ON fs.id = fc.fee_structure_id';
+    }
+
+    if (
+        columnExists($db, 'fee_collections', 'fee_type')
+        && columnExists($db, 'fee_structure', 'fee_type')
+        && columnExists($db, 'fee_structure', 'class')
+        && columnExists($db, 'students', 'class')
+    ) {
+        return 'LEFT JOIN fee_structure fs ON fs.fee_type = fc.fee_type AND fs.class = s.class';
+    }
+
+    return '';
+}
+
+function feeTransactionCreditExpression(PDO $db): string {
+    $paidColumn = firstExistingColumn($db, 'fee_collections', ['paid_amount', 'amount_paid', 'payment_amount', 'paid']);
+    if ($paidColumn) {
+        return "COALESCE(fc.`$paidColumn`, 0)";
+    }
+
+    $amountColumn = firstExistingColumn($db, 'fee_collections', ['amount', 'total_amount', 'fee_amount']);
+    if (!$amountColumn) {
+        return '0';
+    }
+
+    if (columnExists($db, 'fee_collections', 'status')) {
+        return "CASE WHEN LOWER(COALESCE(fc.status, '')) = 'paid' THEN COALESCE(fc.`$amountColumn`, 0) ELSE 0 END";
+    }
+
+    return "COALESCE(fc.`$amountColumn`, 0)";
+}
+
+function feeTransactionDebitExpression(PDO $db): string {
+    $amountColumn = firstExistingColumn($db, 'fee_collections', ['amount', 'total_amount', 'fee_amount', 'due_amount']);
+    if ($amountColumn) {
+        return "COALESCE(fc.`$amountColumn`, 0)";
+    }
+
+    if (tableExists($db, 'fee_structure') && columnExists($db, 'fee_structure', 'amount')) {
+        return 'COALESCE(fs.amount, ' . feeTransactionCreditExpression($db) . ', 0)';
+    }
+
+    return feeTransactionCreditExpression($db);
+}
+
+function getTransactionSummary(PDO $db): array {
+    $summary = ['debit' => 0, 'credit' => 0, 'pending' => 0, 'total_tx' => 0];
+    if (!tableExists($db, 'fee_collections')) {
+        return $summary;
+    }
+
+    $debitExpr = feeTransactionDebitExpression($db);
+    $creditExpr = feeTransactionCreditExpression($db);
+    $structureJoin = feeTransactionStructureJoin($db);
+    $studentJoin = tableExists($db, 'students') ? 'LEFT JOIN students s ON s.id = fc.student_id' : '';
+
+    try {
+        $stmt = $db->query("
+            SELECT COALESCE(SUM($debitExpr), 0) AS debit,
+                   COALESCE(SUM($creditExpr), 0) AS credit,
+                   COALESCE(SUM(GREATEST(($debitExpr) - ($creditExpr), 0)), 0) AS pending,
+                   COUNT(*) AS total_tx
+            FROM fee_collections fc
+            $studentJoin
+            $structureJoin
+        ");
+        $row = $stmt ? $stmt->fetch(PDO::FETCH_ASSOC) : [];
+        return [
+            'debit' => (float)($row['debit'] ?? 0),
+            'credit' => (float)($row['credit'] ?? 0),
+            'pending' => (float)($row['pending'] ?? 0),
+            'total_tx' => (int)($row['total_tx'] ?? 0),
+        ];
+    } catch (Throwable $e) {
+        error_log('getTransactionSummary failed: ' . $e->getMessage());
+        return $summary;
+    }
+}
+
+function getTotalStudentsWithTransactions(PDO $db): int {
+    if (!tableExists($db, 'fee_collections') || !columnExists($db, 'fee_collections', 'student_id')) {
+        return 0;
+    }
+
+    try {
+        return (int)$db->query('SELECT COUNT(DISTINCT student_id) FROM fee_collections')->fetchColumn();
+    } catch (Throwable $e) {
+        error_log('getTotalStudentsWithTransactions failed: ' . $e->getMessage());
+        return 0;
+    }
+}
+
+function getClassList(PDO $db): array {
+    $classes = [];
+
+    foreach ([['students', 'class'], ['fee_structure', 'class']] as $source) {
+        [$table, $column] = $source;
+        if (!tableExists($db, $table) || !columnExists($db, $table, $column)) {
+            continue;
+        }
+
+        try {
+            $rows = $db->query("SELECT DISTINCT `$column` AS class_name FROM `$table` WHERE `$column` IS NOT NULL AND `$column` <> '' ORDER BY `$column` ASC")->fetchAll(PDO::FETCH_ASSOC);
+            foreach ($rows as $row) {
+                $name = trim((string)($row['class_name'] ?? ''));
+                if ($name !== '') {
+                    $classes[$name] = ['id' => $name, 'class_name' => $name];
+                }
+            }
+        } catch (Throwable $e) {
+            error_log("getClassList failed for $table: " . $e->getMessage());
+        }
+    }
+
+    ksort($classes, SORT_NATURAL | SORT_FLAG_CASE);
+    return array_values($classes);
+}
+
+function studentDisplayCodeExpression(PDO $db, string $alias = 's'): string {
+    $prefix = $alias !== '' ? $alias . '.' : '';
+    $parts = [];
+    foreach (['roll_number', 'registration_number', 'student_id'] as $column) {
+        if (columnExists($db, 'students', $column)) {
+            $parts[] = "NULLIF($prefix`$column`, '')";
+        }
+    }
+    $parts[] = "CONCAT('STD-', {$prefix}id)";
+    return 'COALESCE(' . implode(', ', $parts) . ')';
+}
+
+function getStudentTransactionRegister(PDO $db, string $classId = '', string $search = ''): array {
+    if (!tableExists($db, 'students')) {
+        return [];
+    }
+
+    $studentNameExpr = columnExists($db, 'students', 'first_name')
+        ? "TRIM(CONCAT_WS(' ', s.first_name, s.last_name))"
+        : (columnExists($db, 'students', 'full_name') ? 's.full_name' : (columnExists($db, 'students', 'name') ? 's.name' : "CONCAT('Student #', s.id)"));
+    $studentCodeExpr = studentDisplayCodeExpression($db, 's');
+    $classExpr = columnExists($db, 'students', 'class') ? 's.class' : "''";
+    $sectionExpr = columnExists($db, 'students', 'section') ? 's.section' : "''";
+    $admissionDateExpr = columnExists($db, 'students', 'admission_date') ? 's.admission_date' : 'NULL';
+    $familyExpr = columnExists($db, 'students', 'family_id') ? 's.family_id' : "''";
+    $openingColumn = firstExistingColumn($db, 'students', ['opening_balance', 'admission_fee']);
+    $openingExpr = $openingColumn ? "COALESCE(s.`$openingColumn`, 0)" : '0';
+
+    $feeAggSql = "SELECT NULL AS student_id, 0 AS total_debit, 0 AS total_credit, 0 AS live_pending, 0 AS transaction_count WHERE 1=0";
+    if (tableExists($db, 'fee_collections') && columnExists($db, 'fee_collections', 'student_id')) {
+        $debitExpr = feeTransactionDebitExpression($db);
+        $creditExpr = feeTransactionCreditExpression($db);
+        $structureJoin = feeTransactionStructureJoin($db);
+        $feeAggSql = "
+            SELECT fc.student_id,
+                   COALESCE(SUM($debitExpr), 0) AS total_debit,
+                   COALESCE(SUM($creditExpr), 0) AS total_credit,
+                   COALESCE(SUM(GREATEST(($debitExpr) - ($creditExpr), 0)), 0) AS live_pending,
+                   COUNT(*) AS transaction_count
+            FROM fee_collections fc
+            LEFT JOIN students s ON s.id = fc.student_id
+            $structureJoin
+            GROUP BY fc.student_id
+        ";
+    }
+
+    $where = [];
+    $params = [];
+
+    if ($classId !== '' && columnExists($db, 'students', 'class')) {
+        $where[] = 's.class = ?';
+        $params[] = $classId;
+    }
+
+    if ($search !== '') {
+        $searchParts = [];
+        foreach (['first_name', 'last_name', 'full_name', 'name', 'student_id', 'registration_number', 'roll_number'] as $column) {
+            if (columnExists($db, 'students', $column)) {
+                $searchParts[] = "s.`$column` LIKE ?";
+                $params[] = '%' . $search . '%';
+            }
+        }
+        if ($searchParts) {
+            $where[] = '(' . implode(' OR ', $searchParts) . ')';
+        }
+    }
+
+    $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+    try {
+        $stmt = $db->prepare("
+            SELECT s.id AS student_pk,
+                   $studentCodeExpr AS student_id,
+                   $studentNameExpr AS student_name,
+                   $classExpr AS class_name,
+                   $sectionExpr AS section,
+                   $admissionDateExpr AS admission_date,
+                   $familyExpr AS family_id,
+                   $openingExpr AS opening_balance,
+                   COALESCE(ft.total_debit, 0) AS total_debit,
+                   COALESCE(ft.total_credit, 0) AS total_credit,
+                   COALESCE(ft.live_pending, 0) AS live_pending,
+                   COALESCE(ft.transaction_count, 0) AS transaction_count
+            FROM students s
+            LEFT JOIN ($feeAggSql) ft ON ft.student_id = s.id
+            $whereSql
+            ORDER BY class_name ASC, section ASC, student_name ASC, s.id ASC
+        ");
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        error_log('getStudentTransactionRegister failed: ' . $e->getMessage());
+        return [];
+    }
+}
+
+function getStudentList($classId = null, ?PDO $db = null): array {
+    if (!$db) {
+        $database = new Database();
+        $db = $database->getConnection();
+    }
+    if (!$db instanceof PDO || !tableExists($db, 'students')) {
+        return [];
+    }
+
+    $studentNameExpr = columnExists($db, 'students', 'first_name')
+        ? "TRIM(CONCAT_WS(' ', first_name, last_name))"
+        : (columnExists($db, 'students', 'full_name') ? 'full_name' : (columnExists($db, 'students', 'name') ? 'name' : "CONCAT('Student #', id)"));
+    $studentCodeExpr = studentDisplayCodeExpression($db, '');
+    $classExpr = columnExists($db, 'students', 'class') ? 'class' : "''";
+    $sectionExpr = columnExists($db, 'students', 'section') ? 'section' : "''";
+    $statusWhere = columnExists($db, 'students', 'status') ? "LOWER(COALESCE(status, 'active')) = 'active'" : '1=1';
+    $where = [$statusWhere];
+    $params = [];
+
+    if ($classId !== null && $classId !== '' && columnExists($db, 'students', 'class')) {
+        $where[] = 'class = ?';
+        $params[] = $classId;
+    }
+
+    try {
+        $stmt = $db->prepare("
+            SELECT *, $studentNameExpr AS student_name, $studentCodeExpr AS display_student_id, $classExpr AS class_name, $sectionExpr AS section_name
+            FROM students
+            WHERE " . implode(' AND ', $where) . "
+            ORDER BY class_name ASC, section_name ASC, student_name ASC
+        ");
+        $stmt->execute($params);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (Throwable $e) {
+        error_log('getStudentList failed: ' . $e->getMessage());
+        return [];
+    }
+}
+
 function getAdmissionCampuses(): array {
     return [
         'Misbah Campus - Rajanpur' => [
