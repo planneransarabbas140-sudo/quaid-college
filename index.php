@@ -57,6 +57,7 @@ unset($slide);
     <meta property="og:description" content="Excellence in Education since 2015 — Rajanpur, Fazilpur, Kot Mithan">
     <meta property="og:image" content="assets/images/qgc-logo.png">
     <meta name="theme-color" content="#2ab5a0">
+    <meta http-equiv="Cache-Control" content="max-age=31536000">
     <title>Quaid-e-Azam Group of Colleges | South Punjab</title>
 
     <!-- Favicon -->
@@ -66,20 +67,27 @@ unset($slide);
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" as="style" onload="this.rel='stylesheet'">
+    <noscript>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    </noscript>
 
     <!-- Bootstrap 5 -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" media="print" onload="this.media='all'">
+    <noscript><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"></noscript>
 
     <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.rel='stylesheet'">
+    <noscript><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"></noscript>
 
     <!-- AOS Animation -->
-    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" media="print" onload="this.media='all'">
     <link href="assets/css/public-site.css?v=3" rel="stylesheet">
 
     <style>
-        /* ─── CSS Variables ──────────────────────────────────── */
+        
         :root {
             --teal:        #2ab5a0;
             --teal-dark:   #35a99c;
@@ -98,8 +106,8 @@ unset($slide);
             --gray-600:    #475569;
             --gray-800:    #1e293b;
             --font-display: 'Playfair Display', Georgia, serif;
-            --font-body:    'DM Sans', sans-serif;
-            --font-mono:    'Space Mono', monospace;
+            --font-body:    'DM Sans', system-ui, sans-serif;
+            --font-mono:    'Space Mono', 'Courier New', monospace;
             --radius-sm:   8px;
             --radius-md:   16px;
             --radius-lg:   24px;
@@ -109,7 +117,7 @@ unset($slide);
             --transition:  all .35s cubic-bezier(.4,0,.2,1);
         }
 
-        /* ─── Reset & Base ───────────────────────────────────── */
+        
         *, *::before, *::after { box-sizing: border-box; }
         html {
             scroll-behavior: smooth;
@@ -127,13 +135,23 @@ unset($slide);
             overflow-x: hidden;
             line-height: 1.7;
         }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .lazy-section {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease, transform 0.6s ease;
+        }
+        .lazy-section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
 
-        /* ─── Scrollbar ──────────────────────────────────────── */
+        
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: var(--navy); }
         ::-webkit-scrollbar-thumb { background: var(--teal); border-radius: 99px; }
 
-        /* ─── Campus Banner ──────────────────────────────────── */
+        
         .campus-banner {
             background: var(--navy);
             color: rgba(255,255,255,.7);
@@ -223,7 +241,7 @@ unset($slide);
             }
         }
 
-        /* ─── NAVBAR FIX ─── */
+        
         .navbar-main {
             background: rgba(10, 30, 55, 0.98) !important;
             backdrop-filter: blur(20px);
@@ -237,7 +255,7 @@ unset($slide);
             transition: all 0.3s ease;
         }
 
-        /* Logo fix */
+        
         .brand-logo {
             width: 58px !important;
             height: 58px !important;
@@ -254,7 +272,7 @@ unset($slide);
             filter: drop-shadow(0 2px 8px rgba(78,194,181,.3));
         }
 
-        /* Brand name fix */
+        
         .navbar-brand {
             display: flex;
             align-items: center;
@@ -276,7 +294,7 @@ unset($slide);
             margin-top: 2px;
         }
 
-        /* Nav links fix */
+        
         .nav-link-main {
             color: #ffffff !important;
             font-size: .88rem !important;
@@ -298,7 +316,7 @@ unset($slide);
             background: rgba(78,194,181,.1) !important;
         }
 
-        /* Search button fix */
+        
         .nav-search-btn {
             background: rgba(78,194,181,.15) !important;
             border: 1px solid rgba(78,194,181,.3) !important;
@@ -317,7 +335,7 @@ unset($slide);
             color: #0f2d48 !important;
         }
 
-        /* Student Portal button fix */
+        
         .btn-portal-fancy {
             background: linear-gradient(135deg, #2ab5a0, #35a99c) !important;
             color: #0f2d48 !important;
@@ -351,7 +369,7 @@ unset($slide);
             50% { transform: scale(1.2); opacity: 0.8; box-shadow: 0 0 0 10px rgba(240,180,41,0); }
         }
 
-        /* Dropdown fix */
+        
         .nav-dropdown-wrap {
             position: relative;
         }
@@ -412,7 +430,7 @@ unset($slide);
             text-decoration: none;
         }
 
-        /* Divider between logo and links */
+        
         .navbar-divider {
             width: 1px;
             height: 36px;
@@ -420,7 +438,7 @@ unset($slide);
             margin: 0 16px;
         }
 
-        /* Search Overlay CSS */
+        
         .search-overlay {
             position: fixed;
             inset: 0;
@@ -549,7 +567,7 @@ unset($slide);
             background: rgba(78,194,181,.06);
         }
 
-        /* ─── Section Base ───────────────────────────────────── */
+        
         section { padding: 90px 0; }
         .section-alt { background: var(--gray-50); }
 
@@ -583,7 +601,7 @@ unset($slide);
             margin-top: 12px;
         }
 
-        /* ─── Programs Section ───────────────────────────────── */
+        
         .program-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
@@ -632,6 +650,15 @@ unset($slide);
             margin-bottom: 10px;
         }
         .program-desc { color: var(--gray-600); font-size: .88rem; line-height: 1.7; margin-bottom: 20px; }
+        .programs-compact .program-desc,
+        .programs-compact .program-meta,
+        .programs-compact .program-subhead-meta,
+        .programs-compact .section-subtitle {
+            display: none;
+        }
+        .programs-compact .program-card {
+            padding: 28px 24px;
+        }
         .program-meta {
             display: flex;
             flex-wrap: wrap;
@@ -847,7 +874,7 @@ unset($slide);
         }
         .navttc-enroll:hover { gap: 12px; color: var(--white); }
 
-        /* ─── Features / Why QAC ─────────────────────────────── */
+        
         .why-section { background: var(--navy); position: relative; overflow: hidden; }
         .why-section::before {
             content: '';
@@ -893,7 +920,7 @@ unset($slide);
         .feature-title { font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; color: var(--white); margin-bottom: 8px; }
         .feature-desc { color: rgba(255,255,255,.55); font-size: .85rem; line-height: 1.7; margin: 0; }
 
-        /* ─── Stats Banner ───────────────────────────────────── */
+        
         .stats-banner {
             background: linear-gradient(135deg, var(--teal), var(--teal-dark) 60%, #1a8a7e);
             padding: 70px 0;
@@ -922,7 +949,7 @@ unset($slide);
             display: block;
         }
 
-        /* ─── Admissions CTA ─────────────────────────────────── */
+        
         .admissions-cta {
             background: var(--navy);
             position: relative;
@@ -992,7 +1019,7 @@ unset($slide);
             margin-bottom: 20px;
         }
 
-        /* ─── News/Updates ───────────────────────────────────── */
+        
         .news-card {
             background: var(--white);
             border: 1px solid rgba(15,45,72,.08);
@@ -1081,8 +1108,43 @@ unset($slide);
             transition: var(--transition);
         }
         .news-link:hover { gap: 9px; color: var(--navy); }
+        .content-hidden { display: none; }
+        .load-more-wrap {
+            margin-top: 28px;
+            text-align: center;
+        }
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 18px;
+        }
+        .gallery-item {
+            position: relative;
+            overflow: hidden;
+            border-radius: var(--radius-md);
+            aspect-ratio: 4/3;
+            border: 1px solid rgba(15,45,72,.08);
+            box-shadow: var(--shadow-sm);
+            background: var(--gray-100);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            transition: transform .6s ease;
+        }
+        .gallery-item:hover img {
+            transform: scale(1.06);
+        }
+        @media (max-width: 991px) {
+            .gallery-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 575px) {
+            .gallery-grid { grid-template-columns: 1fr; }
+        }
 
-        /* ─── Campus Section ─────────────────────────────────── */
+        
         .campus-card {
             border-radius: var(--radius-lg);
             overflow: hidden;
@@ -1163,8 +1225,17 @@ unset($slide);
             transition: var(--transition);
         }
         .campus-card:hover .campus-arrow { background: var(--teal); color: var(--navy); }
+        .campus-tab-panel { display: none; }
+        .campus-tab-panel.active { display: block; }
+        .campus-tabs {
+            display: inline-flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
 
-        /* ─── Footer ─────────────────────────────────────────── */
+        
         .footer {
             background: var(--gray-800);
             color: rgba(255,255,255,.6);
@@ -1232,7 +1303,7 @@ unset($slide);
         }
         .social-link:hover { background: var(--teal); color: var(--navy); transform: translateY(-3px); }
 
-        /* ─── Announcement Ticker ────────────────────────────── */
+        
         .ticker-wrap {
             background: linear-gradient(90deg, var(--teal-dark), #1a8a7e);
             padding: 10px 0;
@@ -1272,13 +1343,13 @@ unset($slide);
         .ticker-item i { opacity: .7; }
         @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
 
-        /* ─── Navbar toggler fix ─────────────────────────────── */
+        
         .navbar-toggler { border-color: rgba(78,194,181,.4); }
         .navbar-toggler-icon {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(78,194,181,0.8)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
         }
 
-        /* ─── Utility ────────────────────────────────────────── */
+        
         #campusHero {
           padding: 0;
           background: #0a1628;
@@ -1388,10 +1459,14 @@ unset($slide);
                 .qs-slide-bg {
                     position: absolute;
                     inset: 0;
+                    width: 100%;
+                    height: 100%;
                     z-index: 0;
                     background-image: none;
                     background-size: cover;
                     background-position: center;
+                    object-fit: cover;
+                    display: block;
                     opacity: 0;
                     transform: scale(1.02);
                     transition: opacity 0.7s ease, transform 7s ease;
@@ -1604,7 +1679,7 @@ unset($slide);
             .admissions-card { padding: 30px 24px; }
         }
 
-        /* Professional navbar fit */
+        
         .navbar-main > .container > .d-flex {
             flex-wrap: nowrap;
             min-width: 0;
@@ -1650,6 +1725,9 @@ unset($slide);
     </style>
 </head>
 <body class="modern-ui">
+<div id="page-loader" style="position:fixed;inset:0;background:#0f2d48;display:flex;align-items:center;justify-content:center;z-index:9999;">
+    <div style="width:40px;height:40px;border:3px solid rgba(78,194,181,.3);border-top-color:#4ec2b5;border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+</div>
 
 <!-- ─── Campus Top Banner ──────────────────────────────────────── -->
 <div class="campus-banner">
@@ -1719,8 +1797,8 @@ unset($slide);
       </div>
 
       <?php foreach ($hero_slides as $i => $slide): ?>
-            <div class="qs-slide<?= $i === 0 ? ' active' : '' ?>" data-bg="<?= htmlspecialchars($slide['image']) ?>">
-                <div class="qs-slide-bg"></div>
+            <div class="qs-slide<?= $i === 0 ? ' active' : '' ?>">
+                <img class="qs-slide-bg" src="<?= htmlspecialchars($slide['image']) ?>" alt="" width="1200" height="800" loading="lazy">
         <div class="qs-content">
           <div class="qs-left">
             <div class="qs-campus-tag">
@@ -1809,19 +1887,12 @@ unset($slide);
                     <span class="stat-label">Board Pass Rate</span>
                 </div>
             </div>
-            <div class="col-auto d-none d-md-block"><div class="stat-divider" style="height:70px;"></div></div>
-            <div class="col text-center" data-aos="zoom-in" data-aos-delay="400">
-                <div class="stat-box">
-                    <span class="stat-number"><?= $years_active_display ?></span>
-                    <span class="stat-label">Years Since <?= $established_year ?></span>
-                </div>
-            </div>
         </div>
     </div>
 </div>
 
 <!-- ─── WHY QAC ───────────────────────────────────────────────── -->
-<section class="why-section" id="why-qac">
+<section class="why-section lazy-section" id="why-qac">
     <div class="container">
         <div class="row g-5 align-items-center">
             <div class="col-lg-5" data-aos="fade-right">
@@ -1869,7 +1940,7 @@ unset($slide);
 </section>
 
 <!-- ─── PROGRAMS (tabbed) ─────────────────────────────────────── -->
-<section id="programs" class="section-alt">
+<section id="programs" class="section-alt lazy-section programs-compact">
     <div class="container">
         <div class="row align-items-end mb-4">
             <div class="col-lg-8" data-aos="fade-right">
@@ -1968,7 +2039,7 @@ unset($slide);
 </section>
 
 <!-- ─── NAVTTC SHORT COURSES ──────────────────────────────────────── -->
-<section id="navttc-courses" class="navttc-section">
+<section id="navttc-courses" class="navttc-section lazy-section">
     <div class="navttc-grid-bg"></div>
     <div style="position:absolute;top:-10%;right:-5%;width:50vw;height:50vw;background:radial-gradient(ellipse at center,rgba(78,194,181,.08) 0%,transparent 65%);border-radius:50%;pointer-events:none;"></div>
 
@@ -2070,11 +2141,11 @@ unset($slide);
 </section>
 
 <!-- ─── ABOUT QAC ────────────────────────────────────────────── -->
-<section id="about" style="background:var(--white);padding:90px 0;">
+<section id="about" class="lazy-section" style="background:var(--white);padding:90px 0;">
 
     <!-- ── CSS for this section only ── -->
     <style>
-        /* Timeline */
+        
         .timeline { position: relative; padding-left: 0; }
         .timeline::before {
             content: '';
@@ -2139,7 +2210,7 @@ unset($slide);
             margin: 0;
         }
 
-        /* Leadership Cards */
+        
         .leader-card {
             background: var(--white);
             border: 1px solid var(--gray-200);
@@ -2213,6 +2284,12 @@ unset($slide);
             font-size: .87rem;
             line-height: 1.8;
         }
+        .faculty-panel {
+            display: none;
+        }
+        .faculty-panel.visible {
+            display: flex;
+        }
     </style>
 
     <div class="container">
@@ -2281,9 +2358,10 @@ unset($slide);
                         <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--teal-dark);letter-spacing:.1em;text-transform:uppercase;">The Team Behind Our Success</div>
                     </div>
                 </div>
+                <button type="button" class="program-tab-btn mb-4" id="facultyToggle" aria-expanded="false" aria-controls="facultyPanel">Show Leadership</button>
 
                 <!-- Leadership Cards -->
-                <div class="row g-4">
+                <div class="row g-4 faculty-panel" id="facultyPanel">
                     <?php
                     $leaders = [
                         [
@@ -2305,7 +2383,7 @@ unset($slide);
                     <div class="col-md-6" data-aos="fade-up" data-aos-delay="<?= $i * 120 ?>">
                         <div class="leader-card">
                             <?php if (file_exists($leader['image'])): ?>
-                                <img src="<?= str_replace([' ', '(', ')'], ['%20', '%28', '%29'], $leader['image']) ?>" alt="<?= htmlspecialchars($leader['name']) ?>" class="leader-avatar">
+                                <img src="<?= str_replace([' ', '(', ')'], ['%20', '%28', '%29'], $leader['image']) ?>" alt="<?= htmlspecialchars($leader['name']) ?>" class="leader-avatar" loading="lazy" width="130" height="130">
                             <?php else: ?>
                                 <div class="leader-avatar-fallback"><?= $leader['initial'] ?></div>
                             <?php endif; ?>
@@ -2344,7 +2422,7 @@ unset($slide);
 </section>
 
 <!-- ─── ADMISSIONS CTA ────────────────────────────────────────── -->
-<section class="admissions-cta" id="admissions">
+<section class="admissions-cta lazy-section" id="admissions">
     <div class="container">
         <div class="admissions-card" data-aos="fade-up">
             <div class="row align-items-center g-4">
@@ -2389,7 +2467,7 @@ unset($slide);
 </section>
 
 <!-- ─── CAMPUSES ──────────────────────────────────────────────── -->
-<section id="campuses" class="section-alt">
+<section id="campuses" class="section-alt lazy-section">
     <div class="container">
         <div class="text-center mb-5" data-aos="fade-up">
             <span class="section-badge">Our Locations</span>
@@ -2397,9 +2475,17 @@ unset($slide);
             <div class="divider-teal mx-auto"></div>
         </div>
 
-        <div class="row g-4">
+        <div class="text-center">
+            <div class="campus-tabs" role="tablist" aria-label="Campus details">
+                <button type="button" class="program-tab-btn active" data-campus-tab="rajanpur" role="tab" aria-selected="true">Misbah Campus</button>
+                <button type="button" class="program-tab-btn" data-campus-tab="fazilpur" role="tab" aria-selected="false">Hamid Campus</button>
+                <button type="button" class="program-tab-btn" data-campus-tab="kotmithan" role="tab" aria-selected="false">Abul Rehman Campus</button>
+            </div>
+        </div>
+
+        <div class="row g-4 justify-content-center">
             <!-- Rajanpur Campus -->
-            <div class="col-lg-5" data-aos="fade-right">
+            <div class="col-lg-5 campus-tab-panel active" data-campus-panel="rajanpur" data-aos="fade-right">
                 <a href="campus-rajanpur.php" class="campus-card campus-card-rajanpur d-block">
                     <div class="campus-card-bg">
                         <!-- Replace with: background-image: url(assets/images/rajanpur-campus.jpg); background-size: cover; -->
@@ -2426,7 +2512,7 @@ unset($slide);
             </div>
 
             <!-- Fazilpur Campus -->
-            <div class="col-lg-4" data-aos="fade-up">
+            <div class="col-lg-5 campus-tab-panel" data-campus-panel="fazilpur" data-aos="fade-up">
                 <a href="campus-fazilpur.php" class="campus-card campus-card-fazilpur d-block">
                     <div class="campus-card-bg">
                         <!-- Replace with: background-image: url(assets/images/fazilpur-campus.jpg); background-size: cover; -->
@@ -2453,7 +2539,7 @@ unset($slide);
             </div>
 
             <!-- Kot Mithan Campus -->
-            <div class="col-lg-3" data-aos="fade-left">
+            <div class="col-lg-5 campus-tab-panel" data-campus-panel="kotmithan" data-aos="fade-left">
                 <a href="campus-kotmithan.php" class="campus-card campus-card-kotmithan d-block">
                     <div class="campus-card-bg">
                         <!-- Replace with: background-image: url(assets/images/kotmithan-campus.jpg); background-size: cover; -->
@@ -2483,7 +2569,7 @@ unset($slide);
 </section>
 
 <!-- ─── NEWS & UPDATES ────────────────────────────────────────── -->
-<section id="news">
+<section id="news" class="lazy-section">
     <div class="container">
         <div class="row align-items-end mb-5">
             <div class="col-lg-7" data-aos="fade-right">
@@ -2506,12 +2592,15 @@ unset($slide);
                 ['date'=>'28 Apr 2026','title'=>'QAC Rajanpur Achieves 97% Pass Rate in BISE DG Khan Annual Exams','excerpt'=>'We are proud to announce that our students have achieved outstanding results in the annual board examinations...','icon'=>'fa-newspaper','slug'=>'board-results-2025'],
                 ['date'=>'20 Apr 2026','title'=>'Annual Science Exhibition 2026 – Winners Announced','excerpt'=>'Students from both campuses showcased innovative projects at the Annual Science Exhibition held at Rajanpur Campus...','icon'=>'fa-flask','slug'=>'science-exhibition-2026'],
                 ['date'=>'15 Apr 2026','title'=>'Admissions 2026-28 Open – Apply Before 30 June','excerpt'=>'Applications for the new academic session 2026-2028 are now open for all programs. Online and walk-in registration available...','icon'=>'fa-graduation-cap','slug'=>'admissions-2026'],
+                ['date'=>'10 Apr 2026','title'=>'NAVTTC Short Courses Orientation Held Across Campuses','excerpt'=>'Students attended orientation sessions for practical skill programs, certification routes and employment-focused training...','icon'=>'fa-certificate','slug'=>'navttc-orientation'],
+                ['date'=>'04 Apr 2026','title'=>'Parent Teacher Meeting Schedule Released','excerpt'=>'Campus offices have announced the spring parent teacher meeting schedule for academic progress review and mentoring...','icon'=>'fa-users','slug'=>'ptm-schedule'],
+                ['date'=>'29 Mar 2026','title'=>'College Sports Week Concludes with Prize Distribution','excerpt'=>'Students participated in cricket, athletics and indoor competitions during an energetic inter-campus sports week...','icon'=>'fa-medal','slug'=>'sports-week'],
             ];
             foreach ($news as $i => $item): ?>
-            <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="<?= $i * 100 ?>">
+            <div class="col-lg-4 col-md-6 <?= $i >= 3 ? 'content-hidden' : '' ?>" data-load-more-item="news" data-aos="fade-up" data-aos-delay="<?= ($i % 3) * 100 ?>">
                 <div class="news-card">
                     <div class="news-card-img">
-                        <img src="assets/images/image<?= $i + 1 ?>.png" alt="<?= htmlspecialchars($item['title']) ?>" loading="lazy">
+                        <img src="assets/images/image<?= ($i % 3) + 1 ?>.png" alt="<?= htmlspecialchars($item['title']) ?>" loading="lazy" width="640" height="360">
                     </div>
                     <div class="news-card-body">
                         <div class="news-date"><i class="fas fa-calendar me-1"></i><?= $item['date'] ?></div>
@@ -2524,6 +2613,48 @@ unset($slide);
                 </div>
             </div>
             <?php endforeach; ?>
+        </div>
+        <div class="load-more-wrap">
+            <button type="button" class="program-tab-btn" data-load-more-button="news">Load More News</button>
+        </div>
+    </div>
+</section>
+
+<section id="gallery" class="section-alt lazy-section">
+    <div class="container">
+        <div class="row align-items-end mb-5">
+            <div class="col-lg-8" data-aos="fade-right">
+                <span class="section-badge">Campus Gallery</span>
+                <h2 class="section-title">Life at <span class="teal">Quaid-e-Azam</span></h2>
+                <div class="divider-teal"></div>
+            </div>
+            <div class="col-lg-4 text-lg-end" data-aos="fade-left">
+                <a href="#gallery" class="btn btn-outline-secondary px-4 py-2 rounded-pill" style="font-size:.85rem;border-color:var(--gray-200);">
+                    Full Gallery <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+
+        <div class="gallery-grid">
+            <?php
+            $gallery_images = [
+                ['src'=>'assets/images/image1.png','alt'=>'Students at Quaid-e-Azam campus'],
+                ['src'=>'assets/images/image2.png','alt'=>'Academic activities at Quaid-e-Azam campus'],
+                ['src'=>'assets/images/image3.png','alt'=>'Campus event at Quaid-e-Azam Group of Colleges'],
+                ['src'=>'assets/images/campus-hero.png','alt'=>'Quaid-e-Azam campus building'],
+                ['src'=>'assets/images/campus-hero1.jpg','alt'=>'Quaid-e-Azam campus exterior'],
+                ['src'=>'assets/images/banner.jpg','alt'=>'Quaid-e-Azam college banner'],
+                ['src'=>'assets/images/pic.jpg','alt'=>'Quaid-e-Azam college students'],
+                ['src'=>'assets/images/clg add.jpg','alt'=>'Quaid-e-Azam college admission campaign'],
+            ];
+            foreach ($gallery_images as $i => $image): ?>
+            <a class="gallery-item <?= $i >= 6 ? 'content-hidden' : '' ?>" href="<?= htmlspecialchars($image['src']) ?>" data-load-more-item="gallery" data-aos="fade-up" data-aos-delay="<?= ($i % 3) * 80 ?>">
+                <img src="<?= htmlspecialchars(str_replace(' ', '%20', $image['src'])) ?>" alt="<?= htmlspecialchars($image['alt']) ?>" loading="lazy" width="480" height="360">
+            </a>
+            <?php endforeach; ?>
+        </div>
+        <div class="load-more-wrap">
+            <button type="button" class="program-tab-btn" data-load-more-button="gallery">Load More Gallery</button>
         </div>
     </div>
 </section>
@@ -2675,16 +2806,19 @@ document.addEventListener('keydown', function(e){
 </script>
 
 <!-- AOS Animation -->
-<script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
     // Init AOS
-    AOS.init({ once: true, offset: 60, duration: 700, easing: 'ease-out-cubic' });
+    if (window.AOS) {
+        AOS.init({ once: true, offset: 60, duration: 700, easing: 'ease-out-cubic' });
+    }
 
     // Navbar scroll effect
     const nav = document.getElementById('mainNav');
     window.addEventListener('scroll', () => {
-        nav.classList.toggle('scrolled', window.scrollY > 60);
+        if (nav) nav.classList.toggle('scrolled', window.scrollY > 60);
     });
 
     // Program section tabs
@@ -2703,6 +2837,57 @@ document.addEventListener('keydown', function(e){
         });
     });
 
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.1 }
+    );
+
+    document.querySelectorAll('.lazy-section')
+      .forEach(el => observer.observe(el));
+
+    document.querySelectorAll('[data-campus-tab]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const campus = btn.dataset.campusTab;
+            document.querySelectorAll('[data-campus-tab]').forEach(tab => {
+                tab.classList.remove('active');
+                tab.setAttribute('aria-selected', 'false');
+            });
+            document.querySelectorAll('[data-campus-panel]').forEach(panel => {
+                panel.classList.toggle('active', panel.dataset.campusPanel === campus);
+            });
+            btn.classList.add('active');
+            btn.setAttribute('aria-selected', 'true');
+        });
+    });
+
+    const facultyToggle = document.getElementById('facultyToggle');
+    const facultyPanel = document.getElementById('facultyPanel');
+    if (facultyToggle && facultyPanel) {
+        facultyToggle.addEventListener('click', () => {
+            const show = !facultyPanel.classList.contains('visible');
+            facultyPanel.classList.toggle('visible', show);
+            facultyToggle.setAttribute('aria-expanded', show ? 'true' : 'false');
+            facultyToggle.textContent = show ? 'Hide Leadership' : 'Show Leadership';
+        });
+    }
+
+    document.querySelectorAll('[data-load-more-button]').forEach(button => {
+        button.addEventListener('click', () => {
+            const group = button.dataset.loadMoreButton;
+            document.querySelectorAll(`[data-load-more-item="${group}"].content-hidden`).forEach(item => {
+                item.classList.remove('content-hidden');
+            });
+            button.style.display = 'none';
+        });
+    });
+});
 </script>
 
 <!-- Removed Live Server websocket injection (was causing WebSocket errors when using PHP server) -->
@@ -2729,34 +2914,11 @@ document.addEventListener('keydown', function(e){
     <i class="fas fa-arrow-up"></i>
 </button>
 
-<!-- Page Loader -->
-<div id="pageLoader" style="
-    position:fixed;
-    inset:0;
-    background:var(--navy);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    z-index:9999;
-    transition:opacity .5s ease;
-">
-    <div style="text-align:center;">
-        <img src="assets/images/qgc-logo.png" 
-             style="width:80px;height:80px;object-fit:contain;animation:pulse 1s infinite;" alt="Loading Logo">
-        <div style="color:var(--teal);font-family:var(--font-mono);font-size:.8rem;margin-top:12px;letter-spacing:.1em;">
-            LOADING...
-        </div>
-    </div>
-</div>
-
 <script>
 // Show/hide back to top button & Page Loader
-window.addEventListener('load', function(){
-    const loader = document.getElementById('pageLoader');
-    if(loader) {
-        loader.style.opacity = '0';
-        setTimeout(() => loader.style.display = 'none', 500);
-    }
+document.addEventListener('DOMContentLoaded', function() {
+    const loader = document.getElementById('page-loader');
+    if (loader) loader.style.display = 'none';
 });
 
 window.addEventListener('scroll', function(){
