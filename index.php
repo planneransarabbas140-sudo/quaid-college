@@ -99,7 +99,7 @@ unset($slide);
 
     <!-- AOS Animation -->
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" media="print" onload="this.media='all'">
-    <link href="assets/css/public-site.css?v=4" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=5" rel="stylesheet">
 
     <style>
         

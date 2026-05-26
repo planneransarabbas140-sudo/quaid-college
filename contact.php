@@ -13,7 +13,7 @@ $public_nav_active = 'contact';
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/public-site.css?v=4" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=5" rel="stylesheet">
     <style>
         * { box-sizing:border-box; }
         body { margin:0; font-family:Poppins,sans-serif; color:var(--navy); background:#fff; }
@@ -48,9 +48,10 @@ $public_nav_active = 'contact';
         .map-card { min-height:420px; display:grid; place-items:center; text-align:center; color:#fff; background:linear-gradient(135deg,var(--navy),#0c3547); overflow:hidden; position:relative; }
         .map-card::before { content:""; position:absolute; inset:0; background-image:linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size:46px 46px; opacity:.55; }
         .map-card > div { position:relative; z-index:2; }
-        .map-card i { font-size:3.2rem; color:var(--teal); margin-bottom:18px; }
+        .map-card > div > i { font-size:3.2rem; color:var(--teal); margin-bottom:18px; }
         .socials { display:flex; gap:10px; flex-wrap:wrap; }
         .socials a { width:42px; height:42px; border-radius:50%; display:grid; place-items:center; background:rgba(42,181,160,.12); color:var(--teal); transition:300ms ease; }
+        .socials a i { font-size:1rem; margin:0; color:inherit; }
         .socials a:hover { background:var(--teal); color:#fff; transform:translateY(-3px); }
         .cta { background:linear-gradient(135deg,var(--navy),#0c3547); color:#fff; padding:64px 0; }
         .cta h2 { font-weight:900; margin:0 0 10px; }

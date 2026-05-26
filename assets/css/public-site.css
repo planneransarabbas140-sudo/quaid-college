@@ -199,6 +199,13 @@ img.responsive, .responsive-img {
     box-shadow: none;
 }
 
+.btn-teal {
+    background: var(--teal);
+    color: var(--white);
+    border-color: var(--teal);
+    box-shadow: 0 14px 30px rgba(42, 181, 160, 0.24);
+}
+
 .portal-btn i {
     color: var(--teal);
     font-size: 0.95rem;
@@ -230,6 +237,12 @@ img.responsive, .responsive-img {
     background: rgba(42, 181, 160, 0.16);
     border-color: rgba(42, 181, 160, 0.44);
     box-shadow: 0 12px 26px rgba(0, 0, 0, 0.16);
+}
+
+.btn-teal:hover {
+    background: #33c8b1;
+    border-color: #33c8b1;
+    box-shadow: 0 16px 34px rgba(42, 181, 160, 0.34);
 }
 
 .btn-outline-lightish {
