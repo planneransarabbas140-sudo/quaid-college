@@ -35,9 +35,15 @@ $hero_slides = [
         'tagline'  => 'Quality education brought closer to home — for every ambitious student who dares to dream bigger.',
     ],
 ];
+$hero_image_map = [
+    'rajanpur'  => 'assets/images/hero-slide-rajanpur.jpg',
+    'fazilpur'  => 'assets/images/hero-slide-fazilpur.jpg',
+    'kotmithan' => 'assets/images/hero-slide-kotmithan.jpg',
+];
 foreach ($hero_slides as &$slide) {
     $cs = $campus_stats[$slide['key']];
     $slide['image'] = $cs['image'];
+    $slide['hero_image'] = $hero_image_map[$slide['key']] ?? $cs['image'];
     $slide['url']   = $cs['url'];
     $slide['students'] = $cs['students'];
     $slide['faculty']  = $cs['faculty'];
@@ -64,6 +70,9 @@ unset($slide);
     <link rel="icon" type="image/png" href="assets/images/qgc-logo-nav.png">
     <link rel="apple-touch-icon" href="assets/images/qgc-logo-nav.png">
     <link rel="preload" href="assets/images/qgc-logo-nav.png" as="image" fetchpriority="high">
+    <?php foreach ($hero_slides as $i => $slide): ?>
+    <link rel="preload" href="<?= htmlspecialchars($slide['hero_image']) ?>" as="image"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
+    <?php endforeach; ?>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2006,7 +2015,7 @@ unset($slide);
 
       <?php foreach ($hero_slides as $i => $slide): ?>
             <div class="qs-slide<?= $i === 0 ? ' active' : '' ?>">
-                <img class="qs-slide-bg" src="<?= htmlspecialchars($slide['image']) ?>" alt="" width="1200" height="800" loading="lazy">
+                <img class="qs-slide-bg" src="<?= htmlspecialchars($slide['hero_image']) ?>" alt="" width="1200" height="800" loading="eager" decoding="async"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
         <div class="qs-content">
           <div class="qs-left">
             <div class="qs-campus-tag">
