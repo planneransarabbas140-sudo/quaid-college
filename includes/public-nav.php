@@ -27,7 +27,7 @@ if (!function_exists('qgc_campus_nav_current')) {
 <nav class="navbar navbar-expand-lg navbar-campus">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-3" href="index.php">
-            <span class="brand-mark"><img src="assets/images/qgc-logo.png" alt="Quaid-e-Azam Group of Colleges logo" loading="eager" fetchpriority="high" decoding="sync" width="48" height="48"></span>
+            <span class="brand-mark"><img src="assets/images/qgc-logo-nav.png" alt="Quaid-e-Azam Group of Colleges logo" loading="eager" fetchpriority="high" decoding="sync" width="48" height="48"></span>
             <span>
                 <span class="brand-title">Quaid-e-Azam</span>
                 <span class="brand-subtitle"><?= htmlspecialchars($public_brand_subtitle) ?></span>
