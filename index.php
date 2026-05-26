@@ -63,6 +63,7 @@ unset($slide);
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="assets/images/qgc-logo.png">
     <link rel="apple-touch-icon" href="assets/images/qgc-logo.png">
+    <link rel="preload" href="assets/images/qgc-logo.png" as="image" fetchpriority="high">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
