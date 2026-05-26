@@ -1722,6 +1722,213 @@ unset($slide);
             .nav-link-main.active { box-shadow: none; }
             .btn-portal-fancy { width: auto; }
         }
+        @media (max-width: 991px) {
+            .hero,
+            #campusHero,
+            .qgc-hero {
+                min-height: 100vh;
+                position: relative;
+            }
+            .hero::before,
+            #campusHero::before,
+            .qgc-hero::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: rgba(15,45,72,0.75);
+                z-index: 1;
+                pointer-events: none;
+            }
+            .qs-hero-wrap {
+                min-height: 100vh;
+                height: auto;
+                max-height: none;
+                align-items: stretch;
+            }
+            .hero-content,
+            .qs-content {
+                position: relative;
+                z-index: 3;
+                text-align: center;
+                padding: 100px 16px 92px;
+                max-width: 100%;
+                min-height: 100vh;
+                justify-content: center;
+            }
+            .qs-left {
+                width: 100%;
+                align-items: center;
+            }
+            .qs-slide {
+                align-items: stretch;
+            }
+            .qs-slide::before {
+                background: rgba(15,45,72,0.75);
+            }
+            .hero-visual,
+            .hero-image-frame {
+                display: none !important;
+            }
+            .col-lg-6 {
+                width: 100% !important;
+            }
+            .navbar-collapse {
+                background: #0f2d48;
+                padding: 16px;
+                border-radius: 12px;
+                margin-top: 8px;
+                border: 1px solid rgba(78,194,181,.15);
+            }
+            .nav-link,
+            .nav-link-campus {
+                padding: 10px 0 !important;
+                border-bottom: 1px solid rgba(255,255,255,.05);
+            }
+            .portal-menu,
+            .campus-dropdown-menu {
+                position: static !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                transform: none !important;
+                box-shadow: none !important;
+                border: 1px solid rgba(78,194,181,.15);
+                margin-top: 8px;
+            }
+        }
+        @media (max-width: 768px) {
+            body {
+                overflow-x: hidden;
+            }
+            .container {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+            section {
+                padding: 60px 0 !important;
+            }
+            .card {
+                margin-bottom: 16px;
+            }
+            .campus-tags,
+            .hero-campuses,
+            .qs-tab-switcher {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 6px;
+                justify-content: center;
+                padding: 0 16px;
+                margin-top: 16px;
+            }
+            .qs-tab-switcher {
+                left: 50%;
+                right: auto;
+                bottom: 20px;
+                transform: translateX(-50%);
+                width: 100%;
+                max-width: 360px;
+                z-index: 11;
+            }
+            .campus-tag,
+            .qs-campus-tag,
+            .qs-tab {
+                font-size: .7rem;
+                padding: 5px 12px;
+                border-radius: 99px;
+                background: rgba(78,194,181,.15);
+                border: 1px solid rgba(78,194,181,.3);
+                color: #fff;
+                white-space: nowrap;
+            }
+            .qs-campus-tag {
+                width: auto;
+                margin: 0 auto;
+            }
+            .qs-campus-tag span {
+                color: #fff;
+                font-size: .7rem;
+                letter-spacing: .08em;
+            }
+            .hero-stats,
+            .qs-stats-row {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+                border: none;
+                background: transparent;
+                margin-top: 24px;
+            }
+            .qs-stat-div {
+                display: none;
+            }
+            .hero-stat,
+            .qs-stat {
+                background: rgba(255,255,255,.08);
+                border: 1px solid rgba(78,194,181,.2);
+                border-radius: 12px;
+                padding: 12px 16px;
+                min-width: 80px;
+                text-align: center;
+                flex: 0 0 auto;
+            }
+            .hero-stat-num,
+            .qs-stat-num {
+                font-size: 1.3rem;
+                font-weight: 700;
+                color: #4ec2b5;
+                display: block;
+            }
+            .hero-stat-label,
+            .qs-stat-label {
+                font-size: .65rem;
+                color: rgba(255,255,255,.5);
+                text-transform: uppercase;
+                letter-spacing: .05em;
+            }
+        }
+        @media (max-width: 576px) {
+            .hero-cta-group,
+            .qs-cta-row {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+                align-items: center;
+                margin-top: 24px;
+            }
+            .btn-hero-primary,
+            .btn-hero-secondary,
+            .qs-btn-primary,
+            .qs-btn-ghost {
+                width: 100%;
+                max-width: 280px;
+                text-align: center;
+                justify-content: center;
+                padding: 14px 24px;
+                font-size: .95rem;
+            }
+            .hero-headline,
+            .qs-headline {
+                font-size: 2rem !important;
+                line-height: 1.2;
+                margin-bottom: 12px;
+            }
+            .hero-tagline,
+            .qs-tagline {
+                font-size: .85rem;
+            }
+            .hero-desc {
+                font-size: .82rem;
+                line-height: 1.6;
+            }
+            .qs-content {
+                padding: 96px 16px 108px;
+            }
+            .qs-slide-indicator,
+            .qs-nav-arrows {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body class="modern-ui">
