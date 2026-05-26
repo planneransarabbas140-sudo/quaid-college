@@ -40,10 +40,16 @@ $hero_image_map = [
     'fazilpur'  => 'assets/images/hero-slide-fazilpur.jpg',
     'kotmithan' => 'assets/images/hero-slide-kotmithan.jpg',
 ];
+$hero_mobile_image_map = [
+    'rajanpur'  => 'assets/images/hero-slide-rajanpur-mobile.jpg',
+    'fazilpur'  => 'assets/images/hero-slide-fazilpur-mobile.jpg',
+    'kotmithan' => 'assets/images/hero-slide-kotmithan-mobile.jpg',
+];
 foreach ($hero_slides as &$slide) {
     $cs = $campus_stats[$slide['key']];
     $slide['image'] = $cs['image'];
     $slide['hero_image'] = $hero_image_map[$slide['key']] ?? $cs['image'];
+    $slide['hero_mobile_image'] = $hero_mobile_image_map[$slide['key']] ?? $slide['hero_image'];
     $slide['url']   = $cs['url'];
     $slide['students'] = $cs['students'];
     $slide['faculty']  = $cs['faculty'];
@@ -70,9 +76,8 @@ unset($slide);
     <link rel="icon" type="image/png" href="assets/images/qgc-logo-nav.png">
     <link rel="apple-touch-icon" href="assets/images/qgc-logo-nav.png">
     <link rel="preload" href="assets/images/qgc-logo-nav.png" as="image" fetchpriority="high">
-    <?php foreach ($hero_slides as $i => $slide): ?>
-    <link rel="preload" href="<?= htmlspecialchars($slide['hero_image']) ?>" as="image"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
-    <?php endforeach; ?>
+    <link rel="preload" href="<?= htmlspecialchars($hero_slides[0]['hero_mobile_image']) ?>" as="image" media="(max-width: 768px)" fetchpriority="high">
+    <link rel="preload" href="<?= htmlspecialchars($hero_slides[0]['hero_image']) ?>" as="image" media="(min-width: 769px)" fetchpriority="high">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2015,7 +2020,7 @@ unset($slide);
 
       <?php foreach ($hero_slides as $i => $slide): ?>
             <div class="qs-slide<?= $i === 0 ? ' active' : '' ?>">
-                <img class="qs-slide-bg" src="<?= htmlspecialchars($slide['hero_image']) ?>" alt="" width="1200" height="800" loading="eager" decoding="async"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
+                <img class="qs-slide-bg" src="<?= htmlspecialchars($slide['hero_image']) ?>" srcset="<?= htmlspecialchars($slide['hero_mobile_image']) ?> 720w, <?= htmlspecialchars($slide['hero_image']) ?> 1200w" sizes="100vw" alt="" width="1200" height="800" loading="eager" decoding="async"<?= $i === 0 ? ' fetchpriority="high"' : '' ?>>
         <div class="qs-content">
           <div class="qs-left">
             <div class="qs-campus-tag">
