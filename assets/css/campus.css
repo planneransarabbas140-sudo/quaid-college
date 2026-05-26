@@ -410,3 +410,150 @@ body.modern-ui.campus-page .leader-card {
     .hero-actions .btn-campus { width: 100%; }
     .admission-cta .cta-actions { justify-content: flex-start !important; margin-top: 24px; }
 }
+
+@media (max-width: 768px) {
+    body.campus-page {
+        overflow-x: hidden;
+    }
+
+    body.campus-page section {
+        padding: 58px 0;
+    }
+
+    .hero-campus {
+        padding: 58px 0 64px;
+        min-height: auto;
+        background-position: center;
+    }
+
+    .hero-layout {
+        max-width: 100%;
+    }
+
+    .hero-title {
+        font-size: clamp(2rem, 10vw, 2.65rem);
+        line-height: 1.08;
+        overflow-wrap: anywhere;
+    }
+
+    .location-pill {
+        align-items: flex-start;
+        white-space: normal;
+        line-height: 1.45;
+    }
+
+    .hero-copy {
+        font-size: .96rem;
+        line-height: 1.7;
+    }
+
+    .hero-stats {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .stat-card {
+        min-height: 82px;
+        padding: 12px 8px;
+        text-align: center;
+    }
+
+    .stat-card strong {
+        font-size: 1rem;
+    }
+
+    .stat-card span {
+        font-size: .68rem;
+    }
+
+    .hero-pills {
+        flex-wrap: wrap;
+        overflow: visible;
+        padding-bottom: 0;
+        gap: 7px;
+    }
+
+    .program-pill {
+        white-space: normal;
+        text-align: center;
+        font-size: .74rem;
+        padding: 7px 11px;
+    }
+
+    .hero-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .hero-actions .btn-campus,
+    .btn-campus {
+        width: 100%;
+        min-height: 48px;
+    }
+
+    .campus-other-links {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .campus-video {
+        min-height: 220px;
+    }
+
+    .video-box,
+    .campus-map {
+        border-radius: 10px;
+    }
+
+    .leader-wrap,
+    .leader-wrap.leader-wrap--cols-3 {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .leader-card,
+    .program-card {
+        padding: 22px 18px;
+        transform: none !important;
+    }
+
+    .leader-photo,
+    .leader-photo img {
+        width: 96px;
+        height: 96px;
+    }
+
+    .filter-tabs {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .filter-btn {
+        width: 100%;
+    }
+
+    .program-card h3 {
+        min-height: 0;
+    }
+
+    .contact-section .row,
+    .admission-cta .row {
+        --bs-gutter-y: 1.25rem;
+    }
+}
+
+@media (max-width: 420px) {
+    .hero-stats {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        min-height: auto;
+    }
+
+    .hero-title {
+        font-size: clamp(1.8rem, 11vw, 2.25rem);
+    }
+}

@@ -9,11 +9,11 @@ $public_nav_active = 'about';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= $page_title ?> | Quaid-e-Azam Group of Colleges</title>
-    <link rel="icon" type="image/png" href="assets/images/qgc-logo.png">
+    <link rel="icon" type="image/png" href="assets/images/qgc-logo-nav.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/public-site.css?v=3" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=4" rel="stylesheet">
     <style>
         * { box-sizing:border-box; }
         body { margin:0; font-family:Poppins,sans-serif; color:var(--navy); background:#fff; }
@@ -51,6 +51,38 @@ $public_nav_active = 'about';
             .leader-img { width:72px; height:72px; }
             .timeline-item { flex-direction:column; gap:8px; }
             .timeline-year { flex:0 0 auto; }
+        }
+        @media (max-width:768px) {
+            .row.g-4,
+            .row.g-5 { --bs-gutter-y: 1rem; }
+            .value-card,
+            .campus-card,
+            .leader-card { min-height:auto; }
+            .lead-text { margin-top:4px; }
+            .leader-card { text-align:left; }
+            .leader-card:first-child { text-align:center; }
+            .timeline-item {
+                padding:16px 0;
+                gap:10px;
+            }
+            .timeline-year {
+                display:inline-flex;
+                width:max-content;
+                padding:5px 10px;
+                border-radius:999px;
+                background:rgba(42,181,160,.12);
+            }
+            .timeline-item h4 {
+                font-size:.96rem;
+                line-height:1.35;
+            }
+            .timeline-item p {
+                font-size:.88rem;
+                line-height:1.65;
+            }
+            .cta .text-lg-end {
+                text-align:left !important;
+            }
         }
     </style>
 </head>

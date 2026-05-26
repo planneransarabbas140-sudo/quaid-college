@@ -27,12 +27,12 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($c['name']) ?> <?= htmlspecialchars($c['city']) ?> | Quaid-e-Azam Group of Colleges</title>
     <meta name="description" content="<?= htmlspecialchars($c['meta_desc'] ?? '') ?>">
-    <link rel="icon" type="image/png" href="assets/images/qgc-logo.png">
+    <link rel="icon" type="image/png" href="assets/images/qgc-logo-nav.png">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
-    <link href="assets/css/public-site.css?v=3" rel="stylesheet">
-    <link href="assets/css/campus.css?v=2" rel="stylesheet">
+    <link href="assets/css/public-site.css?v=4" rel="stylesheet">
+    <link href="assets/css/campus.css?v=3" rel="stylesheet">
 </head>
 <body class="campus-page modern-ui">
     <?php require __DIR__ . '/public-nav.php'; ?>
