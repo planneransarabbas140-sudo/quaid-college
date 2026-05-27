@@ -1,700 +1,473 @@
 <?php
-/**
- * File: modules/pos/index.php
- * Description: Complete Cafeteria & Uniform POS System
- */
-
+// File: modules/pos/index.php
 require_once '../../config/db.php';
 
-// Session Check
 if (!isLoggedIn()) {
     redirect('../../modules/auth/login.php');
 }
 requireRole(['admin', 'owner']);
 
-$database = new Database();
-$db = $database->getConnection();
+$db = (new Database())->getConnection();
+$userId = getUserId();
+$categories = ['Cafeteria', 'Uniform', 'Stationery', 'Books', 'Forms', 'Other'];
 
-$message = '';
-$messageType = '';
+function pos_h($value) {
+    return htmlspecialchars((string)($value ?? ''), ENT_QUOTES, 'UTF-8');
+}
 
-// Handle Backend Logic
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $action = $_POST['action'] ?? '';
-    
+function pos_money($amount): string {
+    return 'PKR ' . number_format((float)$amount, 2);
+}
+
+function pos_positive_number($value): float {
+    return is_numeric($value) ? max(0, (float)$value) : 0.0;
+}
+
+function pos_ensure_schema(PDO $db): void {
+    $db->exec("CREATE TABLE IF NOT EXISTS pos_products (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        product_name VARCHAR(255) DEFAULT NULL,
+        name VARCHAR(255) DEFAULT NULL,
+        category VARCHAR(100) NOT NULL,
+        purchase_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        sale_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        stock_quantity INT NOT NULL DEFAULT 0,
+        stock INT NOT NULL DEFAULT 0,
+        status VARCHAR(20) NOT NULL DEFAULT 'active',
+        is_active TINYINT(1) NOT NULL DEFAULT 1,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+        INDEX idx_pos_products_category (category),
+        INDEX idx_pos_products_status (status)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS pos_sales (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        invoice_no VARCHAR(100) NOT NULL UNIQUE,
+        customer_type VARCHAR(30) NOT NULL DEFAULT 'walk_in',
+        customer_id INT DEFAULT NULL,
+        customer_name VARCHAR(180) DEFAULT NULL,
+        sale_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        discount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        paid_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        balance DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+        created_by INT DEFAULT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_pos_sales_invoice (invoice_no),
+        INDEX idx_pos_sales_date (sale_date)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $db->exec("CREATE TABLE IF NOT EXISTS pos_sale_items (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        sale_id INT NOT NULL,
+        product_id INT NOT NULL,
+        quantity INT NOT NULL,
+        unit_price DECIMAL(10,2) NOT NULL,
+        subtotal DECIMAL(10,2) NOT NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_pos_sale_items_sale (sale_id),
+        INDEX idx_pos_sale_items_product (product_id)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $productColumns = [
+        'product_name' => "ALTER TABLE pos_products ADD COLUMN product_name VARCHAR(255) DEFAULT NULL",
+        'name' => "ALTER TABLE pos_products ADD COLUMN name VARCHAR(255) DEFAULT NULL",
+        'purchase_price' => "ALTER TABLE pos_products ADD COLUMN purchase_price DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'sale_price' => "ALTER TABLE pos_products ADD COLUMN sale_price DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'price' => "ALTER TABLE pos_products ADD COLUMN price DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'stock_quantity' => "ALTER TABLE pos_products ADD COLUMN stock_quantity INT NOT NULL DEFAULT 0",
+        'stock' => "ALTER TABLE pos_products ADD COLUMN stock INT NOT NULL DEFAULT 0",
+        'status' => "ALTER TABLE pos_products ADD COLUMN status VARCHAR(20) NOT NULL DEFAULT 'active'",
+        'is_active' => "ALTER TABLE pos_products ADD COLUMN is_active TINYINT(1) NOT NULL DEFAULT 1",
+        'updated_at' => "ALTER TABLE pos_products ADD COLUMN updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP",
+    ];
+    foreach ($productColumns as $column => $sql) {
+        if (!columnExists($db, 'pos_products', $column)) {
+            $db->exec($sql);
+        }
+    }
+    $db->exec("UPDATE pos_products SET product_name = name WHERE (product_name IS NULL OR product_name = '') AND name IS NOT NULL");
+    $db->exec("UPDATE pos_products SET name = product_name WHERE (name IS NULL OR name = '') AND product_name IS NOT NULL");
+    $db->exec("UPDATE pos_products SET sale_price = price WHERE sale_price = 0 AND price > 0");
+    $db->exec("UPDATE pos_products SET price = sale_price WHERE price = 0 AND sale_price > 0");
+    $db->exec("UPDATE pos_products SET stock_quantity = stock WHERE stock_quantity = 0 AND stock > 0");
+    $db->exec("UPDATE pos_products SET stock = stock_quantity WHERE stock = 0 AND stock_quantity > 0");
+    $db->exec("UPDATE pos_products SET status = CASE WHEN COALESCE(is_active, 1) = 1 THEN 'active' ELSE 'inactive' END WHERE status IS NULL OR status = ''");
+
+    $saleColumns = [
+        'invoice_no' => "ALTER TABLE pos_sales ADD COLUMN invoice_no VARCHAR(100) DEFAULT NULL",
+        'customer_type' => "ALTER TABLE pos_sales ADD COLUMN customer_type VARCHAR(30) NOT NULL DEFAULT 'walk_in'",
+        'customer_id' => "ALTER TABLE pos_sales ADD COLUMN customer_id INT DEFAULT NULL",
+        'customer_name' => "ALTER TABLE pos_sales ADD COLUMN customer_name VARCHAR(180) DEFAULT NULL",
+        'sale_date' => "ALTER TABLE pos_sales ADD COLUMN sale_date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
+        'total_amount' => "ALTER TABLE pos_sales ADD COLUMN total_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'discount' => "ALTER TABLE pos_sales ADD COLUMN discount DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'paid_amount' => "ALTER TABLE pos_sales ADD COLUMN paid_amount DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'balance' => "ALTER TABLE pos_sales ADD COLUMN balance DECIMAL(10,2) NOT NULL DEFAULT 0.00",
+        'created_by' => "ALTER TABLE pos_sales ADD COLUMN created_by INT DEFAULT NULL",
+        'created_at' => "ALTER TABLE pos_sales ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP",
+    ];
+    foreach ($saleColumns as $column => $sql) {
+        if (!columnExists($db, 'pos_sales', $column)) {
+            $db->exec($sql);
+        }
+    }
+    $db->exec("UPDATE pos_sales SET sale_date = created_at WHERE sale_date IS NULL AND created_at IS NOT NULL");
+    $db->exec("UPDATE pos_sales SET customer_name = student_name WHERE (customer_name IS NULL OR customer_name = '') AND " . (columnExists($db, 'pos_sales', 'student_name') ? 'student_name IS NOT NULL' : '1=0'));
+    $db->exec("UPDATE pos_sales SET invoice_no = CONCAT('POS-', DATE_FORMAT(COALESCE(sale_date, created_at, NOW()), '%Y%m%d'), '-', LPAD(id, 5, '0')) WHERE invoice_no IS NULL OR invoice_no = ''");
+}
+
+function pos_invoice_no(PDO $db): string {
+    do {
+        $invoice = 'POS-' . date('Ymd') . '-' . random_int(10000, 99999);
+        $stmt = $db->prepare('SELECT COUNT(*) FROM pos_sales WHERE invoice_no = ?');
+        $stmt->execute([$invoice]);
+    } while ((int)$stmt->fetchColumn() > 0);
+    return $invoice;
+}
+
+pos_ensure_schema($db);
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
     try {
-        if ($action === 'process_sale') {
-            $student_name = sanitizeInput($_POST['student_name'] ?? 'Walk-in');
-            $class = sanitizeInput($_POST['class'] ?? 'N/A');
-            $campus = sanitizeInput($_POST['campus'] ?? ($_SESSION['user_campus'] ?? 'Rajanpur'));
-            $items = $_POST['items']; // JSON string
-            $total_amount = (float)$_POST['total_amount'];
-            $payment_method = $_POST['payment_method'] ?? 'Cash';
-            $transaction_id = sanitizeInput($_POST['transaction_id'] ?? '');
-            
-            // Insert Sale
-            $stmt = $db->prepare("INSERT INTO pos_sales (student_name, class, items, total_amount, payment_method, transaction_id, campus) 
-                                  VALUES (:name, :class, :items, :total, :method, :tid, :campus)");
-            $stmt->execute([
-                ':name' => $student_name,
-                ':class' => $class,
-                ':items' => $items,
-                ':total' => $total_amount,
-                ':method' => $payment_method,
-                ':tid' => $transaction_id,
-                ':campus' => $campus
-            ]);
-            $saleId = (int)$db->lastInsertId();
-            
-            // Update Stock
-            $cartItems = json_decode($items, true);
-            foreach ($cartItems as $item) {
-                $stmt = $db->prepare("UPDATE pos_products SET stock = stock - :qty WHERE id = :id");
-                $stmt->execute([':qty' => $item['qty'], ':id' => $item['id']]);
-            }
-            
-            recordIncome($db, [
-                'source' => 'pos',
-                'reference_id' => $saleId,
-                'campus' => $campus,
-                'description' => 'POS sale: ' . $student_name,
-                'amount' => $total_amount
-            ]);
+        requireCsrfToken();
+        $action = $_POST['action'] ?? '';
 
-            $message = "Sale processed successfully! Receipt ID: " . $saleId;
-            $messageType = "success";
-        } elseif ($action === 'add_product') {
-            $stmt = $db->prepare("INSERT INTO pos_products (name, category, price, stock) VALUES (:name, :cat, :price, :stock)");
-            $stmt->execute([
-                ':name' => sanitizeInput($_POST['name']),
-                ':cat' => $_POST['category'],
-                ':price' => (float)$_POST['price'],
-                ':stock' => (int)$_POST['stock']
-            ]);
-            $productId = (int)$db->lastInsertId();
-            $stockCost = (float)($_POST['purchase_cost'] ?? 0);
-            if ($stockCost > 0) {
-                recordExpense($db, [
-                    'module_name' => 'pos_stock',
-                    'reference_id' => $productId,
-                    'campus' => $_SESSION['user_campus'] ?? 'Rajanpur',
-                    'category' => ($_POST['category'] ?? '') === 'Stationery' ? 'Stationery & Printing' : 'POS Stock',
-                    'description' => 'Initial stock purchase: ' . sanitizeInput($_POST['name']),
-                    'amount' => $stockCost,
-                    'expense_type' => 'auto',
-                    'status' => 'pending',
-                    'created_by' => getUserId()
-                ]);
+        if (in_array($action, ['add_product', 'edit_product'], true)) {
+            $id = (int)($_POST['id'] ?? 0);
+            $name = sanitizeInput($_POST['product_name'] ?? '');
+            $category = sanitizeInput($_POST['category'] ?? '');
+            $purchase = pos_positive_number($_POST['purchase_price'] ?? 0);
+            $sale = pos_positive_number($_POST['sale_price'] ?? 0);
+            $stock = (int)($_POST['stock_quantity'] ?? 0);
+            $status = in_array($_POST['status'] ?? 'active', ['active', 'inactive'], true) ? $_POST['status'] : 'active';
+
+            if ($name === '' || $category === '' || $sale <= 0 || $stock < 0) {
+                throw new Exception('Please enter valid product name, category, sale price, and stock.');
             }
-            $message = "Product added successfully!";
-            $messageType = "success";
-        } elseif ($action === 'edit_product') {
-            $stmt = $db->prepare("UPDATE pos_products SET name = :name, category = :cat, price = :price, stock = :stock WHERE id = :id");
-            $stmt->execute([
-                ':name' => sanitizeInput($_POST['name']),
-                ':cat' => $_POST['category'],
-                ':price' => (float)$_POST['price'],
-                ':stock' => (int)$_POST['stock'],
-                ':id' => $_POST['id']
-            ]);
-            $message = "Product updated successfully!";
-            $messageType = "success";
-        } elseif ($action === 'delete_product') {
-            $stmt = $db->prepare("UPDATE pos_products SET is_active = 0 WHERE id = :id");
-            $stmt->execute([':id' => $_POST['id']]);
-            $message = "Product removed successfully!";
-            $messageType = "success";
+
+            if ($action === 'add_product') {
+                $stmt = $db->prepare("INSERT INTO pos_products (product_name, name, category, purchase_price, sale_price, price, stock_quantity, stock, status, is_active) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->execute([$name, $name, $category, $purchase, $sale, $sale, $stock, $stock, $status, $status === 'active' ? 1 : 0]);
+                setFlashMessage('success', 'Product added successfully.');
+            } else {
+                if ($id <= 0) {
+                    throw new Exception('Invalid product selected.');
+                }
+                $stmt = $db->prepare("UPDATE pos_products SET product_name = ?, name = ?, category = ?, purchase_price = ?, sale_price = ?, price = ?, stock_quantity = ?, stock = ?, status = ?, is_active = ? WHERE id = ?");
+                $stmt->execute([$name, $name, $category, $purchase, $sale, $sale, $stock, $stock, $status, $status === 'active' ? 1 : 0, $id]);
+                setFlashMessage('success', 'Product updated successfully.');
+            }
+            redirect('index.php');
+        }
+
+        if ($action === 'delete_product') {
+            $id = (int)($_POST['id'] ?? 0);
+            $stmt = $db->prepare("UPDATE pos_products SET status = 'inactive', is_active = 0 WHERE id = ?");
+            $stmt->execute([$id]);
+            setFlashMessage('success', 'Product marked inactive.');
+            redirect('index.php');
+        }
+
+        if ($action === 'process_sale') {
+            $customerType = in_array($_POST['customer_type'] ?? 'walk_in', ['student', 'staff', 'walk_in'], true) ? $_POST['customer_type'] : 'walk_in';
+            $customerId = (int)($_POST['customer_id'] ?? 0) ?: null;
+            $customerName = sanitizeInput($_POST['customer_name'] ?? 'Walk-in');
+            $discount = pos_positive_number($_POST['discount'] ?? 0);
+            $paidAmount = pos_positive_number($_POST['paid_amount'] ?? 0);
+            $items = json_decode((string)($_POST['sale_items'] ?? '[]'), true);
+            if (!is_array($items) || !$items) {
+                throw new Exception('Please add at least one item to the invoice.');
+            }
+
+            $db->beginTransaction();
+            $saleRows = [];
+            $total = 0.0;
+            foreach ($items as $item) {
+                $productId = (int)($item['product_id'] ?? 0);
+                $qty = (int)($item['quantity'] ?? 0);
+                if ($productId <= 0 || $qty <= 0) {
+                    throw new Exception('Invalid sale item quantity.');
+                }
+                $stmt = $db->prepare("SELECT id, COALESCE(NULLIF(product_name, ''), name) AS product_name, sale_price, stock_quantity, status FROM pos_products WHERE id = ? FOR UPDATE");
+                $stmt->execute([$productId]);
+                $product = $stmt->fetch(PDO::FETCH_ASSOC);
+                if (!$product || strtolower((string)$product['status']) !== 'active') {
+                    throw new Exception('One selected product is unavailable.');
+                }
+                if ((int)$product['stock_quantity'] < $qty) {
+                    throw new Exception($product['product_name'] . ' has insufficient stock.');
+                }
+                $unit = (float)$product['sale_price'];
+                $subtotal = $unit * $qty;
+                $saleRows[] = ['product_id' => $productId, 'quantity' => $qty, 'unit_price' => $unit, 'subtotal' => $subtotal];
+                $total += $subtotal;
+            }
+
+            $netTotal = max(0, $total - $discount);
+            $balance = max(0, $netTotal - $paidAmount);
+            $invoice = pos_invoice_no($db);
+            $stmt = $db->prepare("INSERT INTO pos_sales (invoice_no, customer_type, customer_id, customer_name, sale_date, total_amount, discount, paid_amount, balance, created_by) VALUES (?, ?, ?, ?, NOW(), ?, ?, ?, ?, ?)");
+            $stmt->execute([$invoice, $customerType, $customerId, $customerName, $netTotal, $discount, $paidAmount, $balance, $userId]);
+            $saleId = (int)$db->lastInsertId();
+
+            $itemStmt = $db->prepare("INSERT INTO pos_sale_items (sale_id, product_id, quantity, unit_price, subtotal) VALUES (?, ?, ?, ?, ?)");
+            $stockStmt = $db->prepare("UPDATE pos_products SET stock_quantity = stock_quantity - ?, stock = stock - ? WHERE id = ?");
+            foreach ($saleRows as $row) {
+                $itemStmt->execute([$saleId, $row['product_id'], $row['quantity'], $row['unit_price'], $row['subtotal']]);
+                $stockStmt->execute([$row['quantity'], $row['quantity'], $row['product_id']]);
+            }
+            $db->commit();
+            setFlashMessage('success', 'Sale invoice generated: ' . $invoice);
+            redirect('index.php?invoice_id=' . $saleId);
         }
     } catch (Exception $e) {
-        $message = "Error: " . $e->getMessage();
-        $messageType = "danger";
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        setFlashMessage('error', $e->getMessage());
+        redirect('index.php');
     }
 }
 
-// Fetch Data
-$products = $db->query("SELECT * FROM pos_products WHERE is_active = 1 ORDER BY category, name")->fetchAll();
-$dailySales = $db->query("SELECT * FROM pos_sales WHERE DATE(created_at) = CURDATE() ORDER BY created_at DESC")->fetchAll();
-$totalDailyRevenue = array_sum(array_column($dailySales, 'total_amount'));
+$products = $db->query("SELECT *, COALESCE(NULLIF(product_name, ''), name) AS display_name FROM pos_products WHERE LOWER(status) = 'active' AND COALESCE(is_active, 1) = 1 ORDER BY category ASC, display_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$allProducts = $db->query("SELECT *, COALESCE(NULLIF(product_name, ''), name) AS display_name FROM pos_products ORDER BY category ASC, display_name ASC")->fetchAll(PDO::FETCH_ASSOC);
+$dailySales = $db->query("SELECT * FROM pos_sales WHERE DATE(sale_date) = CURDATE() ORDER BY sale_date DESC, id DESC")->fetchAll(PDO::FETCH_ASSOC);
+$dailyTotal = array_sum(array_map(static fn($s) => (float)$s['total_amount'], $dailySales));
+$dailyPaid = array_sum(array_map(static fn($s) => (float)$s['paid_amount'], $dailySales));
 
-$page_title = "Cafeteria & Uniform POS";
+$invoice = null;
+$invoiceItems = [];
+if (isset($_GET['invoice_id'])) {
+    $stmt = $db->prepare('SELECT * FROM pos_sales WHERE id = ? LIMIT 1');
+    $stmt->execute([(int)$_GET['invoice_id']]);
+    $invoice = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($invoice) {
+        $stmt = $db->prepare("SELECT si.*, COALESCE(NULLIF(p.product_name, ''), p.name) AS product_name FROM pos_sale_items si JOIN pos_products p ON p.id = si.product_id WHERE si.sale_id = ? ORDER BY si.id ASC");
+        $stmt->execute([(int)$invoice['id']]);
+        $invoiceItems = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
+
+$page_title = 'Point of Sale';
 include '../../includes/header.php';
 ?>
-<script src="../../assets/js/payment_helper.js?v=2"></script>
 
-<div class="container-fluid">
-    <!-- Top Stats & Navigation -->
-    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <h2 class="page-title text-navy mb-0">POS Terminal</h2>
-        <div class="d-flex gap-3">
-            <div class="bg-white px-4 py-2 rounded-4 shadow-sm border-start border-teal border-4">
-                <small class="text-muted d-block">Today's Sales</small>
-                <span class="fw-bold text-navy">PKR <?php echo number_format($totalDailyRevenue, 2); ?></span>
-            </div>
-            <button class="btn btn-navy shadow-sm" data-bs-toggle="modal" data-bs-target="#reportModal">
-                <i class="fas fa-chart-line me-2"></i>Daily Report
-            </button>
-            <button class="btn btn-teal text-white shadow-sm" data-bs-toggle="modal" data-bs-target="#manageProductsModal">
-                <i class="fas fa-boxes me-2"></i>Manage Products
-            </button>
+<div class="container-fluid pos-module">
+    <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 mb-4 no-print">
+        <div>
+            <a href="../../dashboard.php" class="btn btn-sm btn-light border rounded-pill mb-3"><i class="fas fa-arrow-left me-1"></i> Back to Dashboard</a>
+            <h2 class="page-title mb-1"><i class="fas fa-cash-register me-2" style="color:var(--teal);"></i>Point of Sale</h2>
+            <div class="text-muted">Sell school items, generate invoices, and track daily sales.</div>
+        </div>
+        <div class="d-flex flex-wrap gap-2">
+            <div class="bg-white px-3 py-2 rounded border"><span class="text-muted small">Today Sales</span><div class="fw-bold"><?= pos_money($dailyTotal) ?></div></div>
+            <div class="bg-white px-3 py-2 rounded border"><span class="text-muted small">Today Paid</span><div class="fw-bold text-success"><?= pos_money($dailyPaid) ?></div></div>
+            <button class="btn btn-outline-secondary" onclick="window.print()"><i class="fas fa-print me-1"></i>Print</button>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#productModal" onclick="resetProductForm()"><i class="fas fa-box me-1"></i>Add Product</button>
         </div>
     </div>
 
-    <!-- Alert Messages -->
-    <?php if ($message): ?>
-        <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show no-print" role="alert">
-            <?php echo $message; ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
+    <?php displayFlashMessage(); ?>
 
     <div class="row g-4 no-print">
-        <!-- Product Grid (Left Side) -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                <div class="card-header bg-white p-3 border-0">
-                    <ul class="nav nav-pills custom-pills" id="posTabs">
-                        <li class="nav-item">
-                            <button class="nav-link active" data-filter="all">All Items</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-filter="Cafeteria">Cafeteria</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-filter="Uniform">Uniform</button>
-                        </li>
-                        <li class="nav-item">
-                            <button class="nav-link" data-filter="Stationery">Stationery</button>
-                        </li>
-                    </ul>
-                </div>
-                <div class="card-body bg-light p-4">
-                    <div class="row g-3" id="productGrid">
-                        <?php foreach ($products as $p): ?>
-                            <div class="col-xl-3 col-md-4 product-card-wrapper" data-category="<?php echo $p['category']; ?>">
-                                <div class="card h-100 border-0 shadow-sm product-card" onclick='addToCart(<?php echo json_encode($p); ?>)'>
-                                    <div class="position-relative">
-                                        <div class="bg-teal-subtle text-teal p-4 text-center rounded-top-4">
-                                            <i class="fas <?php 
-                                                echo $p['category'] === 'Cafeteria' ? 'fa-utensils' : 
-                                                    ($p['category'] === 'Uniform' ? 'fa-tshirt' : 'fa-pen-fancy'); 
-                                            ?> fa-3x opacity-50"></i>
-                                        </div>
-                                        <span class="badge bg-navy position-absolute top-0 end-0 m-2">
-                                            PKR <?php echo number_format($p['price'], 0); ?>
-                                        </span>
-                                    </div>
-                                    <div class="card-body p-3 text-center">
-                                        <h6 class="mb-1 fw-bold text-navy"><?php echo htmlspecialchars($p['name']); ?></h6>
-                                        <small class="text-muted">Stock: <?php echo $p['stock']; ?></small>
-                                    </div>
-                                </div>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white"><h5 class="fw-bold mb-0">Products</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <?php foreach ($products as $product): ?>
+                            <div class="col-xl-3 col-md-4">
+                                <button type="button" class="product-tile w-100 text-start" onclick='addToCart(<?= json_encode([
+                                    'id' => (int)$product['id'],
+                                    'name' => $product['display_name'],
+                                    'price' => (float)$product['sale_price'],
+                                    'stock' => (int)$product['stock_quantity'],
+                                ], JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) ?>)'>
+                                    <div class="fw-bold"><?= pos_h($product['display_name']) ?></div>
+                                    <div class="small text-muted"><?= pos_h($product['category']) ?></div>
+                                    <div class="mt-2 d-flex justify-content-between"><span><?= pos_money($product['sale_price']) ?></span><span class="badge bg-light text-dark border">Stock <?= (int)$product['stock_quantity'] ?></span></div>
+                                </button>
                             </div>
                         <?php endforeach; ?>
+                        <?php if (!$products): ?><div class="col-12 text-center text-muted py-4">No active products found.</div><?php endif; ?>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Cart Section (Right Side) -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm rounded-4 h-100 sticky-top" style="top: 100px;">
-                <div class="card-header bg-navy text-white p-4 rounded-top-4 border-0">
-                    <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Current Order</h5>
+            <form class="card border-0 shadow-sm sticky-top" style="top:90px" method="POST" onsubmit="return prepareSale();">
+                <?= csrfTokenInput() ?>
+                <input type="hidden" name="action" value="process_sale">
+                <input type="hidden" name="sale_items" id="sale_items">
+                <div class="card-header bg-white"><h5 class="fw-bold mb-0">New Invoice</h5></div>
+                <div class="card-body">
+                    <div id="cartList" class="mb-3"><div class="text-center text-muted py-4">Select products to begin.</div></div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-md-6"><label class="form-label small fw-bold">Customer Type</label><select name="customer_type" class="form-select"><option value="student">Student</option><option value="staff">Staff</option><option value="walk_in">Walk-in</option></select></div>
+                        <div class="col-md-6"><label class="form-label small fw-bold">Customer ID</label><input type="number" name="customer_id" class="form-control" min="0"></div>
+                        <div class="col-12"><label class="form-label small fw-bold">Customer Name</label><input type="text" name="customer_name" class="form-control" value="Walk-in"></div>
+                    </div>
+                    <div class="d-flex justify-content-between"><span>Subtotal</span><strong id="subtotalText">PKR 0.00</strong></div>
+                    <div class="row g-2 my-2">
+                        <div class="col-6"><label class="form-label small">Discount</label><input type="number" step="0.01" min="0" name="discount" id="discount" class="form-control" value="0" oninput="renderCart()"></div>
+                        <div class="col-6"><label class="form-label small">Paid</label><input type="number" step="0.01" min="0" name="paid_amount" id="paid_amount" class="form-control" value="0" oninput="renderCart()"></div>
+                    </div>
+                    <div class="d-flex justify-content-between fs-5"><span>Total</span><strong id="totalText" class="text-primary">PKR 0.00</strong></div>
+                    <div class="d-flex justify-content-between"><span>Balance</span><strong id="balanceText" class="text-danger">PKR 0.00</strong></div>
                 </div>
-                <div class="card-body p-0 flex-grow-1 overflow-auto" style="max-height: 400px;">
-                    <div id="cartItemsList">
-                        <div class="text-center py-5 text-muted" id="emptyCartMsg">
-                            <i class="fas fa-cart-plus fa-3x mb-3 opacity-20"></i>
-                            <p>Select items to start an order</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-footer bg-white p-4 rounded-bottom-4 border-0 shadow-top">
-                    <div class="mb-3">
-                        <label class="small text-muted mb-1">Student Details</label>
-                        <input type="text" id="cart_student_name" class="form-control form-control-sm mb-2" placeholder="Student Name">
-                        <select id="cart_student_class" class="form-select form-select-sm">
-                            <option value="">Select Class</option>
-                            <option>ICS</option><option>FSc</option><option>BSCS</option>
-                            <option>Web Dev</option><option>Graphic Design</option>
-                        </select>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between mb-2">
-                        <span class="text-muted">Subtotal</span>
-                        <span class="fw-bold" id="cartSubtotal">PKR 0.00</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-4">
-                        <h4 class="text-navy mb-0">Total</h4>
-                        <h4 class="text-teal mb-0" id="cartTotal">PKR 0.00</h4>
-                    </div>
-
-                    <button class="btn btn-teal text-white w-100 py-3 rounded-3 shadow-sm fw-bold" id="checkoutBtn" disabled data-bs-toggle="modal" data-bs-target="#checkoutModal">
-                        CHECKOUT & PAYMENT
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Checkout Modal -->
-<div class="modal fade" id="checkoutModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-navy text-white">
-                <h5 class="modal-title">Checkout & Payment</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="checkoutForm">
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label">Student Name</label>
-                            <input type="text" id="pay_student_name" class="form-control" placeholder="Student Name / Walk-in">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Class</label>
-                            <select id="pay_student_class" class="form-select">
-                                <option value="">Select Program</option>
-                                <optgroup label="Intermediate">
-                                    <option>FSc Pre-Medical</option>
-                                    <option>FSc Pre-Engineering</option>
-                                    <option>ICS</option>
-                                    <option>I.Com</option>
-                                    <option>FA</option>
-                                </optgroup>
-                                <optgroup label="Degree">
-                                    <option>ADP Arts</option>
-                                    <option>ADP Science</option>
-                                    <option>BSCS</option>
-                                    <option>BS IT</option>
-                                </optgroup>
-                                <optgroup label="NAVTTC">
-                                    <option>Web Development</option>
-                                    <option>Graphic Designing</option>
-                                    <option>Digital Marketing</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Campus</label>
-                            <select id="pay_campus" class="form-select">
-                                <option>Rajanpur</option>
-                                <option>Fazilpur</option>
-                                <option>Kot Mithan</option>
-                            </select>
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label">Payment Method</label>
-                            <select id="pay_method" name="payment_method" class="form-select" required>
-                                <option value="Cash">Cash</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                                <option value="Online Payment">Online Payment</option>
-                                <option value="Cheque">Cheque</option>
-                                <option value="EasyPaisa">EasyPaisa</option>
-                                <option value="JazzCash">JazzCash</option>
-                                <option value="Card/ATM">Card/ATM</option>
-                            </select>
-                        </div>
-                        <div class="col-12" id="tid_field" style="display: none;">
-                            <label class="form-label">Transaction ID / Reference</label>
-                            <input type="text" id="pay_tid" name="transaction_id" class="form-control" placeholder="Enter transaction ID">
-                        </div>
-                    </div>
-                    
-                    <div class="mt-4 p-3 bg-light rounded-3">
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>Order Total:</span>
-                            <span class="fw-bold text-navy" id="modalTotal">PKR 0.00</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-teal text-white fw-bold" onclick="submitOrder()">CONFIRM SALE & PRINT</button>
-                </div>
+                <div class="card-footer bg-white"><button class="btn btn-success w-100" id="checkoutBtn" disabled><i class="fas fa-receipt me-1"></i>Generate Invoice</button></div>
             </form>
         </div>
     </div>
-</div>
 
-<!-- Receipt Modal (Hidden usually, shown for print preview) -->
-<div class="modal fade" id="receiptModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content border-0">
-            <div class="modal-body p-4" id="receiptArea">
-                <!-- Content generated by JS -->
+    <div class="row g-4 mt-1">
+        <div class="col-lg-7">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white"><h5 class="fw-bold mb-0">Products / Stock</h5></div>
+                <div class="card-body table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light"><tr><th>Product</th><th>Category</th><th>Purchase</th><th>Sale</th><th>Stock</th><th>Status</th><th class="text-end no-print">Action</th></tr></thead>
+                        <tbody>
+                            <?php foreach ($allProducts as $product): ?>
+                                <tr>
+                                    <td><?= pos_h($product['display_name']) ?></td><td><?= pos_h($product['category']) ?></td><td><?= pos_money($product['purchase_price']) ?></td><td><?= pos_money($product['sale_price']) ?></td><td><?= (int)$product['stock_quantity'] ?></td><td><span class="badge <?= strtolower((string)$product['status']) === 'active' ? 'bg-success' : 'bg-secondary' ?>"><?= pos_h(ucfirst((string)$product['status'])) ?></span></td>
+                                    <td class="text-end no-print">
+                                        <button class="btn btn-sm btn-outline-primary" onclick='editProduct(<?= json_encode($product, JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_TAG | JSON_HEX_AMP) ?>)' data-bs-toggle="modal" data-bs-target="#productModal"><i class="fas fa-pen"></i></button>
+                                        <form method="POST" class="d-inline" onsubmit="return confirm('Mark this product inactive?');"><?= csrfTokenInput() ?><input type="hidden" name="action" value="delete_product"><input type="hidden" name="id" value="<?= (int)$product['id'] ?>"><button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button></form>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div class="modal-footer border-0">
-                <button class="btn btn-navy w-100" onclick="printReceipt()">Print Receipt</button>
+        </div>
+        <div class="col-lg-5">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white"><h5 class="fw-bold mb-0">Daily Sales Report</h5></div>
+                <div class="card-body table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead class="table-light"><tr><th>Invoice</th><th>Customer</th><th class="text-end">Amount</th><th class="text-end">Balance</th></tr></thead>
+                        <tbody>
+                            <?php if (!$dailySales): ?><tr><td colspan="4" class="text-center text-muted py-4">No sales today.</td></tr><?php endif; ?>
+                            <?php foreach ($dailySales as $sale): ?><tr><td><a href="index.php?invoice_id=<?= (int)$sale['id'] ?>"><?= pos_h($sale['invoice_no']) ?></a><div class="small text-muted"><?= pos_h(date('h:i A', strtotime($sale['sale_date']))) ?></div></td><td><?= pos_h($sale['customer_name'] ?: ucfirst($sale['customer_type'])) ?></td><td class="text-end fw-bold"><?= pos_money($sale['total_amount']) ?></td><td class="text-end"><?= pos_money($sale['balance']) ?></td></tr><?php endforeach; ?>
+                        </tbody>
+                        <tfoot class="table-light"><tr><th colspan="2">Total</th><th class="text-end"><?= pos_money($dailyTotal) ?></th><th></th></tr></tfoot>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Manage Products Modal -->
-<div class="modal fade" id="manageProductsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-teal text-white">
-                <h5 class="modal-title">Product Management</h5>
-                <button class="btn btn-light btn-sm ms-auto me-2" data-bs-toggle="modal" data-bs-target="#productModal" onclick="resetProductModal()">Add Product</button>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <table class="table table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Product Name</th>
-                            <th>Category</th>
-                            <th>Price</th>
-                            <th>Stock</th>
-                            <th class="text-center">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($products as $p): ?>
-                            <tr>
-                                <td class="ps-4 fw-bold text-navy"><?php echo htmlspecialchars($p['name']); ?></td>
-                                <td><span class="badge bg-light text-navy border"><?php echo $p['category']; ?></span></td>
-                                <td>PKR <?php echo number_format($p['price'], 2); ?></td>
-                                <td>
-                                    <span class="fw-bold <?php echo $p['stock'] < 10 ? 'text-danger' : 'text-success'; ?>">
-                                        <?php echo $p['stock']; ?>
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <button class="btn btn-sm btn-outline-warning" onclick='showEditProduct(<?php echo json_encode($p); ?>)'>
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="action" value="delete_product">
-                                        <input type="hidden" name="id" value="<?php echo $p['id']; ?>">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this product?')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+    <?php if ($invoice): ?>
+        <div class="card border-0 shadow-sm mt-4 invoice-print" id="invoiceArea">
+            <div class="card-body">
+                <div class="text-center mb-3"><h4 class="fw-bold mb-0">Quaid-e-Azam Group of Colleges</h4><div>POS Sale Invoice</div></div>
+                <div class="row mb-3"><div class="col-md-6"><strong>Invoice:</strong> <?= pos_h($invoice['invoice_no']) ?><br><strong>Customer:</strong> <?= pos_h($invoice['customer_name'] ?: ucfirst($invoice['customer_type'])) ?></div><div class="col-md-6 text-md-end"><strong>Date:</strong> <?= pos_h(date('d M Y h:i A', strtotime($invoice['sale_date']))) ?><br><strong>Type:</strong> <?= pos_h(ucfirst($invoice['customer_type'])) ?></div></div>
+                <table class="table table-bordered"><thead><tr><th>Item</th><th class="text-end">Qty</th><th class="text-end">Rate</th><th class="text-end">Subtotal</th></tr></thead><tbody><?php foreach ($invoiceItems as $item): ?><tr><td><?= pos_h($item['product_name']) ?></td><td class="text-end"><?= (int)$item['quantity'] ?></td><td class="text-end"><?= pos_money($item['unit_price']) ?></td><td class="text-end"><?= pos_money($item['subtotal']) ?></td></tr><?php endforeach; ?></tbody><tfoot><tr><th colspan="3" class="text-end">Discount</th><th class="text-end"><?= pos_money($invoice['discount']) ?></th></tr><tr><th colspan="3" class="text-end">Total</th><th class="text-end"><?= pos_money($invoice['total_amount']) ?></th></tr><tr><th colspan="3" class="text-end">Paid</th><th class="text-end"><?= pos_money($invoice['paid_amount']) ?></th></tr><tr><th colspan="3" class="text-end">Balance</th><th class="text-end"><?= pos_money($invoice['balance']) ?></th></tr></tfoot></table>
+                <div class="text-center no-print"><button class="btn btn-primary" onclick="window.print()"><i class="fas fa-print me-1"></i>Print Invoice</button></div>
             </div>
         </div>
-    </div>
+    <?php endif; ?>
 </div>
 
-<!-- Add/Edit Product Modals and Reports Modals omitted for brevity, will implement fully -->
+<div class="modal fade no-print" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <form class="modal-content border-0 shadow" method="POST">
+            <?= csrfTokenInput() ?>
+            <input type="hidden" name="action" id="product_action" value="add_product">
+            <input type="hidden" name="id" id="product_id">
+            <div class="modal-header bg-primary text-white"><h5 class="modal-title" id="productModalTitle">Add Product</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body row g-3">
+                <div class="col-md-6"><label class="form-label">Product Name *</label><input type="text" name="product_name" id="product_name" class="form-control" required></div>
+                <div class="col-md-6"><label class="form-label">Category *</label><select name="category" id="category" class="form-select" required><?php foreach ($categories as $category): ?><option value="<?= pos_h($category) ?>"><?= pos_h($category) ?></option><?php endforeach; ?></select></div>
+                <div class="col-md-4"><label class="form-label">Purchase Price</label><input type="number" step="0.01" min="0" name="purchase_price" id="purchase_price" class="form-control" value="0"></div>
+                <div class="col-md-4"><label class="form-label">Sale Price *</label><input type="number" step="0.01" min="0" name="sale_price" id="sale_price" class="form-control" required></div>
+                <div class="col-md-4"><label class="form-label">Stock Quantity *</label><input type="number" min="0" name="stock_quantity" id="stock_quantity" class="form-control" required></div>
+                <div class="col-md-12"><label class="form-label">Status</label><select name="status" id="status" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
+            </div>
+            <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary">Save Product</button></div>
+        </form>
+    </div>
+</div>
 
 <style>
-    :root {
-        --teal-subtle: rgba(78, 194, 181, 0.1);
-    }
-    .text-navy { color: var(--navy); }
-    .text-teal { color: var(--teal); }
-    .bg-navy { background-color: var(--navy) !important; }
-    .bg-teal { background-color: var(--teal) !important; }
-    .bg-teal-subtle { background-color: var(--teal-subtle); }
-    .btn-teal { background-color: var(--teal); border-color: var(--teal); }
-    .btn-teal:hover { background-color: var(--teal-dark); border-color: var(--teal-dark); color: white; }
-    .btn-outline-teal { color: var(--teal); border-color: var(--teal); }
-    .btn-outline-teal:hover, .btn-check:checked + .btn-outline-teal { background-color: var(--teal); color: white; }
-    .btn-outline-navy { color: var(--navy); border-color: var(--navy); }
-    .btn-outline-navy:hover, .btn-check:checked + .btn-outline-navy { background-color: var(--navy); color: white; }
-    .btn-navy { background-color: var(--navy); border-color: var(--navy); color: white; }
-    
-    .product-card { transition: all 0.2s; cursor: pointer; border-radius: 15px; }
-    .product-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
-    .product-card:active { transform: scale(0.95); }
-    
-    .custom-pills .nav-link { color: var(--navy); border-radius: 10px; margin-right: 10px; font-weight: 500; transition: all 0.3s; }
-    .custom-pills .nav-link.active { background-color: var(--teal) !important; color: white !important; box-shadow: 0 4px 10px rgba(78, 194, 181, 0.3); }
-    
-    .cart-item { border-bottom: 1px solid #eee; transition: all 0.2s; }
-    .cart-item:hover { background-color: #fcfcfc; }
-    
-    #receiptArea { font-family: 'Courier New', Courier, monospace; font-size: 14px; }
-    
-    @media print {
-        body * { visibility: hidden; }
-        #receiptArea, #receiptArea * { visibility: visible; }
-        #receiptArea { position: absolute; left: 0; top: 0; width: 300px; padding: 10px; }
-    }
+    :root { --teal:#4ec2b5; --navy:#0f2d48; }
+    .page-title { font-family:'Playfair Display',serif; font-weight:700; color:var(--navy); }
+    .btn-primary { background:var(--teal); border-color:var(--teal); color:var(--navy); font-weight:600; }
+    .product-tile { border:1px solid #e5e7eb; background:#fff; border-radius:8px; padding:1rem; min-height:120px; transition:.15s ease; }
+    .product-tile:hover { border-color:var(--teal); box-shadow:0 8px 20px rgba(15,45,72,.08); }
+    @media print { .no-print, #sidebar, .topbar, .sidebar-backdrop, .btn, form { display:none !important; } #content { margin-left:0 !important; width:100% !important; } body * { visibility:hidden; } .invoice-print, .invoice-print * { visibility:visible; } .invoice-print { position:absolute; left:0; top:0; width:100%; box-shadow:none !important; } }
 </style>
 
 <script>
 let cart = [];
-
+const fmt = n => 'PKR ' + Number(n || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2});
 function addToCart(product) {
-    const existing = cart.find(item => item.id === product.id);
-    if (existing) {
-        existing.qty++;
-    } else {
-        cart.push({
-            id: product.id,
-            name: product.name,
-            price: product.price,
-            qty: 1
-        });
+    const existing = cart.find(i => i.product_id === product.id);
+    const currentQty = existing ? existing.quantity : 0;
+    if (currentQty + 1 > product.stock) {
+        alert('Stock not available for ' + product.name);
+        return;
     }
+    if (existing) existing.quantity += 1;
+    else cart.push({product_id: product.id, name: product.name, unit_price: product.price, stock: product.stock, quantity: 1});
     renderCart();
 }
-
-function updateQty(id, delta) {
-    const item = cart.find(i => i.id === id);
-    if (item) {
-        item.qty += delta;
-        if (item.qty <= 0) {
-            cart = cart.filter(i => i.id !== id);
-        }
-    }
+function changeQty(id, delta) {
+    const item = cart.find(i => i.product_id === id);
+    if (!item) return;
+    const next = item.quantity + delta;
+    if (next <= 0) cart = cart.filter(i => i.product_id !== id);
+    else if (next <= item.stock) item.quantity = next;
+    else alert('Stock not available.');
     renderCart();
 }
-
 function renderCart() {
-    const list = document.getElementById('cartItemsList');
-    const emptyMsg = document.getElementById('emptyCartMsg');
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    
-    if (cart.length === 0) {
-        list.innerHTML = '';
-        emptyMsg.style.display = 'block';
-        checkoutBtn.disabled = true;
-        updateTotals(0);
-        return;
-    }
-    
-    emptyMsg.style.display = 'none';
-    checkoutBtn.disabled = false;
-    
-    let html = '';
-    let total = 0;
-    cart.forEach(item => {
-        total += item.price * item.qty;
-        html += `
-            <div class="cart-item p-3 d-flex justify-content-between align-items-center">
-                <div class="flex-grow-1">
-                    <h6 class="mb-0 text-navy fw-bold">${item.name}</h6>
-                    <small class="text-muted">PKR ${item.price} x ${item.qty}</small>
-                </div>
-                <div class="d-flex align-items-center gap-2">
-                    <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${item.id}, -1)"><i class="fas fa-minus fa-xs"></i></button>
-                    <span class="fw-bold mx-1" style="min-width: 20px; text-align: center;">${item.qty}</span>
-                    <button class="btn btn-sm btn-light border p-1" onclick="updateQty(${item.id}, 1)"><i class="fas fa-plus fa-xs"></i></button>
-                    <button class="btn btn-sm btn-outline-danger ms-2" onclick="removeItem(${item.id})"><i class="fas fa-times fa-xs"></i></button>
-                </div>
-                <div class="ms-3 text-end fw-bold text-navy" style="min-width: 80px;">
-                    PKR ${(item.price * item.qty).toFixed(0)}
-                </div>
-            </div>
-        `;
-    });
-    list.innerHTML = html;
-    updateTotals(total);
+    const list = document.getElementById('cartList');
+    const subtotal = cart.reduce((sum, item) => sum + item.unit_price * item.quantity, 0);
+    const discount = Number(document.getElementById('discount').value || 0);
+    const paid = Number(document.getElementById('paid_amount').value || 0);
+    const total = Math.max(0, subtotal - discount);
+    const balance = Math.max(0, total - paid);
+    if (!cart.length) list.innerHTML = '<div class="text-center text-muted py-4">Select products to begin.</div>';
+    else list.innerHTML = cart.map(item => `<div class="d-flex justify-content-between align-items-center border-bottom py-2"><div><strong>${item.name}</strong><div class="small text-muted">${fmt(item.unit_price)} x ${item.quantity}</div></div><div class="btn-group btn-group-sm"><button type="button" class="btn btn-outline-secondary" onclick="changeQty(${item.product_id},-1)">-</button><button type="button" class="btn btn-outline-secondary" onclick="changeQty(${item.product_id},1)">+</button></div></div>`).join('');
+    document.getElementById('subtotalText').textContent = fmt(subtotal);
+    document.getElementById('totalText').textContent = fmt(total);
+    document.getElementById('balanceText').textContent = fmt(balance);
+    document.getElementById('checkoutBtn').disabled = !cart.length;
 }
-
-function removeItem(id) {
-    cart = cart.filter(i => i.id !== id);
-    renderCart();
+function prepareSale() {
+    if (!cart.length) return false;
+    document.getElementById('sale_items').value = JSON.stringify(cart.map(item => ({product_id: item.product_id, quantity: item.quantity})));
+    return true;
 }
-
-function updateTotals(total) {
-    document.getElementById('cartSubtotal').innerText = 'PKR ' + total.toLocaleString();
-    document.getElementById('cartTotal').innerText = 'PKR ' + total.toLocaleString();
-    document.getElementById('modalTotal').innerText = 'PKR ' + total.toLocaleString();
+function resetProductForm() {
+    document.getElementById('productModalTitle').textContent = 'Add Product';
+    document.getElementById('product_action').value = 'add_product';
+    document.getElementById('product_id').value = '';
+    document.getElementById('product_name').value = '';
+    document.getElementById('category').value = 'Cafeteria';
+    document.getElementById('purchase_price').value = '0';
+    document.getElementById('sale_price').value = '';
+    document.getElementById('stock_quantity').value = '';
+    document.getElementById('status').value = 'active';
 }
-
-// Initialize payment helper
-document.addEventListener('DOMContentLoaded', () => {
-    setupPaymentMethod('pay_method', 'tid_field');
-});
-
-function submitOrder() {
-    const total = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-    const studentName = document.getElementById('pay_student_name').value || 'Walk-in';
-    const studentClass = document.getElementById('pay_student_class').value || 'N/A';
-    const campus = document.getElementById('pay_campus').value;
-    const method = document.getElementById('pay_method').value;
-    const tid = document.getElementById('pay_tid').value;
-    
-    if (document.getElementById('pay_tid').required && !tid) {
-        alert('Please enter Transaction ID');
-        return;
-    }
-
-    // Create form data to submit
-    const formData = new FormData();
-    formData.append('action', 'process_sale');
-    formData.append('student_name', studentName);
-    formData.append('class', studentClass);
-    formData.append('campus', campus);
-    formData.append('items', JSON.stringify(cart));
-    formData.append('total_amount', total);
-    formData.append('payment_method', method);
-    formData.append('transaction_id', tid);
-    
-    fetch('', { method: 'POST', body: formData })
-    .then(res => res.text())
-    .then(data => {
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('checkoutModal')).hide();
-        generateReceipt(studentName, studentClass, method, total, tid);
-        cart = [];
-        renderCart();
-        bootstrap.Modal.getOrCreateInstance(document.getElementById('receiptModal')).show();
-    })
-    .catch(err => {
-        alert('Error processing sale: ' + err);
-    });
-}
-
-function generateReceipt(name, cls, method, total, tid) {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString();
-    const timeStr = now.toLocaleTimeString();
-    const campus = '<?php echo $_SESSION['user_campus'] ?? 'Rajanpur'; ?>';
-    
-    let itemsHtml = '';
-    cart.forEach(item => {
-        itemsHtml += `<div>${item.name.padEnd(20)} x${item.qty.toString().padEnd(2)} PKR ${item.price * item.qty}</div>`;
-    });
-    
-    let tidHtml = tid ? `<div class="small">TID: ${tid}</div>` : '';
-    
-    document.getElementById('receiptArea').innerHTML = `
-        <div class="text-center">
-            <h6 class="fw-bold mb-1">Quaid-e-Azam Group of Colleges</h6>
-            <div class="small">Campus: ${campus}</div>
-            <div class="small mb-2">Date: ${dateStr} Time: ${timeStr}</div>
-            <div class="border-bottom border-dark mb-2"></div>
-        </div>
-        <div class="mb-2">
-            ${itemsHtml}
-        </div>
-        <div class="border-bottom border-dark mb-2"></div>
-        <div class="d-flex justify-content-between fw-bold mb-1">
-            <span>Total:</span>
-            <span>PKR ${total.toFixed(2)}</span>
-        </div>
-        <div class="small">Payment: ${method}</div>
-        ${tidHtml}
-        <div class="text-center small mt-3">
-            <div>Customer: ${name} (${cls})</div>
-            <div class="mt-2 fw-bold">Thank You!</div>
-        </div>
-    `;
-}
-
-function printReceipt() {
-    window.print();
-}
-
-function showEditProduct(p) {
-    document.getElementById('productModalTitle').innerText = 'Edit Product';
-    document.getElementById('productAction').value = 'edit_product';
-    document.getElementById('productId').value = p.id;
-    document.getElementById('productName').value = p.name;
-    document.getElementById('productCategory').value = p.category;
-    document.getElementById('productPrice').value = p.price;
-    document.getElementById('productStock').value = p.stock;
-    
-    var modal = new bootstrap.Modal(document.getElementById('productModal'));
-    modal.show();
-}
-
-function resetProductModal() {
-    document.getElementById('productModalTitle').innerText = 'Add New Product';
-    document.getElementById('productAction').value = 'add_product';
-    document.getElementById('productId').value = '';
-    document.getElementById('productForm').reset();
+function editProduct(product) {
+    document.getElementById('productModalTitle').textContent = 'Edit Product';
+    document.getElementById('product_action').value = 'edit_product';
+    document.getElementById('product_id').value = product.id || '';
+    document.getElementById('product_name').value = product.display_name || product.product_name || product.name || '';
+    document.getElementById('category').value = product.category || 'Other';
+    document.getElementById('purchase_price').value = product.purchase_price || 0;
+    document.getElementById('sale_price').value = product.sale_price || product.price || 0;
+    document.getElementById('stock_quantity').value = product.stock_quantity || product.stock || 0;
+    document.getElementById('status').value = product.status || 'active';
 }
 </script>
-
-<!-- Combined Add/Edit Product Modal -->
-<div class="modal fade" id="productModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-navy text-white">
-                <h5 class="modal-title" id="productModalTitle">Add New Product</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <form method="POST" id="productForm">
-                <div class="modal-body">
-                    <input type="hidden" name="action" id="productAction" value="add_product">
-                    <input type="hidden" name="id" id="productId">
-                    <div class="mb-3">
-                        <label class="form-label">Product Name</label>
-                        <input type="text" name="name" id="productName" class="form-control" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Category</label>
-                        <select name="category" id="productCategory" class="form-select" required>
-                            <option>Cafeteria</option>
-                            <option>Uniform</option>
-                            <option>Stationery</option>
-                        </select>
-                    </div>
-                    <div class="row">
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Price (PKR)</label>
-                            <input type="number" step="0.01" name="price" id="productPrice" class="form-control" required>
-                        </div>
-                        <div class="col-6 mb-3">
-                            <label class="form-label">Stock</label>
-                            <input type="number" name="stock" id="productStock" class="form-control" required>
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Stock Purchase Cost (optional)</label>
-                        <input type="number" step="0.01" name="purchase_cost" id="productPurchaseCost" class="form-control" placeholder="Creates pending expense for stationery/POS stock">
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-navy w-100">Save Product</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Report Modal -->
-<div class="modal fade" id="reportModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-navy text-white">
-                <h5 class="modal-title">Daily Sales Report - <?php echo date('d M Y'); ?></h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4">Time</th>
-                            <th>Customer</th>
-                            <th>Method</th>
-                            <th class="text-end pe-4">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($dailySales as $sale): ?>
-                            <tr>
-                                <td class="ps-4"><?php echo date('h:i A', strtotime($sale['created_at'])); ?></td>
-                                <td><?php echo htmlspecialchars($sale['student_name']); ?></td>
-                                <td><span class="badge bg-light text-navy border"><?php echo $sale['payment_method']; ?></span></td>
-                                <td class="text-end pe-4 fw-bold">PKR <?php echo number_format($sale['total_amount'], 2); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                    <tfoot class="table-light fw-bold">
-                        <tr>
-                            <td colspan="3" class="ps-4">Total Revenue</td>
-                            <td class="text-end pe-4 text-teal">PKR <?php echo number_format($totalDailyRevenue, 2); ?></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
 
 <?php include '../../includes/footer.php'; ?>

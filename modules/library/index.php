@@ -8,7 +8,7 @@ require_once '../../config/db.php';
 if (!isLoggedIn()) {
     redirect('../../index.php');
 }
-requireRole(['admin', 'owner']);
+requireRole(['admin', 'owner', 'librarian', 'library']);
 
 $db = (new Database())->getConnection();
 $message = '';
@@ -238,11 +238,16 @@ include '../../includes/header.php';
 
 <div class="container-fluid">
     <div class="row mb-4">
-        <div class="col-12 d-flex justify-content-between align-items-center">
+        <div class="col-12 d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
             <h2 class="page-title mb-0"><i class="fas fa-book-reader me-2" style="color: var(--teal);"></i>Library Management</h2>
-            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
-                <i class="fas fa-plus me-2"></i>Add New Book
-            </button>
+            <div class="d-flex flex-wrap gap-2">
+                <a href="issue.php" class="btn btn-outline-primary"><i class="fas fa-hand-holding me-1"></i>Issue</a>
+                <a href="return.php" class="btn btn-outline-primary"><i class="fas fa-undo me-1"></i>Return</a>
+                <a href="fines.php" class="btn btn-outline-primary"><i class="fas fa-coins me-1"></i>Fines</a>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addBookModal">
+                    <i class="fas fa-plus me-2"></i>Add New Book
+                </button>
+            </div>
         </div>
     </div>
 

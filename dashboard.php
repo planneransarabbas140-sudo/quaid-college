@@ -199,9 +199,19 @@ $adminStats = [
     'teachers' => tableExists($db, 'staff') ? getStat($db, $teacherCountSql) : 0,
     'fees' => safeSumColumn($db, 'fee_collections', ['paid_amount', 'amount_paid', 'amount']),
     'complaints' => tableExists($db, 'complaints') ? getStat($db, "SELECT COUNT(*) FROM complaints") : 0,
-    'lms_uploads' => tableExists($db, 'course_materials') ? getStat($db, "SELECT COUNT(*) FROM course_materials") : 0,
+    'lms_uploads' => tableExists($db, 'lms_materials') ? getStat($db, "SELECT COUNT(*) FROM lms_materials") : 0,
     'pending' => count($pendingRequests),
     'pending_admissions' => tableExists($db, 'admission_applications') ? getStat($db, "SELECT COUNT(*) FROM admission_applications WHERE status = 'pending'") : 0,
+];
+
+$operationsStats = [
+    'pending_tasks' => tableExists($db, 'tasks') ? getStat($db, "SELECT COUNT(*) FROM tasks WHERE LOWER(COALESCE(status, 'pending')) IN ('pending','in_progress')") : 0,
+    'pending_complaints' => tableExists($db, 'complaints') ? getStat($db, "SELECT COUNT(*) FROM complaints WHERE LOWER(COALESCE(status, 'pending')) IN ('pending','under_review')") : 0,
+    'pending_leaves' => tableExists($db, 'leave_applications') ? getStat($db, "SELECT COUNT(*) FROM leave_applications WHERE LOWER(COALESCE(status, 'pending')) = 'pending'") : 0,
+    'books_issued' => tableExists($db, 'library_issues') ? getStat($db, "SELECT COUNT(*) FROM library_issues WHERE LOWER(COALESCE(status, 'issued')) = 'issued'") : 0,
+    'daily_sales' => tableExists($db, 'pos_sales') ? getStat($db, "SELECT COALESCE(SUM(total_amount), 0) FROM pos_sales WHERE DATE(sale_date) = CURDATE()") : 0,
+    'account_expenses' => tableExists($db, 'account_expenses') ? getStat($db, "SELECT COALESCE(SUM(amount), 0) FROM account_expenses WHERE LOWER(COALESCE(status, 'paid')) <> 'cancelled'") : 0,
+    'pending_fees' => tableExists($db, 'vouchers') ? getStat($db, "SELECT COALESCE(SUM(total_amount), 0) FROM vouchers WHERE status = 'unpaid'") : 0,
 ];
 
 $setupChecklist = [];
@@ -281,10 +291,22 @@ $financeCategoryRows = fetchRows($db, "
 ");
 
 $teacherStats = [
-    'classes' => tableExists($db, 'timetable') ? getStat($db, "SELECT COUNT(DISTINCT class) FROM timetable WHERE teacher_id = ?", [$userId]) : 0,
+    'classes' => tableExists($db, 'timetables') ? getStat($db, "SELECT COUNT(DISTINCT class_id) FROM timetables WHERE teacher_id = ?", [$userId]) : 0,
     'students' => tableExists($db, 'students') ? getStat($db, "SELECT COUNT(*) FROM students WHERE COALESCE(status, 'Active') = 'Active'") : 0,
-    'subjects' => tableExists($db, 'timetable') ? getStat($db, "SELECT COUNT(DISTINCT subject) FROM timetable WHERE teacher_id = ?", [$userId]) : 0,
+    'subjects' => tableExists($db, 'timetables') ? getStat($db, "SELECT COUNT(DISTINCT subject_id) FROM timetables WHERE teacher_id = ?", [$userId]) : 0,
     'pending' => getStat($db, "SELECT COUNT(*) FROM approval_requests WHERE requested_by = ? AND status = 'pending'", [$userId]),
+];
+
+$staffId = 0;
+if (tableExists($db, 'staff') && columnExists($db, 'staff', 'user_id')) {
+    $staffRow = fetchRows($db, "SELECT id FROM staff WHERE user_id = ? LIMIT 1", [$userId]);
+    $staffId = (int)($staffRow[0]['id'] ?? 0);
+}
+$staffStats = [
+    'tasks' => $staffId && tableExists($db, 'tasks') ? getStat($db, "SELECT COUNT(*) FROM tasks WHERE assigned_to = ? AND LOWER(COALESCE(status, 'pending')) IN ('pending','in_progress')", [$staffId]) : 0,
+    'internal' => tableExists($db, 'internal_management') ? getStat($db, "SELECT COUNT(*) FROM internal_management WHERE status = 'active' AND (visibility = 'all_staff' OR created_by = ? OR assigned_to = ?)", [$userId, $staffId]) : 0,
+    'complaints' => $staffId && tableExists($db, 'complaints') ? getStat($db, "SELECT COUNT(*) FROM complaints WHERE assigned_to = ? AND LOWER(COALESCE(status, 'pending')) IN ('pending','under_review')", [$staffId]) : 0,
+    'downloads' => tableExists($db, 'downloads') ? getStat($db, "SELECT COUNT(*) FROM downloads WHERE status = 'active'") : 0,
 ];
 
 $studentUserId = $userId;
@@ -294,12 +316,12 @@ $studentId = $studentRecord['id'] ?? 0;
 $studentStats = [
     'attendance' => $studentId && tableExists($db, 'student_attendance') ? getStat($db, "SELECT COUNT(*) FROM student_attendance WHERE student_id = ?", [$studentId]) : 0,
     'homework' => tableExists($db, 'homework_diary') ? getStat($db, "SELECT COUNT(*) FROM homework_diary") : 0,
-    'lms' => tableExists($db, 'course_materials') ? getStat($db, "SELECT COUNT(*) FROM course_materials") : 0,
+    'lms' => tableExists($db, 'lms_materials') ? getStat($db, "SELECT COUNT(*) FROM lms_materials WHERE status = 'active'") : 0,
     'fee_paid' => $studentId ? safeSumColumn($db, 'fee_collections', ['paid_amount', 'amount_paid', 'amount'], "student_id = " . (int)$studentId) : 0,
 ];
 
 $classes = tableExists($db, 'students') ? fetchRows($db, "SELECT DISTINCT class FROM students WHERE class IS NOT NULL AND class <> '' ORDER BY class ASC LIMIT 30") : [];
-$subjects = tableExists($db, 'timetable') ? fetchRows($db, "SELECT DISTINCT subject FROM timetable WHERE subject IS NOT NULL AND subject <> '' ORDER BY subject ASC LIMIT 30") : [];
+$subjects = tableExists($db, 'timetables') ? fetchRows($db, "SELECT DISTINCT subject_id AS subject FROM timetables WHERE subject_id IS NOT NULL AND subject_id <> '' ORDER BY subject_id ASC LIMIT 30") : [];
 if (!$subjects) {
     $subjects = [['subject' => 'English'], ['subject' => 'Mathematics'], ['subject' => 'Computer Science']];
 }
@@ -392,10 +414,12 @@ include 'includes/header.php';
         <?php if ($isAdminRole): ?>
             <div class="d-flex flex-wrap gap-2">
                 <a href="#pending-approvals" class="btn btn-light fw-bold rounded-pill px-4">Review Pending Approvals</a>
-                <a href="modules/expenses/index.php" class="btn btn-outline-light fw-bold rounded-pill px-4">Financial Overview</a>
+                <a href="modules/accounts/reports.php" class="btn btn-outline-light fw-bold rounded-pill px-4">Accounts Reports</a>
             </div>
         <?php elseif ($role === 'teacher'): ?>
             <a href="#teacher-actions" class="btn btn-light fw-bold rounded-pill px-4">Submit Work for Approval</a>
+        <?php elseif ($role === 'staff'): ?>
+            <a href="#staff-actions" class="btn btn-light fw-bold rounded-pill px-4">Open Staff Workspace</a>
         <?php else: ?>
             <a href="#student-actions" class="btn btn-light fw-bold rounded-pill px-4">Student Actions</a>
         <?php endif; ?>
@@ -411,6 +435,24 @@ include 'includes/header.php';
         <div class="col-md-6 col-xl-2"><div class="mini-card"><i class="fas fa-cloud-upload-alt"></i><span>LMS Uploads</span><strong><?= number_format($adminStats['lms_uploads']) ?></strong></div></div>
         <div class="col-md-6 col-xl-2"><div class="mini-card"><i class="fas fa-hourglass-half"></i><span>Pending</span><strong><?= number_format($adminStats['pending']) ?></strong></div></div>
         <div class="col-md-6 col-xl-2"><div class="mini-card"><i class="fas fa-user-clock"></i><span>Pending Admissions</span><strong><?= number_format($adminStats['pending_admissions']) ?></strong></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-header bg-white border-0 p-4">
+            <h5 class="mb-1 fw-bold">Operations Snapshot</h5>
+            <p class="text-muted mb-0 small">A compact view of the modules that need daily attention.</p>
+        </div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-6 col-xl-3"><a class="mini-card d-block text-decoration-none" href="modules/tasks/index.php"><i class="fas fa-tasks"></i><span>Pending Tasks</span><strong><?= number_format($operationsStats['pending_tasks']) ?></strong></a></div>
+                <div class="col-md-6 col-xl-3"><a class="mini-card d-block text-decoration-none" href="modules/complaints/index.php"><i class="fas fa-exclamation-circle"></i><span>Open Complaints</span><strong><?= number_format($operationsStats['pending_complaints']) ?></strong></a></div>
+                <div class="col-md-6 col-xl-3"><a class="mini-card d-block text-decoration-none" href="modules/hr/leave.php"><i class="fas fa-calendar-minus"></i><span>Pending Leaves</span><strong><?= number_format($operationsStats['pending_leaves']) ?></strong></a></div>
+                <div class="col-md-6 col-xl-3"><a class="mini-card d-block text-decoration-none" href="modules/library/issue.php"><i class="fas fa-book-open"></i><span>Books Issued</span><strong><?= number_format($operationsStats['books_issued']) ?></strong></a></div>
+                <div class="col-md-6 col-xl-4"><a class="mini-card d-block text-decoration-none" href="modules/pos/index.php"><i class="fas fa-store"></i><span>Today POS Sales</span><strong>Rs <?= number_format((float)$operationsStats['daily_sales']) ?></strong></a></div>
+                <div class="col-md-6 col-xl-4"><a class="mini-card d-block text-decoration-none" href="modules/accounts/expenses.php"><i class="fas fa-file-invoice-dollar"></i><span>Account Expenses</span><strong>Rs <?= number_format((float)$operationsStats['account_expenses']) ?></strong></a></div>
+                <div class="col-md-6 col-xl-4"><a class="mini-card d-block text-decoration-none" href="modules/fee_management/index.php"><i class="fas fa-money-bill-wave"></i><span>Pending Fees</span><strong>Rs <?= number_format((float)$operationsStats['pending_fees']) ?></strong></a></div>
+            </div>
+        </div>
     </div>
 
     <?php if ($setupChecklist && count(array_filter($setupChecklist, fn($item) => !$item['done'])) > 0): ?>
@@ -558,7 +600,9 @@ include 'includes/header.php';
                     <div class="d-grid gap-2">
                         <a class="btn btn-outline-primary text-start" href="modules/attendance/index.php"><i class="fas fa-calendar-check me-2"></i>Mark Attendance</a>
                         <a class="btn btn-outline-primary text-start" href="modules/lms/index.php"><i class="fas fa-cloud-upload-alt me-2"></i>Upload LMS Material</a>
-                        <a class="btn btn-outline-primary text-start" href="modules/diary_homework/index.php"><i class="fas fa-book-open me-2"></i>Add Daily Diary</a>
+                        <a class="btn btn-outline-primary text-start" href="modules/homework/index.php"><i class="fas fa-book-open me-2"></i>Add Homework / Diary</a>
+                        <a class="btn btn-outline-primary text-start" href="modules/timetable/index.php"><i class="fas fa-clock me-2"></i>My Timetable</a>
+                        <a class="btn btn-outline-primary text-start" href="modules/tasks/index.php"><i class="fas fa-tasks me-2"></i>My Tasks</a>
                     </div>
                     <form method="POST" class="mt-4">
                         <?= csrfTokenInput() ?>
@@ -569,6 +613,26 @@ include 'includes/header.php';
                         <button class="btn btn-success rounded-pill px-4">Send LMS Request</button>
                     </form>
                 </div>
+            </div>
+        </div>
+    </div>
+
+<?php elseif ($role === 'staff'): ?>
+    <div class="row g-4 mb-4">
+        <div class="col-md-3"><div class="mini-card"><i class="fas fa-tasks"></i><span>Assigned Tasks</span><strong><?= number_format($staffStats['tasks']) ?></strong></div></div>
+        <div class="col-md-3"><div class="mini-card"><i class="fas fa-briefcase"></i><span>Internal Records</span><strong><?= number_format($staffStats['internal']) ?></strong></div></div>
+        <div class="col-md-3"><div class="mini-card"><i class="fas fa-exclamation-circle"></i><span>Assigned Complaints</span><strong><?= number_format($staffStats['complaints']) ?></strong></div></div>
+        <div class="col-md-3"><div class="mini-card"><i class="fas fa-download"></i><span>Downloads</span><strong><?= number_format($staffStats['downloads']) ?></strong></div></div>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 mb-4" id="staff-actions">
+        <div class="card-header bg-white border-0 p-4"><h5 class="mb-0 fw-bold">Staff Workspace</h5></div>
+        <div class="card-body p-4">
+            <div class="row g-3">
+                <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/tasks/index.php"><i class="fas fa-tasks me-2"></i>My Tasks</a></div>
+                <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/internal/index.php"><i class="fas fa-briefcase me-2"></i>Internal Management</a></div>
+                <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/downloads/index.php"><i class="fas fa-download me-2"></i>Downloads</a></div>
+                <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/complaints/index.php"><i class="fas fa-exclamation-circle me-2"></i>Complaints</a></div>
             </div>
         </div>
     </div>
@@ -589,8 +653,10 @@ include 'includes/header.php';
                     <div class="row g-3">
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/student_profile/index.php"><i class="fas fa-user me-2"></i>My Profile</a></div>
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/attendance/index.php"><i class="fas fa-calendar me-2"></i>My Attendance</a></div>
-                        <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/diary_homework/index.php"><i class="fas fa-book-open me-2"></i>My Homework</a></div>
+                        <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/homework/index.php"><i class="fas fa-book-open me-2"></i>My Homework</a></div>
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/lms/index.php"><i class="fas fa-folder-open me-2"></i>My LMS Material</a></div>
+                        <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/timetable/index.php"><i class="fas fa-clock me-2"></i>My Timetable</a></div>
+                        <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/ptm/index.php"><i class="fas fa-users me-2"></i>PTM Notices</a></div>
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/fee_management/index.php"><i class="fas fa-money-bill me-2"></i>My Fee Status</a></div>
                         <div class="col-md-6"><a class="btn btn-outline-primary w-100 text-start" href="modules/fee_management/index.php#generate-challan"><i class="fas fa-file-invoice me-2"></i>Generate Fee Challan</a></div>
                     </div>
@@ -652,6 +718,11 @@ include 'includes/header.php';
                 <div class="module-chip">My Classes</div>
                 <div class="module-chip">My Students</div>
                 <div class="module-chip">Pending Submissions</div>
+            <?php elseif ($role === 'staff'): ?>
+                <p class="text-muted mb-2">Staff can work on assigned tasks, assigned complaints, shared downloads, and internal records.</p>
+                <div class="module-chip">Assigned Tasks</div>
+                <div class="module-chip">Internal Records</div>
+                <div class="module-chip">Downloads</div>
             <?php else: ?>
                 <p class="text-muted mb-2">Student access is read-only except assignment submission and complaint requests.</p>
                 <div class="module-chip">My Profile</div>

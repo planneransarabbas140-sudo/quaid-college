@@ -1,0 +1,38 @@
+-- Learning Management System material table
+
+CREATE TABLE IF NOT EXISTS lms_materials (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    class_id VARCHAR(100) DEFAULT NULL,
+    section_id VARCHAR(50) DEFAULT NULL,
+    subject_id VARCHAR(120) DEFAULT NULL,
+    teacher_id INT DEFAULT NULL,
+    title VARCHAR(220) NOT NULL,
+    description TEXT DEFAULT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    original_file_name VARCHAR(255) DEFAULT NULL,
+    file_type VARCHAR(20) DEFAULT NULL,
+    file_size BIGINT NOT NULL DEFAULT 0,
+    uploaded_by INT DEFAULT NULL,
+    uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status VARCHAR(20) NOT NULL DEFAULT 'active',
+    download_count INT NOT NULL DEFAULT 0,
+    INDEX idx_lms_class (class_id, section_id),
+    INDEX idx_lms_subject (subject_id),
+    INDEX idx_lms_status (status),
+    INDEX idx_lms_uploaded_at (uploaded_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS class_id VARCHAR(100) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS section_id VARCHAR(50) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS subject_id VARCHAR(120) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS teacher_id INT DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS title VARCHAR(220) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS description TEXT DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS file_path VARCHAR(255) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS original_file_name VARCHAR(255) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS file_type VARCHAR(20) DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS file_size BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS uploaded_by INT DEFAULT NULL;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS uploaded_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP;
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'active';
+ALTER TABLE lms_materials ADD COLUMN IF NOT EXISTS download_count INT NOT NULL DEFAULT 0;
