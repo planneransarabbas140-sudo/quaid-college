@@ -364,6 +364,13 @@ function ensureFinanceTables(PDO $db): void {
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
 }
 
+function normalizeFinanceStatus($status): string {
+    $status = strtolower(trim((string)$status));
+    $status = str_replace([' ', '-'], '_', $status);
+    $allowed = ['pending', 'approved', 'rejected', 'paid'];
+    return in_array($status, $allowed, true) ? $status : 'pending';
+}
+
 function syncFinancialModuleData(PDO $db): void {
     ensureFinanceTables($db);
 
