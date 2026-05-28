@@ -2037,7 +2037,7 @@ unset($slide);
               <div class="qs-stat"><span class="qs-stat-num"><?= htmlspecialchars($slide['programs']) ?></span><span class="qs-stat-label">Programs</span></div>
             </div>
             <div class="qs-cta-row">
-              <a href="modules/admissions/apply.php" class="qs-btn-primary">Apply Now 2026</a>
+              <a href="modules/admissions/apply.php" class="qs-btn-primary">Apply Now</a>
               <a href="<?= htmlspecialchars($slide['url']) ?>" class="qs-btn-ghost">Explore Campus →</a>
             </div>
           </div>
@@ -2163,8 +2163,8 @@ unset($slide);
                     students across South Punjab seeking quality intermediate and degree education.
                 </p>
                 <div class="mt-4">
-                    <a href="modules/admissions/apply.php" class="btn-hero-primary">
-                        Start Your Application <i class="fas fa-arrow-right"></i>
+                    <a href="programs.php" class="btn-hero-primary">
+                        Explore Programs <i class="fas fa-arrow-right"></i>
                     </a>
                 </div>
             </div>

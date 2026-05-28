@@ -83,8 +83,8 @@ $public_nav_active = 'news';
                                 <span>NAVTTC</span>
                             </div>
                             <div class="d-flex flex-wrap gap-3 mt-4">
-                                <a href="modules/admissions/apply.php" class="btn-teal">Apply Online <i class="fa-solid fa-arrow-right"></i></a>
                                 <a href="programs.php" class="btn-outline-darkish">Explore Programs</a>
+                                <a href="contact.php" class="btn-outline-darkish">Talk to Office</a>
                             </div>
                         </article>
                     </div>

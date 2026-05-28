@@ -1088,26 +1088,46 @@ body.modern-ui::after {
     font-size: 1rem;
 }
 
-.floating-apply-btn {
-    position: fixed;
-    right: 18px;
-    bottom: 18px;
-    z-index: 950;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    border-radius: 999px;
-    padding: 12px 16px;
-    color: #fff;
-    background: linear-gradient(135deg, var(--teal), #169f8e);
-    box-shadow: 0 18px 48px rgba(42,181,160,.34);
-    font-weight: 900;
-    text-decoration: none;
+.programs-page .program-card,
+.campus-page #programs .program-card {
+    padding-bottom: 22px;
 }
 
-.floating-apply-btn:hover {
-    color: #fff;
-    transform: translateY(-2px);
+.programs-page .program-apply,
+.campus-page #programs .learn-btn,
+body.modern-ui .programs-compact .program-link,
+body.modern-ui .navttc-enroll {
+    display: none !important;
+}
+
+.programs-page .program-card p {
+    margin-bottom: 14px;
+}
+
+.programs-page .program-grid {
+    margin-top: 24px;
+}
+
+body.modern-ui .premium-story-board,
+body.modern-ui .premium-news-shell {
+    padding-block: clamp(52px, 7vw, 76px);
+}
+
+body.modern-ui .premium-bento-card {
+    min-height: 190px;
+}
+
+body.modern-ui .premium-bento-card.wide {
+    min-height: 398px;
+}
+
+body.modern-ui .footer-cta-panel {
+    padding: 22px;
+    margin-bottom: 32px;
+}
+
+body.modern-ui .footer-cta-panel h3 {
+    font-size: clamp(1.2rem, 2.2vw, 1.55rem);
 }
 
 .premium-reveal {
@@ -1453,11 +1473,6 @@ body.modern-ui::after {
 @media (max-width: 575px) {
     .footer-proof-grid {
         grid-template-columns: 1fr;
-    }
-    .floating-apply-btn {
-        left: 16px;
-        right: 16px;
-        justify-content: center;
     }
     .qgc-hero .qs-tab-switcher {
         left: 50%;

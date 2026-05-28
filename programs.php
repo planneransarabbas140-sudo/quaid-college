@@ -68,7 +68,7 @@ $public_nav_active = 'programs';
         @media (max-width:575px) { .program-tabs { display:grid; grid-template-columns:1fr; } .program-tab { width:100%; } .campus-table { overflow-x:auto; } }
     </style>
 </head>
-<body class="modern-ui">
+<body class="modern-ui programs-page">
     <?php require __DIR__ . '/includes/public-nav.php'; ?>
 
     <header class="hero">
@@ -77,7 +77,7 @@ $public_nav_active = 'programs';
             <h1>Choose a focused study path with real academic support.</h1>
             <p>Explore intermediate, degree, professional education, and NAVTTC skill programs offered across Quaid-e-Azam Group of Colleges campuses.</p>
             <div class="d-flex flex-wrap gap-3 mt-4">
-                <a href="modules/admissions/apply.php" class="btn-teal">Apply Online <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="contact.php" class="btn-teal">Admissions Guidance <i class="fa-solid fa-arrow-right"></i></a>
                 <a href="#program-list" class="btn-outline-lightish">View Programs</a>
             </div>
             <div class="hero-stat-grid">

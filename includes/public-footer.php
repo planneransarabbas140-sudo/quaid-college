@@ -14,7 +14,6 @@ $public_footer_portals = $public_footer_portals ?? false;
                 <p>Speak with the admissions office or start the online form. Our team will guide you through eligibility, documents, and fee details.</p>
             </div>
             <div class="footer-cta-actions">
-                <a href="modules/admissions/apply.php" class="btn-teal">Apply Online <i class="fa-solid fa-arrow-right"></i></a>
                 <a href="contact.php" class="btn-outline-lightish">Talk to Office</a>
             </div>
         </div>
@@ -65,9 +64,6 @@ $public_footer_portals = $public_footer_portals ?? false;
         <div class="footer-bottom">&copy; <?= date('Y') ?> Quaid-e-Azam Group of Colleges. All Rights Reserved.</div>
     </div>
 </footer>
-<a href="modules/admissions/apply.php" class="floating-apply-btn" aria-label="Apply online">
-    <i class="fa-solid fa-pen-to-square"></i><span>Apply</span>
-</a>
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script defer src="assets/js/responsive.js?v=3"></script>
 <script defer src="assets/js/public-premium.js?v=1"></script>
