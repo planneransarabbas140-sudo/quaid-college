@@ -202,6 +202,7 @@ $currentScriptPath = str_replace('\\', '/', (string)($_SERVER['PHP_SELF'] ?? '')
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/layout.css?v=2">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/components.css?v=2">
     <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/responsive.css?v=2">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/admin-modern.css?v=1">
     
     <style>
         /* Layout Fixes for No Overlap */
@@ -253,7 +254,7 @@ $currentScriptPath = str_replace('\\', '/', (string)($_SERVER['PHP_SELF'] ?? '')
         }
     </style>
 </head>
-<body>
+<body class="admin-modern">
 
     <div class="wrapper">
         <div class="sidebar-backdrop"></div>

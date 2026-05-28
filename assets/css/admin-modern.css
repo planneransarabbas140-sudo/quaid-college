@@ -1,0 +1,498 @@
+/* QGC premium admin layer - aligns backend with public website branding */
+:root {
+    --primary-dark: #061827;
+    --accent-teal: #2ab5a0;
+    --accent-teal-soft: rgba(42, 181, 160, .12);
+    --bg-soft: #f5f8fb;
+    --card-bg: rgba(255, 255, 255, .94);
+    --text-dark: #10243c;
+    --text-muted: #667085;
+    --border-soft: rgba(15, 45, 72, .1);
+    --shadow-soft: 0 22px 70px rgba(15, 45, 72, .1);
+    --radius-lg: 18px;
+    --sidebar-width: 276px;
+    --sidebar-collapsed: 82px;
+}
+
+html {
+    overflow-x: hidden;
+}
+
+body.admin-modern,
+body.auth-modern,
+body.apply-modern {
+    font-family: Inter, "Plus Jakarta Sans", "DM Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: var(--text-dark);
+    background:
+        linear-gradient(180deg, rgba(248, 250, 252, .98), rgba(245, 248, 251, 1)),
+        radial-gradient(900px 420px at 12% 0%, rgba(42, 181, 160, .12), transparent 62%);
+    overflow-x: hidden;
+}
+
+body.admin-modern .wrapper {
+    min-height: 100vh;
+    background: transparent;
+}
+
+body.admin-modern #sidebar {
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+    max-width: var(--sidebar-width);
+    background:
+        linear-gradient(180deg, rgba(6, 24, 39, .98), rgba(9, 36, 55, .98)),
+        radial-gradient(420px 220px at 22% 0%, rgba(42, 181, 160, .18), transparent 72%) !important;
+    border-right: 1px solid rgba(255, 255, 255, .08);
+    box-shadow: 18px 0 60px rgba(6, 24, 39, .18);
+}
+
+body.admin-modern .sidebar-header {
+    min-height: 84px;
+    padding: 18px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, .08);
+}
+
+body.admin-modern .sidebar-header img {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 16px;
+}
+
+body.admin-modern #sidebar ul li a {
+    min-height: 44px;
+    margin: 3px 4px;
+    border-radius: 14px;
+    color: rgba(255, 255, 255, .72);
+    font-size: .84rem;
+    font-weight: 720;
+}
+
+body.admin-modern #sidebar ul li a i {
+    color: #72ead8;
+}
+
+body.admin-modern #sidebar ul li a:hover,
+body.admin-modern #sidebar ul li.active > a {
+    color: #fff;
+    background: rgba(42, 181, 160, .14);
+    border-color: rgba(42, 181, 160, .2);
+    transform: translateX(2px);
+}
+
+body.admin-modern #content {
+    margin-left: var(--sidebar-width);
+    width: calc(100% - var(--sidebar-width));
+    min-width: 0;
+    background: transparent;
+}
+
+body.admin-modern #content.active {
+    margin-left: var(--sidebar-collapsed);
+    width: calc(100% - var(--sidebar-collapsed));
+}
+
+body.admin-modern .topbar,
+body.admin-modern #content > .navbar {
+    min-height: 72px;
+    background: rgba(248, 250, 252, .86) !important;
+    border-bottom: 1px solid var(--border-soft);
+    box-shadow: 0 12px 40px rgba(15, 45, 72, .06);
+    backdrop-filter: blur(22px) saturate(145%);
+}
+
+body.admin-modern #content > .p-4,
+body.admin-modern #content > .p-md-5 {
+    padding: clamp(18px, 3vw, 34px) !important;
+}
+
+body.admin-modern .page-header,
+body.admin-modern .card,
+body.admin-modern .stat-card,
+body.admin-modern .summary-card,
+body.admin-modern .dashboard-card,
+body.admin-modern .form-card,
+body.admin-modern .table-card,
+body.admin-modern .glass {
+    border: 1px solid var(--border-soft) !important;
+    border-radius: var(--radius-lg) !important;
+    background: var(--card-bg) !important;
+    box-shadow: var(--shadow-soft) !important;
+}
+
+body.admin-modern .page-header {
+    padding: clamp(20px, 3vw, 30px) !important;
+}
+
+body.admin-modern .page-title,
+body.admin-modern h1,
+body.admin-modern h2,
+body.admin-modern h3,
+body.admin-modern h4,
+body.admin-modern h5 {
+    color: var(--text-dark);
+    letter-spacing: 0;
+}
+
+body.admin-modern .text-muted,
+body.admin-modern small {
+    color: var(--text-muted) !important;
+}
+
+body.admin-modern .btn {
+    border-radius: 999px;
+    font-weight: 800;
+}
+
+body.admin-modern .btn-primary,
+body.admin-modern .btn-success,
+body.admin-modern .btn-approve,
+body.admin-modern .btn-teal {
+    background: linear-gradient(135deg, var(--accent-teal), #169f8e) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+    box-shadow: 0 14px 34px rgba(42, 181, 160, .22);
+}
+
+body.admin-modern .btn-light,
+body.admin-modern .btn-secondary {
+    background: #fff !important;
+    border: 1px solid var(--border-soft) !important;
+    color: var(--text-dark) !important;
+}
+
+body.admin-modern .badge {
+    border-radius: 999px;
+    padding: .46rem .7rem;
+    font-weight: 850;
+}
+
+body.admin-modern .badge-pending,
+body.admin-modern .bg-warning {
+    background: rgba(245, 166, 35, .18) !important;
+    color: #8a5e00 !important;
+}
+
+body.admin-modern .badge-approved,
+body.admin-modern .bg-success {
+    background: rgba(42, 181, 160, .16) !important;
+    color: #177d70 !important;
+}
+
+body.admin-modern .badge-rejected,
+body.admin-modern .bg-danger {
+    background: rgba(220, 53, 69, .12) !important;
+    color: #b42335 !important;
+}
+
+body.admin-modern .form-control,
+body.admin-modern .form-select,
+body.admin-modern textarea,
+body.admin-modern input[type="text"],
+body.admin-modern input[type="email"],
+body.admin-modern input[type="password"],
+body.admin-modern input[type="number"],
+body.admin-modern input[type="date"],
+body.admin-modern input[type="time"] {
+    min-height: 44px;
+    border-radius: 12px !important;
+    border: 1px solid rgba(15, 45, 72, .13) !important;
+    background: rgba(255, 255, 255, .9) !important;
+    color: var(--text-dark);
+    font-weight: 650;
+}
+
+body.admin-modern .form-control:focus,
+body.admin-modern .form-select:focus {
+    border-color: rgba(42, 181, 160, .55) !important;
+    box-shadow: 0 0 0 .2rem rgba(42, 181, 160, .12) !important;
+}
+
+body.admin-modern .table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 16px;
+}
+
+body.admin-modern table {
+    margin-bottom: 0;
+    vertical-align: middle;
+}
+
+body.admin-modern .table > :not(caption) > * > * {
+    padding: .9rem .85rem;
+    border-color: rgba(15, 45, 72, .08);
+}
+
+body.admin-modern thead,
+body.admin-modern .table-light {
+    background: #eef7f6 !important;
+}
+
+body.admin-modern thead th {
+    color: var(--text-dark);
+    font-size: .76rem;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+}
+
+body.admin-modern .nav-tabs {
+    border-bottom: 1px solid var(--border-soft);
+    gap: 6px;
+    padding: 8px;
+}
+
+body.admin-modern .nav-tabs .nav-link {
+    border-radius: 999px;
+}
+
+body.admin-modern .nav-tabs .nav-link.active {
+    color: #177d70 !important;
+    background: var(--accent-teal-soft) !important;
+    border: 1px solid rgba(42, 181, 160, .24) !important;
+}
+
+body.admin-modern .topbar-search {
+    max-width: 230px;
+}
+
+body.admin-modern .topbar-admin {
+    border-radius: 999px;
+}
+
+body.admin-modern .admin-avatar {
+    background: linear-gradient(135deg, var(--primary-dark), #0c3547);
+}
+
+body.auth-modern .auth-shell,
+body.apply-modern .admission-header {
+    background:
+        linear-gradient(135deg, rgba(6, 24, 39, .96), rgba(13, 84, 87, .88)),
+        radial-gradient(900px 420px at 18% 12%, rgba(42, 181, 160, .18), transparent 58%);
+}
+
+body.auth-modern .brand-panel {
+    background:
+        linear-gradient(135deg, rgba(6, 24, 39, .94), rgba(13, 84, 87, .82)),
+        url('../images/hero-slide-rajanpur.jpg') center/cover !important;
+}
+
+body.auth-modern .auth-card,
+body.apply-modern .form-card {
+    border: 1px solid var(--border-soft) !important;
+    border-radius: 24px !important;
+    background: rgba(255, 255, 255, .94) !important;
+    box-shadow: var(--shadow-soft) !important;
+}
+
+body.auth-modern .form-control,
+body.auth-modern .form-select,
+body.apply-modern .form-control,
+body.apply-modern .form-select {
+    min-height: 46px;
+    border-radius: 12px;
+    border: 1px solid rgba(15, 45, 72, .13);
+    font-weight: 650;
+}
+
+body.auth-modern .form-control:focus,
+body.auth-modern .form-select:focus,
+body.apply-modern .form-control:focus,
+body.apply-modern .form-select:focus {
+    border-color: rgba(42, 181, 160, .55);
+    box-shadow: 0 0 0 .2rem rgba(42, 181, 160, .12);
+}
+
+body.apply-modern .admission-header {
+    text-align: left;
+    padding: clamp(42px, 7vw, 78px) 0;
+}
+
+body.apply-modern .admission-header h1,
+body.apply-modern .admission-header h2 {
+    font-size: clamp(2rem, 5vw, 4.2rem);
+    line-height: 1.04;
+    font-weight: 900;
+}
+
+body.apply-modern .progress-container {
+    background: rgba(255, 255, 255, .78) !important;
+}
+
+body.apply-modern .step-progress {
+    gap: 12px;
+}
+
+body.apply-modern .step-item {
+    border-color: rgba(15, 45, 72, .14);
+}
+
+body.apply-modern .step-item.active,
+body.apply-modern .step-item.completed {
+    background: var(--accent-teal) !important;
+    border-color: var(--accent-teal) !important;
+    color: #fff !important;
+}
+
+body.apply-modern .form-step {
+    padding: clamp(22px, 4vw, 40px) !important;
+}
+
+body.apply-modern .btn-next,
+body.apply-modern .btn-submit,
+body.apply-modern .btn-back {
+    border-radius: 999px !important;
+    font-weight: 850 !important;
+}
+
+body.apply-modern .btn-next,
+body.apply-modern .btn-submit {
+    background: linear-gradient(135deg, var(--accent-teal), #169f8e) !important;
+    color: #fff !important;
+    border: 0 !important;
+}
+
+body.admin-modern .admission-filter-bar {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+body.admin-modern .application-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+body.admin-modern .application-detail-grid > div {
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 14px;
+    background: #fff;
+}
+
+@media (max-width: 1199px) {
+    body.admin-modern .admission-filter-bar,
+    body.admin-modern .application-detail-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 992px) {
+    body.admin-modern #sidebar {
+        transform: translateX(-104%);
+        margin-left: 0 !important;
+        width: min(86vw, 310px);
+        min-width: min(86vw, 310px);
+        max-width: min(86vw, 310px);
+        z-index: 1060;
+    }
+
+    body.admin-modern #sidebar.active {
+        transform: translateX(0);
+    }
+
+    body.admin-modern #content,
+    body.admin-modern #content.active {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    body.admin-modern .sidebar-backdrop.visible {
+        display: block;
+        z-index: 1050;
+    }
+
+    body.admin-modern .topbar-search,
+    body.admin-modern .admin-info,
+    body.admin-modern .topbar-icon-btn {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    body.admin-modern #content > .p-4,
+    body.admin-modern #content > .p-md-5 {
+        padding: 16px !important;
+    }
+
+    body.admin-modern .page-header,
+    body.admin-modern .page-header.d-flex,
+    body.admin-modern .topbar-actions {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    body.admin-modern .admission-filter-bar,
+    body.admin-modern .application-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    body.admin-modern .btn,
+    body.apply-modern .btn,
+    body.auth-modern .btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    body.admin-modern table {
+        min-width: 760px;
+    }
+
+    body.admin-modern .d-inline-flex {
+        display: flex !important;
+        width: 100%;
+        flex-wrap: wrap;
+    }
+
+    body.admin-modern td .form-control-sm {
+        width: 100% !important;
+    }
+
+    body.auth-modern .auth-shell {
+        display: block;
+    }
+
+    body.auth-modern .brand-panel {
+        min-height: auto;
+        padding: 28px 20px;
+    }
+
+    body.auth-modern .brand-stat {
+        grid-template-columns: 1fr;
+    }
+
+    body.auth-modern .form-panel,
+    body.apply-modern .container {
+        padding: 16px !important;
+    }
+
+    body.apply-modern .step-progress {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    body.apply-modern .step-label {
+        display: none !important;
+    }
+}
+
+@media print {
+    body.admin-modern #sidebar,
+    body.admin-modern .topbar,
+    body.admin-modern .sidebar-backdrop,
+    body.admin-modern .btn,
+    #chatbot-bubble,
+    #chatbot-window {
+        display: none !important;
+    }
+    body.admin-modern #content {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+    body.admin-modern .card {
+        box-shadow: none !important;
+    }
+}

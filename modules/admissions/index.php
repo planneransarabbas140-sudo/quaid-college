@@ -49,8 +49,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['application_action'])
 }
 // ─── FETCH DATA ───────────────────────────────────────────────
 // Tab 1: Recent Admissions (Online Applications)
-$online_apps = $db->query("SELECT * FROM admission_applications ORDER BY created_at DESC LIMIT 50")->fetchAll();
+$filters = [
+    'campus' => trim($_GET['campus'] ?? ''),
+    'program' => trim($_GET['program'] ?? ''),
+    'status' => trim($_GET['status'] ?? ''),
+    'date_from' => trim($_GET['date_from'] ?? ''),
+    'date_to' => trim($_GET['date_to'] ?? ''),
+];
+$where = [];
+$params = [];
+if ($filters['campus'] !== '') {
+    $where[] = 'campus = ?';
+    $params[] = $filters['campus'];
+}
+if ($filters['program'] !== '') {
+    $where[] = 'program = ?';
+    $params[] = $filters['program'];
+}
+if (in_array($filters['status'], ['pending', 'approved', 'rejected'], true)) {
+    $where[] = 'status = ?';
+    $params[] = $filters['status'];
+}
+if ($filters['date_from'] !== '') {
+    $where[] = 'DATE(created_at) >= ?';
+    $params[] = $filters['date_from'];
+}
+if ($filters['date_to'] !== '') {
+    $where[] = 'DATE(created_at) <= ?';
+    $params[] = $filters['date_to'];
+}
+$whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+$appsStmt = $db->prepare("SELECT * FROM admission_applications {$whereSql} ORDER BY created_at DESC LIMIT 100");
+$appsStmt->execute($params);
+$online_apps = $appsStmt->fetchAll();
 $pendingAdmissions = $db->query("SELECT COUNT(*) FROM admission_applications WHERE status = 'pending'")->fetchColumn();
+$campusOptions = $db->query("SELECT DISTINCT campus FROM admission_applications WHERE campus IS NOT NULL AND campus <> '' ORDER BY campus")->fetchAll(PDO::FETCH_COLUMN);
+$programOptions = $db->query("SELECT DISTINCT program FROM admission_applications WHERE program IS NOT NULL AND program <> '' ORDER BY program")->fetchAll(PDO::FETCH_COLUMN);
 
 // Tab 2: Enrolled Students
 $campusJoin = tableExists($db, 'campuses') && columnExists($db, 'students', 'campus_id')
@@ -138,6 +172,32 @@ include '../../includes/header.php';
             
             <!-- TAB 1: ONLINE APPLICATIONS -->
             <div class="tab-pane fade show active p-4" id="online-content" role="tabpanel">
+                <form method="GET" class="admission-filter-bar">
+                    <select name="campus" class="form-select">
+                        <option value="">All campuses</option>
+                        <?php foreach ($campusOptions as $campus): ?>
+                            <option value="<?= htmlspecialchars($campus) ?>" <?= $filters['campus'] === $campus ? 'selected' : '' ?>><?= htmlspecialchars($campus) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select name="program" class="form-select">
+                        <option value="">All programs</option>
+                        <?php foreach ($programOptions as $program): ?>
+                            <option value="<?= htmlspecialchars($program) ?>" <?= $filters['program'] === $program ? 'selected' : '' ?>><?= htmlspecialchars($program) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                    <select name="status" class="form-select">
+                        <option value="">All statuses</option>
+                        <option value="pending" <?= $filters['status'] === 'pending' ? 'selected' : '' ?>>Pending</option>
+                        <option value="approved" <?= $filters['status'] === 'approved' ? 'selected' : '' ?>>Approved</option>
+                        <option value="rejected" <?= $filters['status'] === 'rejected' ? 'selected' : '' ?>>Rejected</option>
+                    </select>
+                    <input type="date" name="date_from" class="form-control" value="<?= htmlspecialchars($filters['date_from']) ?>" aria-label="Date from">
+                    <div class="d-flex gap-2">
+                        <input type="date" name="date_to" class="form-control" value="<?= htmlspecialchars($filters['date_to']) ?>" aria-label="Date to">
+                        <button class="btn btn-primary px-3" type="submit"><i class="fas fa-filter"></i></button>
+                        <a class="btn btn-light px-3" href="index.php"><i class="fas fa-rotate-left"></i></a>
+                    </div>
+                </form>
                 <div class="table-responsive">
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
@@ -185,6 +245,9 @@ include '../../includes/header.php';
                                     <?php endif; ?>
                                     <a href="view_application.php?id=<?= $app['id'] ?>" class="btn btn-sm btn-light rounded-pill px-3 ms-1">
                                         <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                    <a href="view_application.php?id=<?= $app['id'] ?>&print=1" class="btn btn-sm btn-light rounded-pill px-3 ms-1">
+                                        <i class="fas fa-print me-1"></i> Print
                                     </a>
                                 </td>
                             </tr>
