@@ -29,7 +29,6 @@ $public_footer_portals = $public_footer_portals ?? false;
                 <?php if ($public_footer_portals): ?>
                 <div class="mt-3 d-flex flex-wrap gap-2">
                     <a href="modules/auth/login.php" class="portal-btn" style="font-size:.78rem;padding:8px 14px;">Student Portal</a>
-                    <a href="modules/fee_management/index.php" class="portal-btn" style="font-size:.78rem;padding:8px 14px;background:rgba(255,255,255,.12);">Fee Portal</a>
                 </div>
                 <?php endif; ?>
             </div>
