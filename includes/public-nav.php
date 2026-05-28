@@ -63,6 +63,7 @@ if (!function_exists('qgc_campus_nav_current')) {
                 <i class="fa-solid fa-search"></i>
             </button>
             <?php endif; ?>
+            <a class="nav-apply-btn mt-3 mt-lg-0 me-lg-2" href="modules/admissions/apply.php"><i class="fa-solid fa-arrow-right"></i><span>Apply</span></a>
             <a class="portal-btn mt-3 mt-lg-0" href="modules/auth/login.php"><i class="fa-solid fa-lock"></i><span>Portal Login</span></a>
         </div>
     </div>
