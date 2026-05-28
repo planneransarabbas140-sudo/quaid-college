@@ -97,7 +97,30 @@ $public_nav_active = 'programs';
                         <h2 class="section-title">Find the right program.</h2>
                     </div>
                     <div class="col-lg-5">
-                        <p class="lead-text mb-0">Use the category buttons to quickly review available study options and choose the pathway that matches your next goal.</p>
+                        <p class="lead-text mb-0">Search by subject, career direction, duration, or category, then narrow the list with quick filters.</p>
+                    </div>
+                </div>
+
+                <div class="premium-search-panel">
+                    <label for="programSearch">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input id="programSearch" type="search" placeholder="Search programs, skills, affiliations, or career tracks" autocomplete="off">
+                    </label>
+                    <span class="premium-filter-count" id="programMatchCount">12 programs found</span>
+                </div>
+
+                <div class="premium-program-guide">
+                    <div class="premium-guide-card featured">
+                        <strong>Best for focused admissions planning</strong>
+                        <span>Compare intermediate, BS, professional, and skill pathways before visiting the campus office.</span>
+                    </div>
+                    <div class="premium-guide-card">
+                        <strong>Pre-medical and engineering</strong>
+                        <span>Structured board preparation with regular testing and faculty guidance.</span>
+                    </div>
+                    <div class="premium-guide-card">
+                        <strong>Digital and NAVTTC skills</strong>
+                        <span>Short practical courses for job-ready creative and technology skills.</span>
                     </div>
                 </div>
 
@@ -218,6 +241,9 @@ $public_nav_active = 'programs';
                             <a href="<?= program_apply_url('NAVTTC - Digital Marketing, UI/UX, Graphics, AI') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>
+                </div>
+                <div id="programNoResults" class="program-no-results d-none">
+                    No programs matched your search. Try a broader keyword like science, computer, degree, or skill.
                 </div>
             </div>
         </section>
@@ -344,23 +370,5 @@ $public_nav_active = 'programs';
     </main>
 
     <?php require __DIR__ . '/includes/public-footer.php'; ?>
-    <script>
-        const tabs = document.querySelectorAll('.program-tab');
-        const items = document.querySelectorAll('.program-item');
-
-        tabs.forEach((tab) => {
-            tab.addEventListener('click', () => {
-                const filter = tab.dataset.filter;
-
-                tabs.forEach((button) => button.classList.remove('active'));
-                tab.classList.add('active');
-
-                items.forEach((item) => {
-                    const shouldShow = filter === 'all' || item.dataset.category === filter;
-                    item.classList.toggle('d-none', !shouldShow);
-                });
-            });
-        });
-    </script>
 </body>
 </html>

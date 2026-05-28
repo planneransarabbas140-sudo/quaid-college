@@ -7,10 +7,26 @@ $public_footer_portals = $public_footer_portals ?? false;
 ?>
 <footer class="public-footer">
     <div class="container">
+        <div class="footer-cta-panel">
+            <div>
+                <span class="footer-kicker">Admissions 2026</span>
+                <h3>Ready to choose your campus and program?</h3>
+                <p>Speak with the admissions office or start the online form. Our team will guide you through eligibility, documents, and fee details.</p>
+            </div>
+            <div class="footer-cta-actions">
+                <a href="modules/admissions/apply.php" class="btn-teal">Apply Online <i class="fa-solid fa-arrow-right"></i></a>
+                <a href="contact.php" class="btn-outline-lightish">Talk to Office</a>
+            </div>
+        </div>
         <div class="row g-4">
             <div class="col-lg-4">
                 <h3>Quaid-e-Azam Group of Colleges</h3>
                 <p>Disciplined, career-focused education across Rajanpur, Fazilpur, and Kot Mithan since <?= (int)($established_year ?? 2015) ?>.</p>
+                <div class="footer-proof-grid">
+                    <span><strong><?= (int)($total_students ?? 0) ?>+</strong> Students</span>
+                    <span><strong><?= (int)($total_faculty ?? 0) ?>+</strong> Faculty</span>
+                    <span><strong><?= (int)($programs_offered ?? 0) ?>+</strong> Programs</span>
+                </div>
                 <?php if ($public_footer_portals): ?>
                 <div class="mt-3 d-flex flex-wrap gap-2">
                     <a href="modules/auth/login.php" class="portal-btn" style="font-size:.78rem;padding:8px 14px;">Student Portal</a>
@@ -49,5 +65,9 @@ $public_footer_portals = $public_footer_portals ?? false;
         <div class="footer-bottom">&copy; <?= date('Y') ?> Quaid-e-Azam Group of Colleges. All Rights Reserved.</div>
     </div>
 </footer>
+<a href="modules/admissions/apply.php" class="floating-apply-btn" aria-label="Apply online">
+    <i class="fa-solid fa-pen-to-square"></i><span>Apply</span>
+</a>
 <script defer src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script defer src="assets/js/responsive.js?v=3"></script>
+<script defer src="assets/js/public-premium.js?v=1"></script>

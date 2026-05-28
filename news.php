@@ -16,49 +16,106 @@ $public_nav_active = 'news';
     <link href="assets/css/public-site.css?v=5" rel="stylesheet">
     <style>
         * { box-sizing: border-box; }
-        body { margin:0; font-family:Poppins,sans-serif; background:var(--light); color:var(--navy); }
+        body { margin:0; font-family:Poppins,sans-serif; background:#f8fafc; color:var(--navy); }
         a { text-decoration:none; }
-        .home-btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; border-radius:999px; padding:11px 20px; background:var(--teal); color:var(--white); font-weight:800; transition:300ms ease; }
-        .home-btn:hover { color:var(--white); transform:translateY(-2px); background:#33c8b1; }
-        .coming-soon { min-height:calc(100vh - 274px); display:grid; place-items:center; padding:90px 20px; background:radial-gradient(circle at 15% 15%, rgba(42,181,160,.14), transparent 30%), linear-gradient(135deg,#f8fafc,#eef3f8); }
-        .soon-card { max-width:760px; width:100%; text-align:center; background:var(--white); border-radius:14px; padding:64px 34px; box-shadow:0 24px 70px rgba(26,47,74,.12); border-top:4px solid var(--teal); }
-        .soon-card .badge { background:rgba(245,166,35,.15); color:var(--navy); border:1px solid rgba(245,166,35,.35); }
-        .soon-card h1 { margin:18px 0 10px; font-size:clamp(2.4rem,6vw,4.8rem); font-weight:900; color:var(--navy); }
-        .soon-card p { color:var(--muted); font-size:1.08rem; margin-bottom:28px; }
-        .news-actions { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; margin:30px 0 28px; text-align:left; }
-        .news-action-card { border:1px solid #dce3ef; border-radius:12px; padding:18px; color:var(--navy); background:#fff; transition:300ms ease; }
-        .news-action-card:hover { transform:translateY(-4px); border-color:var(--teal); box-shadow:0 16px 38px rgba(26,47,74,.12); color:var(--navy); }
-        .news-action-card i { width:38px; height:38px; border-radius:10px; display:inline-grid; place-items:center; background:rgba(42,181,160,.13); color:var(--teal); margin-bottom:12px; }
-        .news-action-card strong { display:block; font-size:.92rem; margin-bottom:5px; }
-        .news-action-card span { display:block; color:var(--muted); font-size:.78rem; line-height:1.55; }
-        @media (max-width:991px) { .news-actions { grid-template-columns:1fr; } }
+        .section-kicker { color:var(--teal); font-weight:900; text-transform:uppercase; font-size:.76rem; letter-spacing:.12em; margin-bottom:10px; }
+        .section-title { font-size:clamp(2rem,4vw,3.25rem); font-weight:900; margin:0; }
+        .lead-text { color:var(--muted); line-height:1.85; }
+        .news-grid { margin-top:28px; }
+        .notice-list { display:grid; gap:12px; margin-top:22px; }
+        .notice-list a { display:flex; justify-content:space-between; gap:16px; align-items:center; border:1px solid rgba(15,45,72,.1); border-radius:14px; padding:14px 16px; color:var(--navy); background:#fff; }
+        .notice-list a:hover { border-color:rgba(42,181,160,.45); box-shadow:0 14px 36px rgba(15,45,72,.08); }
+        .notice-list span { color:var(--muted); font-size:.8rem; font-weight:800; white-space:nowrap; }
+        @media (max-width:575px) { .notice-list a { display:block; } .notice-list span { display:block; margin-top:8px; } }
     </style>
 </head>
 <body class="modern-ui">
     <?php require __DIR__ . '/includes/public-nav.php'; ?>
-    <main class="coming-soon">
-        <section class="soon-card">
-            <span class="badge rounded-pill px-3 py-2"><?= $page_title ?></span>
-            <h1>News Desk</h1>
-            <p>This page is under development. Until the full news archive is published, use these quick links for the most requested updates.</p>
-            <div class="news-actions">
-                <a class="news-action-card" href="modules/admissions/apply.php">
-                    <i class="fa-solid fa-graduation-cap"></i>
-                    <strong>Admissions 2026</strong>
-                    <span>Apply online for FA, FSc, ICS, BS, ADP, B.Ed and NAVTTC programs.</span>
-                </a>
-                <a class="news-action-card" href="modules/examination/index.php">
-                    <i class="fa-solid fa-calendar-check"></i>
-                    <strong>Exam Schedule</strong>
-                    <span>View examination notices and schedule updates from the college office.</span>
-                </a>
-                <a class="news-action-card" href="modules/student/index.php">
-                    <i class="fa-solid fa-list-check"></i>
-                    <strong>Merit Lists</strong>
-                    <span>Check student updates, merit lists, and batch announcements.</span>
-                </a>
+    <main>
+        <header class="premium-news-hero">
+            <div class="container">
+                <div class="section-kicker">News and Notices</div>
+                <h1>College updates, admissions alerts, and student notices in one place.</h1>
+                <p>Follow important academic announcements, admissions activity, exam updates, campus events, and student support notices from Quaid-e-Azam Group of Colleges.</p>
+                <div class="announcement-strip">
+                    <strong>Latest</strong>
+                    <span>Admissions guidance for the 2026 batch is open across Rajanpur, Fazilpur, and Kot Mithan campuses.</span>
+                </div>
             </div>
-            <a href="index.php" class="home-btn"><i class="fa-solid fa-arrow-left"></i> Back to Home</a>
+        </header>
+
+        <section class="premium-news-shell">
+            <div class="container">
+                <div class="row align-items-end g-4">
+                    <div class="col-lg-7">
+                        <div class="section-kicker">Featured Desk</div>
+                        <h2 class="section-title">Important updates.</h2>
+                    </div>
+                    <div class="col-lg-5">
+                        <p class="lead-text mb-0">Quick access to the notices students and parents ask for most often, with a cleaner archive layout ready for future dynamic posts.</p>
+                    </div>
+                </div>
+
+                <div class="row g-4 news-grid">
+                    <div class="col-lg-7">
+                        <article class="premium-feature-card">
+                            <span class="badge rounded-pill px-3 py-2">Admissions</span>
+                            <h2 class="mt-3 mb-3">Admissions 2026 inquiry support is live.</h2>
+                            <p>Students can apply online or contact the nearest campus office for eligibility, document checklist, fee guidance, and program availability.</p>
+                            <div class="news-filter-bar">
+                                <span>FA / FSc</span>
+                                <span>ICS / I.Com</span>
+                                <span>BS / ADP</span>
+                                <span>NAVTTC</span>
+                            </div>
+                            <div class="d-flex flex-wrap gap-3 mt-4">
+                                <a href="modules/admissions/apply.php" class="btn-teal">Apply Online <i class="fa-solid fa-arrow-right"></i></a>
+                                <a href="programs.php" class="btn-outline-darkish">Explore Programs</a>
+                            </div>
+                        </article>
+                    </div>
+                    <div class="col-lg-5">
+                        <div class="premium-feature-card">
+                            <span class="badge rounded-pill px-3 py-2">Notice Board</span>
+                            <div class="notice-list">
+                                <a href="modules/examination/index.php"><strong>Exam schedule and results desk</strong><span>Academic</span></a>
+                                <a href="modules/student/index.php"><strong>Student records and merit updates</strong><span>Students</span></a>
+                                <a href="contact.php"><strong>Campus office contact timings</strong><span>Support</span></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4 news-grid">
+                    <div class="col-md-6 col-xl-4">
+                        <article class="premium-news-card">
+                            <span class="badge rounded-pill px-3 py-2">Campus Life</span>
+                            <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>All Campuses</span></div>
+                            <h3>Student support counters active for new admissions.</h3>
+                            <p>Dedicated teams are available to guide students through program selection, documentation, and admission form submission.</p>
+                            <a href="contact.php" class="program-apply">Contact Campus <i class="fa-solid fa-arrow-right"></i></a>
+                        </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <article class="premium-news-card">
+                            <span class="badge rounded-pill px-3 py-2">Academics</span>
+                            <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>Exam Desk</span></div>
+                            <h3>Regular test planning continues for board classes.</h3>
+                            <p>Intermediate students receive structured preparation cycles with performance review and academic follow-up.</p>
+                            <a href="programs.php" class="program-apply">View Programs <i class="fa-solid fa-arrow-right"></i></a>
+                        </article>
+                    </div>
+                    <div class="col-md-6 col-xl-4">
+                        <article class="premium-news-card">
+                            <span class="badge rounded-pill px-3 py-2">Skills</span>
+                            <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>NAVTTC</span></div>
+                            <h3>Short skill programs open for digital career tracks.</h3>
+                            <p>Students can explore web development, mobile apps, digital marketing, UI/UX, graphics, and AI-assisted work skills.</p>
+                            <a href="programs.php#program-list" class="program-apply">Find Skills <i class="fa-solid fa-arrow-right"></i></a>
+                        </article>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
     <?php require __DIR__ . '/includes/public-footer.php'; ?>
