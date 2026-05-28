@@ -75,7 +75,7 @@ $public_nav_active = 'programs';
         <div class="container">
             <div class="eyebrow"><i class="fa-solid fa-layer-group"></i> Academic Programs</div>
             <h1>Choose a focused study path with real academic support.</h1>
-            <p>Explore intermediate, degree, professional education, and NAVTTC skill programs offered across Quaid-e-Azam Group of Colleges campuses.</p>
+            <p>Clear pathways. Strong guidance. Career-ready outcomes.</p>
             <div class="d-flex flex-wrap gap-3 mt-4">
                 <a href="contact.php" class="btn-teal">Admissions Guidance <i class="fa-solid fa-arrow-right"></i></a>
                 <a href="#program-list" class="btn-outline-lightish">View Programs</a>
@@ -97,7 +97,7 @@ $public_nav_active = 'programs';
                         <h2 class="section-title">Find the right program.</h2>
                     </div>
                     <div class="col-lg-5">
-                        <p class="lead-text mb-0">Search by subject, career direction, duration, or category, then narrow the list with quick filters.</p>
+                        <p class="lead-text mb-0">Search, filter, compare, decide.</p>
                     </div>
                 </div>
 
@@ -112,15 +112,15 @@ $public_nav_active = 'programs';
                 <div class="premium-program-guide">
                     <div class="premium-guide-card featured">
                         <strong>Best for focused admissions planning</strong>
-                        <span>Compare intermediate, BS, professional, and skill pathways before visiting the campus office.</span>
+                        <span>Compare pathways before visiting the campus office.</span>
                     </div>
                     <div class="premium-guide-card">
                         <strong>Pre-medical and engineering</strong>
-                        <span>Structured board preparation with regular testing and faculty guidance.</span>
+                        <span>Board preparation, testing, faculty guidance.</span>
                     </div>
                     <div class="premium-guide-card">
                         <strong>Digital and NAVTTC skills</strong>
-                        <span>Short practical courses for job-ready creative and technology skills.</span>
+                        <span>Practical digital skills for faster employability.</span>
                     </div>
                 </div>
 
@@ -137,7 +137,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-flask"></i></div>
                             <h3>FSc Pre-Medical</h3>
-                            <p>Biology, Chemistry, and Physics pathway for students aiming at medical, dental, pharmacy, and health sciences careers.</p>
+                            <p>Medical and health sciences pathway.</p>
                             <div class="program-tags"><span>2 Years</span><span>BISE DG Khan</span><span>Intermediate</span></div>
                             <a href="<?= program_apply_url('FSc Pre-Medical') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -146,7 +146,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-calculator"></i></div>
                             <h3>FSc Pre-Engineering</h3>
-                            <p>Mathematics, Physics, and Chemistry track for engineering, architecture, technology, and analytical careers.</p>
+                            <p>Engineering and technology pathway.</p>
                             <div class="program-tags"><span>2 Years</span><span>BISE DG Khan</span><span>Intermediate</span></div>
                             <a href="<?= program_apply_url('FSc Pre-Engineering') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -155,7 +155,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-desktop"></i></div>
                             <h3>ICS Computer Science</h3>
-                            <p>Computer Science with Mathematics and Statistics for students preparing for software, IT, and data-related fields.</p>
+                            <p>Software, IT, and data pathway.</p>
                             <div class="program-tags"><span>2 Years</span><span>BISE DG Khan</span><span>IT Track</span></div>
                             <a href="<?= program_apply_url('ICS Computer Science') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -164,7 +164,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-chart-line"></i></div>
                             <h3>I.Com Commerce</h3>
-                            <p>Commerce, accounting, and business foundation for future studies in finance, management, and entrepreneurship.</p>
+                            <p>Business, finance, and accounting base.</p>
                             <div class="program-tags"><span>2 Years</span><span>BISE DG Khan</span><span>Commerce</span></div>
                             <a href="<?= program_apply_url('I.Com Commerce') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -173,7 +173,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-book-open"></i></div>
                             <h3>FA Arts</h3>
-                            <p>Humanities and social sciences route for students pursuing law, journalism, public service, and teaching.</p>
+                            <p>Law, media, teaching, and public service.</p>
                             <div class="program-tags"><span>2 Years</span><span>BISE DG Khan</span><span>Arts</span></div>
                             <a href="<?= program_apply_url('FA Arts') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -182,7 +182,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                             <h3>ADP Arts and ADP Science</h3>
-                            <p>Two-year associate degree options for students seeking university-affiliated undergraduate pathways.</p>
+                            <p>University-affiliated associate pathway.</p>
                             <div class="program-tags"><span>2 Years</span><span>IUB Affiliated</span><span>Degree</span></div>
                             <a href="<?= program_apply_url('ADP Arts and ADP Science') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -191,7 +191,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-laptop-code"></i></div>
                             <h3>BSCS Computer Science</h3>
-                            <p>Four-year computer science degree covering programming, software development, databases, and computing foundations.</p>
+                            <p>Programming, databases, and software systems.</p>
                             <div class="program-tags"><span>4 Years</span><span>IUB Affiliated</span><span>Computing</span></div>
                             <a href="<?= program_apply_url('BSCS Computer Science') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -200,7 +200,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-network-wired"></i></div>
                             <h3>BS Information Technology</h3>
-                            <p>Systems, networks, web technologies, and applied IT skills for modern technology workplaces.</p>
+                            <p>Networks, systems, and applied IT.</p>
                             <div class="program-tags"><span>4 Years</span><span>IUB Affiliated</span><span>IT</span></div>
                             <a href="<?= program_apply_url('BS Information Technology') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -209,7 +209,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-microscope"></i></div>
                             <h3>BS Zoology, Mathematics, Urdu, Chemistry</h3>
-                            <p>Discipline-specific BS programs for students moving toward research, teaching, industry, or higher studies.</p>
+                            <p>Research, teaching, and higher studies.</p>
                             <div class="program-tags"><span>4 Years</span><span>IUB Affiliated</span><span>BS Programs</span></div>
                             <a href="<?= program_apply_url('BS Zoology, Mathematics, Urdu, Chemistry') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -218,7 +218,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-chalkboard-user"></i></div>
                             <h3>B.Ed Education</h3>
-                            <p>Professional teacher education pathway for students and working educators pursuing classroom and school careers.</p>
+                            <p>Professional teaching and school careers.</p>
                             <div class="program-tags"><span>Professional</span><span>Education</span><span>Career Track</span></div>
                             <a href="<?= program_apply_url('B.Ed Education') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -227,7 +227,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-code"></i></div>
                             <h3>Web Development and Mobile Apps</h3>
-                            <p>NAVTTC short courses for practical development skills, project work, and entry-level digital careers.</p>
+                            <p>Project-based web and app skills.</p>
                             <div class="program-tags"><span>3 to 6 Months</span><span>Govt Certified</span><span>NAVTTC</span></div>
                             <a href="<?= program_apply_url('NAVTTC - Web Development and Mobile Apps') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -236,7 +236,7 @@ $public_nav_active = 'programs';
                         <article class="program-card">
                             <div class="program-icon"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
                             <h3>Digital Marketing, UI/UX, Graphics, AI</h3>
-                            <p>Market-ready skill courses in creative design, online marketing, computer office management, and AI-assisted work.</p>
+                            <p>Creative, marketing, and AI-assisted skills.</p>
                             <div class="program-tags"><span>3 to 6 Months</span><span>Govt Certified</span><span>NAVTTC</span></div>
                             <a href="<?= program_apply_url('NAVTTC - Digital Marketing, UI/UX, Graphics, AI') ?>" class="program-apply">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
@@ -342,13 +342,13 @@ $public_nav_active = 'programs';
                         <h2 class="section-title">Apply in three steps.</h2>
                     </div>
                     <div class="col-lg-5">
-                        <p class="lead-text mb-0">Students can apply online or visit the nearest campus office for guidance on eligibility, documents, and fee details.</p>
+                        <p class="lead-text mb-0">Simple steps. Clear documents. Office support.</p>
                     </div>
                 </div>
                 <div class="row g-4">
-                    <div class="col-md-4"><div class="step-card"><div class="step-num">1</div><h3>Select your program</h3><p>Choose the study track that matches your matric, intermediate, or career plan.</p></div></div>
-                    <div class="col-md-4"><div class="step-card"><div class="step-num">2</div><h3>Submit admission form</h3><p>Complete the online form and provide accurate academic and contact information.</p></div></div>
-                    <div class="col-md-4"><div class="step-card"><div class="step-num">3</div><h3>Visit campus office</h3><p>Bring documents for verification, fee guidance, and final enrollment confirmation.</p></div></div>
+                    <div class="col-md-4"><div class="step-card"><div class="step-num">1</div><h3>Select program</h3><p>Pick your academic direction.</p></div></div>
+                    <div class="col-md-4"><div class="step-card"><div class="step-num">2</div><h3>Submit form</h3><p>Share accurate student details.</p></div></div>
+                    <div class="col-md-4"><div class="step-card"><div class="step-num">3</div><h3>Verify documents</h3><p>Confirm seat and fee guidance.</p></div></div>
                 </div>
             </div>
         </section>

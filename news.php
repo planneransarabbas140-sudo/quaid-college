@@ -36,7 +36,7 @@ $public_nav_active = 'news';
             <div class="container">
                 <div class="section-kicker">News and Notices</div>
                 <h1>College updates, admissions alerts, and student notices in one place.</h1>
-                <p>Follow important academic announcements, admissions activity, exam updates, campus events, and student support notices from Quaid-e-Azam Group of Colleges.</p>
+                <p>Admissions, exams, events, and student notices. All in one place.</p>
                 <div class="announcement-strip">
                     <strong>Latest</strong>
                     <span>Admissions guidance for the 2026 batch is open across Rajanpur, Fazilpur, and Kot Mithan campuses.</span>
@@ -52,7 +52,7 @@ $public_nav_active = 'news';
                         <h2 class="section-title">Important updates.</h2>
                     </div>
                     <div class="col-lg-5">
-                        <p class="lead-text mb-0">Quick access to the notices students and parents ask for most often, with a cleaner archive layout ready for future dynamic posts.</p>
+                        <p class="lead-text mb-0">Search notices. Filter updates. Move fast.</p>
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@ $public_nav_active = 'news';
                         <article class="premium-feature-card">
                             <span class="badge rounded-pill px-3 py-2">Admissions</span>
                             <h2 class="mt-3 mb-3">Admissions 2026 inquiry support is live.</h2>
-                            <p>Students can apply online or contact the nearest campus office for eligibility, document checklist, fee guidance, and program availability.</p>
+                            <p>Eligibility, documents, fees, and program availability.</p>
                             <div class="news-filter-bar">
                                 <span>FA / FSc</span>
                                 <span>ICS / I.Com</span>
@@ -106,7 +106,7 @@ $public_nav_active = 'news';
                             <span class="badge rounded-pill px-3 py-2">Campus Life</span>
                             <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>All Campuses</span></div>
                             <h3>Student support counters active for new admissions.</h3>
-                            <p>Dedicated teams are available to guide students through program selection, documentation, and admission form submission.</p>
+                            <p>Support for program choice and documents.</p>
                             <a href="contact.php" class="program-apply">Contact Campus <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>
@@ -115,7 +115,7 @@ $public_nav_active = 'news';
                             <span class="badge rounded-pill px-3 py-2">Academics</span>
                             <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>Exam Desk</span></div>
                             <h3>Regular test planning continues for board classes.</h3>
-                            <p>Intermediate students receive structured preparation cycles with performance review and academic follow-up.</p>
+                            <p>Test cycles, review, follow-up.</p>
                             <a href="programs.php" class="program-apply">View Programs <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>
@@ -124,7 +124,7 @@ $public_nav_active = 'news';
                             <span class="badge rounded-pill px-3 py-2">Skills</span>
                             <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>NAVTTC</span></div>
                             <h3>Short skill programs open for digital career tracks.</h3>
-                            <p>Students can explore web development, mobile apps, digital marketing, UI/UX, graphics, and AI-assisted work skills.</p>
+                            <p>Web, apps, marketing, UI/UX, graphics, AI.</p>
                             <a href="programs.php#program-list" class="program-apply">Find Skills <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>

@@ -1130,6 +1130,82 @@ body.modern-ui .footer-cta-panel h3 {
     font-size: clamp(1.2rem, 2.2vw, 1.55rem);
 }
 
+body.modern-ui .lead-text,
+body.modern-ui .section-subtitle,
+body.modern-ui .feature-desc,
+body.modern-ui .program-desc,
+body.modern-ui .program-card p,
+body.modern-ui .premium-bento-card p,
+body.modern-ui .campus-story-card p,
+body.modern-ui .welcome-copy p,
+body.modern-ui .step-card p {
+    line-height: 1.55;
+}
+
+body.modern-ui .feature-item {
+    padding: 22px;
+}
+
+body.modern-ui .program-card,
+body.modern-ui .track-card,
+body.modern-ui .step-card,
+body.modern-ui .premium-news-card {
+    min-height: 0;
+}
+
+body.modern-ui .program-card h3,
+body.modern-ui .program-name {
+    text-wrap: balance;
+}
+
+body.modern-ui .program-card p,
+body.modern-ui .program-desc {
+    font-size: .82rem;
+    margin-bottom: 12px;
+}
+
+body.modern-ui .value-card p,
+body.modern-ui .campus-card p,
+body.modern-ui .leader-card p,
+body.modern-ui .contact-card p,
+body.modern-ui .office-card p,
+body.modern-ui .premium-news-card p,
+body.modern-ui .premium-feature-card p {
+    font-size: .86rem;
+    line-height: 1.55;
+}
+
+body.modern-ui .value-card,
+body.modern-ui .campus-card,
+body.modern-ui .leader-card,
+body.modern-ui .contact-card,
+body.modern-ui .office-card,
+body.modern-ui .form-card {
+    padding: 22px;
+}
+
+body.modern-ui .icon-box,
+body.modern-ui .program-icon {
+    margin-bottom: 14px;
+}
+
+body.modern-ui .program-tags span,
+body.modern-ui .program-tag,
+body.modern-ui .badge-soft,
+body.modern-ui .premium-bento-meta span {
+    letter-spacing: .02em;
+}
+
+body.modern-ui .step-card {
+    padding: 20px;
+}
+
+body.modern-ui .track-card ul,
+body.modern-ui .check-list,
+body.modern-ui .campus-story-list {
+    gap: 8px;
+}
+
 .premium-reveal {
     opacity: 0;
     transform: translateY(22px);

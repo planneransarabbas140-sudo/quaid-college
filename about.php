@@ -93,7 +93,7 @@ $public_nav_active = 'about';
         <div class="container">
             <div class="eyebrow"><i class="fa-solid fa-star"></i> About QGC</div>
             <h1>Building disciplined, future-ready students in South Punjab.</h1>
-            <p>Quaid-e-Azam Group of Colleges provides affordable, structured, and career-focused education through intermediate, degree, professional, and NAVTTC skill programs across Rajanpur, Fazilpur, and Kot Mithan.</p>
+            <p>Structured academics. Practical skills. Three campuses across South Punjab.</p>
             <div class="d-flex flex-wrap gap-3 mt-4">
                 <a href="modules/admissions/apply.php" class="btn-teal">Apply Now <i class="fa-solid fa-arrow-right"></i></a>
                 <a href="contact.php" class="btn-teal" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);">Contact Office</a>
@@ -109,13 +109,13 @@ $public_nav_active = 'about';
                     <h2 class="section-title">A group of campuses with one academic standard.</h2>
                 </div>
                 <div class="col-lg-7">
-                    <p class="lead-text mb-0">QGC is designed for families who want strong academic discipline, accessible campuses, experienced faculty, and a clear route from classroom learning to professional opportunity. Our academic model combines board-focused preparation, degree pathways, technology programs, and skill-based training for the changing job market.</p>
+                    <p class="lead-text mb-0">A scan-first academic model: board preparation, degree pathways, digital skills, and faculty guidance.</p>
                 </div>
             </div>
             <div class="row g-4 mt-4">
-                <div class="col-md-4"><div class="value-card"><div class="icon-box"><i class="fa-solid fa-book-open"></i></div><h3>Academic Discipline</h3><p>Structured classes, regular testing, and performance tracking help students stay focused and accountable.</p></div></div>
-                <div class="col-md-4"><div class="value-card"><div class="icon-box"><i class="fa-solid fa-laptop-code"></i></div><h3>Modern Programs</h3><p>From FA/FSc and BS programs to web development, AI, UI/UX, and digital marketing, students learn relevant skills.</p></div></div>
-                <div class="col-md-4"><div class="value-card"><div class="icon-box"><i class="fa-solid fa-people-group"></i></div><h3>Student Support</h3><p>Faculty, administration, and campus leadership work together to guide students through admissions, academics, and growth.</p></div></div>
+                <div class="col-md-4"><div class="value-card"><div class="icon-box"><i class="fa-solid fa-book-open"></i></div><h3>Academic Discipline</h3><p>Classes, tests, tracking.</p></div></div>
+                <div class="col-md-4"><div class="value-card"><div class="icon-box"><i class="fa-solid fa-laptop-code"></i></div><h3>Modern Programs</h3><p>FSc, BS, AI, UI/UX, digital skills.</p></div></div>
+                <div class="col-md-4"><div class="value-card"><div class="icon-box"><i class="fa-solid fa-people-group"></i></div><h3>Student Support</h3><p>Faculty, office, leadership guidance.</p></div></div>
             </div>
         </div>
     </section>
@@ -127,9 +127,9 @@ $public_nav_active = 'about';
                 <h2 class="section-title">Our Campus Network</h2>
             </div>
             <div class="row g-4">
-                <div class="col-lg-4"><a class="campus-card d-block" href="campus-rajanpur.php"><span class="campus-badge main">MAIN CAMPUS</span><h3>Misbah Campus</h3><p>Rajanpur campus serving as the central academic hub of Quaid-e-Azam Group of Colleges.</p></a></div>
-                <div class="col-lg-4"><a class="campus-card d-block" href="campus-fazilpur.php"><span class="campus-badge">SUB CAMPUS</span><h3>Hamid Campus</h3><p>Fazilpur campus offering intermediate, degree, and NAVTTC programs close to local families.</p></a></div>
-                <div class="col-lg-4"><a class="campus-card d-block" href="campus-kotmithan.php"><span class="campus-badge">SUB CAMPUS</span><h3>Abul Rehman Campus</h3><p>Kotmithan campus focused on accessible education, discipline, and practical student development.</p></a></div>
+                <div class="col-lg-4"><a class="campus-card d-block" href="campus-rajanpur.php"><span class="campus-badge main">MAIN CAMPUS</span><h3>Misbah Campus</h3><p>Rajanpur academic hub.</p></a></div>
+                <div class="col-lg-4"><a class="campus-card d-block" href="campus-fazilpur.php"><span class="campus-badge">SUB CAMPUS</span><h3>Hamid Campus</h3><p>Fazilpur programs close to home.</p></a></div>
+                <div class="col-lg-4"><a class="campus-card d-block" href="campus-kotmithan.php"><span class="campus-badge">SUB CAMPUS</span><h3>Abul Rehman Campus</h3><p>Kot Mithan access and support.</p></a></div>
             </div>
         </div>
     </section>

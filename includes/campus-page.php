@@ -97,7 +97,7 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
                 <div class="col-lg-5 reveal">
                     <div class="welcome-copy">
                         <h2>Welcome to <?= htmlspecialchars($c['name']) ?></h2>
-                        <p><?= htmlspecialchars($c['welcome_text']) ?></p>
+                        <p>Focused academics. Practical skills. Local access.</p>
                         <ul class="check-list">
                             <?php foreach ($c['highlights'] as $item): ?>
                             <li><i class="fa-solid fa-circle-check"></i> <?= htmlspecialchars($item) ?></li>
@@ -120,7 +120,7 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
                 <article class="campus-story-card media reveal" style="background-image: url('<?= htmlspecialchars($c['video_poster']) ?>');">
                     <span class="premium-bento-kicker"><i class="fa-solid fa-camera"></i> Campus Story</span>
                     <h2>Life at <?= htmlspecialchars($c['name']) ?></h2>
-                    <p><?= htmlspecialchars($c['welcome_text']) ?></p>
+                    <p>Campus life built around confidence, discipline, and progress.</p>
                     <div class="premium-bento-meta">
                         <span><?= htmlspecialchars($c['students']) ?> students</span>
                         <span><?= htmlspecialchars($c['faculty']) ?> faculty</span>
@@ -129,8 +129,8 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
                 </article>
                 <article class="campus-story-card reveal">
                     <span class="premium-bento-kicker"><i class="fa-solid fa-compass"></i> Student Support Model</span>
-                    <h2>Built around guidance, discipline, and measurable progress.</h2>
-                    <p>Students receive academic direction, regular follow-up, and access to campus services from admission to examination preparation.</p>
+                    <h2>Guidance. Discipline. Progress.</h2>
+                    <p>Support from admission to exam preparation.</p>
                     <div class="campus-story-list">
                         <?php foreach ($c['highlights'] as $item): ?>
                         <span><i class="fa-solid fa-circle-check"></i><?= htmlspecialchars($item) ?></span>
@@ -210,7 +210,7 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
             <div class="row align-items-center">
                 <div class="col-lg-7 reveal">
                     <h2>Ready to Join <?= htmlspecialchars($c['name']) ?>?</h2>
-                    <p>Admissions open for the upcoming batch — limited seats available.</p>
+                    <p>Admissions open for the upcoming batch.</p>
                 </div>
                 <div class="col-lg-5 d-flex justify-content-lg-end gap-3 flex-wrap cta-actions reveal">
                     <a href="modules/admissions/apply.php" class="btn-campus btn-gold">Apply Now</a>
@@ -226,7 +226,7 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
                 <div class="col-lg-5 reveal">
                     <div class="welcome-copy">
                         <h2>Get In Touch</h2>
-                        <p>Our admissions team can guide you on programs, eligibility, fees, and campus visits.</p>
+                        <p>Program guidance, eligibility, fees, and visits.</p>
                     </div>
                     <div class="info-list">
                         <div class="info-row"><i class="fa-solid fa-location-dot"></i><span><?= htmlspecialchars($c['address']) ?></span></div>

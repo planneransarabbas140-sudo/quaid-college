@@ -75,7 +75,7 @@ $public_nav_active = 'contact';
         <div class="container">
             <div class="eyebrow"><i class="fa-solid fa-phone-volume"></i> Contact QGC</div>
             <h1>Talk to our admissions and campus teams.</h1>
-            <p>Whether you need admission guidance, program information, campus visit support, or student office help, our team is ready to guide you.</p>
+            <p>Admissions, programs, fees, visits. Fast guidance from the right office.</p>
             <div class="d-flex flex-wrap gap-3 mt-4">
                 <a href="tel:<?= preg_replace('/\s+/', '', $site_phone) ?>" class="btn-teal"><i class="fa-solid fa-phone"></i> Call Now</a>
                 <a href="https://wa.me/923338879961" class="btn-outline-lightish"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
@@ -91,9 +91,9 @@ $public_nav_active = 'contact';
     <section>
         <div class="container">
             <div class="row g-4">
-                <div class="col-md-4"><a class="contact-card d-block" href="tel:+923338879961"><div class="icon-box"><i class="fa-solid fa-phone"></i></div><h3>Call Admissions</h3><p>Speak with our admission office for eligibility, fee structure, and campus guidance.</p></a></div>
-                <div class="col-md-4"><a class="contact-card d-block" href="mailto:info@qgc.edu.pk"><div class="icon-box"><i class="fa-solid fa-envelope"></i></div><h3>Email Us</h3><p>Send questions about programs, admissions, documents, or student services.</p></a></div>
-                <div class="col-md-4"><a class="contact-card d-block" href="https://wa.me/923338879961"><div class="icon-box"><i class="fa-brands fa-whatsapp"></i></div><h3>WhatsApp Support</h3><p>Get quick updates and admissions support through the official WhatsApp channel.</p></a></div>
+                <div class="col-md-4"><a class="contact-card d-block" href="tel:+923338879961"><div class="icon-box"><i class="fa-solid fa-phone"></i></div><h3>Call Admissions</h3><p>Eligibility, fees, campus guidance.</p></a></div>
+                <div class="col-md-4"><a class="contact-card d-block" href="mailto:info@qgc.edu.pk"><div class="icon-box"><i class="fa-solid fa-envelope"></i></div><h3>Email Us</h3><p>Programs, documents, student services.</p></a></div>
+                <div class="col-md-4"><a class="contact-card d-block" href="https://wa.me/923338879961"><div class="icon-box"><i class="fa-brands fa-whatsapp"></i></div><h3>WhatsApp Support</h3><p>Quick admissions updates.</p></a></div>
             </div>
         </div>
     </section>
@@ -102,7 +102,7 @@ $public_nav_active = 'contact';
         <div class="container">
             <div class="row align-items-end mb-5">
                 <div class="col-lg-7"><div class="section-kicker">Campus Offices</div><h2 class="section-title">Visit the nearest campus</h2></div>
-                <div class="col-lg-5"><p class="mb-0" style="color:var(--muted);line-height:1.75;">Choose your city and contact the campus office directly for admissions, program counselling, and fee information.</p></div>
+                <div class="col-lg-5"><p class="mb-0" style="color:var(--muted);line-height:1.75;">Choose your city. Contact the right office.</p></div>
             </div>
             <div class="row g-4">
                 <?php foreach ($campus_stats as $key => $c):

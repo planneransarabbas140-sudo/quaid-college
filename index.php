@@ -2068,7 +2068,7 @@ unset($slide);
 <div class="hero-bridge">
     <div class="container">
         <div class="hero-bridge-inner" data-aos="fade-up">
-            <p class="hero-bridge-text">Three campuses across South Punjab — intermediate, degree, and NAVTTC skill programs under one trusted institution.</p>
+            <p class="hero-bridge-text">One trusted education network across South Punjab.</p>
             <div class="hero-bridge-stats">
                 <div class="hero-bridge-stat"><strong><?= $total_students ?></strong><span>Network Students</span></div>
                 <div class="hero-bridge-stat"><strong><?= $total_faculty ?></strong><span>Faculty</span></div>
@@ -2085,7 +2085,7 @@ unset($slide);
             <article class="premium-bento-card wide">
                 <span class="premium-bento-kicker"><i class="fas fa-wand-magic-sparkles"></i> Student Journey</span>
                 <h2>From classroom discipline to career confidence.</h2>
-                <p>QGC brings admissions, academic planning, board preparation, skills training, and parent communication into one connected education experience.</p>
+                <p>Guided learning from admission to career direction.</p>
                 <div class="premium-bento-meta">
                     <span>Board preparation</span>
                     <span>Degree pathways</span>
@@ -2095,22 +2095,22 @@ unset($slide);
             <article class="premium-bento-card">
                 <span class="premium-bento-kicker"><i class="fas fa-chart-line"></i> Outcomes</span>
                 <h3>Progress that parents can trust</h3>
-                <p>Regular tests, attendance follow-up, student records, and exam updates help families stay aligned with performance.</p>
+                <p>Tests, follow-up, records, and exam updates.</p>
             </article>
             <article class="premium-bento-card">
                 <span class="premium-bento-kicker"><i class="fas fa-laptop-code"></i> Digital Layer</span>
                 <h3>Modern ERP-backed campus operations</h3>
-                <p>Admissions, attendance, LMS, fees, notices, library, and communication modules support a cleaner student experience.</p>
+                <p>ERP-backed admissions, LMS, fees, notices, and library.</p>
             </article>
             <article class="premium-bento-card">
                 <span class="premium-bento-kicker"><i class="fas fa-users"></i> Mentorship</span>
                 <h3>Faculty-guided academic decisions</h3>
-                <p>Students choose programs with guidance, then receive structured support from experienced teachers and campus offices.</p>
+                <p>Program guidance plus structured faculty support.</p>
             </article>
             <article class="premium-bento-card">
                 <span class="premium-bento-kicker"><i class="fas fa-location-dot"></i> Access</span>
                 <h3>Three campuses, one standard</h3>
-                <p>Rajanpur, Fazilpur, and Kot Mithan campuses share one education vision with local access for South Punjab families.</p>
+                <p>Rajanpur, Fazilpur, and Kot Mithan. One standard.</p>
             </article>
         </div>
     </div>
@@ -2159,8 +2159,7 @@ unset($slide);
                 <h2 class="section-title" style="color:var(--white);">The QGC <span style="color:var(--teal);">Advantage</span></h2>
                 <div class="divider-teal"></div>
                 <p class="section-subtitle" style="color:rgba(255,255,255,.6);max-width:420px;">
-                    Since <?= $established_year ?>, Quaid-e-Azam Group of Colleges has been a trusted choice for
-                    students across South Punjab seeking quality intermediate and degree education.
+                    Quality academics, modern skills, and student support across South Punjab.
                 </p>
                 <div class="mt-4">
                     <a href="programs.php" class="btn-hero-primary">
@@ -2172,12 +2171,12 @@ unset($slide);
                 <div class="row g-3">
                     <?php
                     $features = [
-                        ['icon'=>'fa-chalkboard-teacher','title'=>'Expert Faculty','desc'=>'Qualified teachers with strong board examination experience and dedicated student mentorship.'],
-                        ['icon'=>'fa-laptop-code','title'=>'Digital Classrooms','desc'=>'Smart boards, LMS portal, and computer labs equipped with latest technology for modern learning.'],
-                        ['icon'=>'fa-medal','title'=>'Proven Board Results','desc'=>'Consistently strong outcomes in BISE DG Khan examinations since our founding in ' . $established_year . '.'],
-                        ['icon'=>'fa-shield-alt','title'=>'Safe Campus','desc'=>'Secure, CCTV-monitored premises with dedicated wardens ensuring a disciplined study environment.'],
-                        ['icon'=>'fa-flask','title'=>'Modern Labs','desc'=>'Fully equipped Biology, Chemistry, Physics and Computer Science laboratories for hands-on learning.'],
-                        ['icon'=>'fa-hand-holding-heart','title'=>'Need-Based Scholarships','desc'=>'Merit and need-based financial assistance to ensure no deserving student is left behind.'],
+                        ['icon'=>'fa-chalkboard-teacher','title'=>'Expert Faculty','desc'=>'Board-focused teaching and mentorship.'],
+                        ['icon'=>'fa-laptop-code','title'=>'Digital Classrooms','desc'=>'Smart learning with LMS and labs.'],
+                        ['icon'=>'fa-medal','title'=>'Strong Results','desc'=>'Consistent BISE DG Khan performance.'],
+                        ['icon'=>'fa-shield-alt','title'=>'Safe Campus','desc'=>'Disciplined, monitored study spaces.'],
+                        ['icon'=>'fa-flask','title'=>'Modern Labs','desc'=>'Science and computer practical learning.'],
+                        ['icon'=>'fa-hand-holding-heart','title'=>'Scholarships','desc'=>'Merit and need-based support.'],
                     ];
                     foreach ($features as $i => $f): ?>
                     <div class="col-md-6" data-aos="fade-up" data-aos-delay="<?= $i * 80 ?>">
@@ -2206,7 +2205,7 @@ unset($slide);
                 <span class="section-badge">Academic Programs</span>
                 <h2 class="section-title">Programs That <span class="teal">Define Careers</span></h2>
                 <div class="divider-teal"></div>
-                <p class="section-subtitle">Intermediate programs affiliated with BISE DG Khan and degree programs with Islamia University of Bahawalpur — plus NAVTTC-certified short courses.</p>
+                <p class="section-subtitle">BISE, IUB, and NAVTTC pathways in one place.</p>
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0" data-aos="fade-left">
                 <a href="programs.php" class="btn btn-outline-secondary px-4 py-2 rounded-pill" style="font-size:.85rem;border-color:var(--gray-200);">
@@ -2232,12 +2231,12 @@ unset($slide);
             <div class="row g-4">
                 <?php
                 $inter_programs = [
-                    ['icon'=>'fa-flask',      'name'=>'FSc Pre-Medical',      'desc'=>'For students aspiring to become doctors, dentists and health professionals.',             'tags'=>['2 Years','BISE DG Khan']],
-                    ['icon'=>'fa-calculator', 'name'=>'FSc Pre-Engineering',  'desc'=>'For future engineers, architects and technology professionals.',                           'tags'=>['2 Years','BISE DG Khan']],
-                    ['icon'=>'fa-desktop',    'name'=>'ICS Computer Science', 'desc'=>'For students entering the world of software, IT and digital technology.',                 'tags'=>['2 Years','BISE DG Khan']],
-                    ['icon'=>'fa-briefcase',  'name'=>'I.Com Commerce',       'desc'=>'For future businessmen, accountants and finance professionals.',                          'tags'=>['2 Years','BISE DG Khan']],
-                    ['icon'=>'fa-book-open',  'name'=>'FA Arts',              'desc'=>'For students pursuing law, journalism, civil services and social sciences.',            'tags'=>['2 Years','BISE DG Khan']],
-                    ['icon'=>'fa-mosque',     'name'=>'Taleem-ul-Islam',      'desc'=>'For students seeking Islamic education integrated with modern academics.',                'tags'=>['2 Years','BISE DG Khan']],
+                    ['icon'=>'fa-flask',      'name'=>'FSc Pre-Medical',      'desc'=>'Medical and health sciences track.',             'tags'=>['2 Years','BISE DG Khan']],
+                    ['icon'=>'fa-calculator', 'name'=>'FSc Pre-Engineering',  'desc'=>'Engineering and technology track.',                           'tags'=>['2 Years','BISE DG Khan']],
+                    ['icon'=>'fa-desktop',    'name'=>'ICS Computer Science', 'desc'=>'Software and IT foundation.',                 'tags'=>['2 Years','BISE DG Khan']],
+                    ['icon'=>'fa-briefcase',  'name'=>'I.Com Commerce',       'desc'=>'Commerce, finance, and business.',                          'tags'=>['2 Years','BISE DG Khan']],
+                    ['icon'=>'fa-book-open',  'name'=>'FA Arts',              'desc'=>'Law, media, and social sciences.',            'tags'=>['2 Years','BISE DG Khan']],
+                    ['icon'=>'fa-mosque',     'name'=>'Taleem-ul-Islam',      'desc'=>'Islamic studies with modern academics.',                'tags'=>['2 Years','BISE DG Khan']],
                 ];
                 foreach ($inter_programs as $i => $ip): ?>
                 <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="<?= $i * 60 ?>">
@@ -2268,14 +2267,14 @@ unset($slide);
             <div class="row g-4">
                 <?php
                 $degree_programs = [
-                    ['icon'=>'fa-palette',       'name'=>'ADP Arts',                  'desc'=>'Two year associate degree in arts for students pursuing humanities and social sciences.',     'tags'=>['2 Years','IUB Affiliated']],
-                    ['icon'=>'fa-atom',          'name'=>'ADP Science',               'desc'=>'Two year associate degree in science for students in applied and natural sciences.',         'tags'=>['2 Years','IUB Affiliated']],
-                    ['icon'=>'fa-laptop-code',   'name'=>'BSCS Computer Science',     'desc'=>'Four year degree in computer science, software engineering and programming.',              'tags'=>['4 Years','IUB Affiliated']],
-                    ['icon'=>'fa-network-wired', 'name'=>'BS Information Technology', 'desc'=>'Four year degree focused on networks, systems and modern IT solutions.',                   'tags'=>['4 Years','IUB Affiliated']],
-                    ['icon'=>'fa-microscope',    'name'=>'BS Zoology',                'desc'=>'Four year degree in biological and life sciences for future researchers.',                  'tags'=>['4 Years','IUB Affiliated']],
-                    ['icon'=>'fa-infinity',      'name'=>'BS Mathematics',            'desc'=>'Four year degree in pure and applied mathematics for analytical careers.',                 'tags'=>['4 Years','IUB Affiliated']],
-                    ['icon'=>'fa-language',      'name'=>'BS Urdu',                   'desc'=>'Four year degree in Urdu language, literature and linguistics.',                           'tags'=>['4 Years','IUB Affiliated']],
-                    ['icon'=>'fa-vial',          'name'=>'BS Chemistry',              'desc'=>'Four year degree in chemical sciences for research and industry careers.',                 'tags'=>['4 Years','IUB Affiliated']],
+                    ['icon'=>'fa-palette',       'name'=>'ADP Arts',                  'desc'=>'Humanities and social sciences.',     'tags'=>['2 Years','IUB Affiliated']],
+                    ['icon'=>'fa-atom',          'name'=>'ADP Science',               'desc'=>'Applied and natural sciences.',         'tags'=>['2 Years','IUB Affiliated']],
+                    ['icon'=>'fa-laptop-code',   'name'=>'BSCS Computer Science',     'desc'=>'Software, data, and computing.',              'tags'=>['4 Years','IUB Affiliated']],
+                    ['icon'=>'fa-network-wired', 'name'=>'BS Information Technology', 'desc'=>'Networks, systems, and web tech.',                   'tags'=>['4 Years','IUB Affiliated']],
+                    ['icon'=>'fa-microscope',    'name'=>'BS Zoology',                'desc'=>'Life sciences and research.',                  'tags'=>['4 Years','IUB Affiliated']],
+                    ['icon'=>'fa-infinity',      'name'=>'BS Mathematics',            'desc'=>'Pure and applied mathematics.',                 'tags'=>['4 Years','IUB Affiliated']],
+                    ['icon'=>'fa-language',      'name'=>'BS Urdu',                   'desc'=>'Language, literature, and linguistics.',                           'tags'=>['4 Years','IUB Affiliated']],
+                    ['icon'=>'fa-vial',          'name'=>'BS Chemistry',              'desc'=>'Chemical sciences and industry.',                 'tags'=>['4 Years','IUB Affiliated']],
                 ];
                 foreach ($degree_programs as $i => $dp): ?>
                 <div class="col-lg-4 col-md-6" data-aos="fade-up" data-aos-delay="<?= $i * 60 ?>">
@@ -2309,7 +2308,7 @@ unset($slide);
                 <span class="section-badge" style="background:rgba(78,194,181,.1);border-color:rgba(78,194,181,.2);color:var(--teal);">National Vocational &amp; Technical Training Commission</span>
                 <h2 class="section-title" style="color:var(--white);">NAVTTC <span style="color:var(--teal);">Short Courses</span></h2>
                 <div class="divider-teal"></div>
-                <p class="section-subtitle" style="color:rgba(255,255,255,.6);">Quaid-e-Azam Group of Colleges in collaboration with NAVTTC offers short courses of 3 months and 6 months duration to equip students with modern professional skills for today's job market.</p>
+                <p class="section-subtitle" style="color:rgba(255,255,255,.6);">Short, practical, government-certified skill tracks.</p>
             </div>
             <div class="col-lg-4 text-lg-end mt-3 mt-lg-0" data-aos="fade-left">
                 <div style="display:inline-flex;align-items:center;gap:12px;background:rgba(78,194,181,.08);border:1px solid rgba(78,194,181,.2);border-radius:var(--radius-md);padding:14px 20px;">
