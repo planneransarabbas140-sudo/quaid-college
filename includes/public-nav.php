@@ -54,7 +54,6 @@ if (!function_exists('qgc_campus_nav_current')) {
                     </div>
                 </div>
                 <a class="nav-link-campus<?= qgc_nav_active('programs') ?>" href="programs.php">Programs</a>
-                <a class="nav-link-campus<?= qgc_nav_active('admissions') ?>" href="modules/admissions/apply.php">Admissions</a>
                 <a class="nav-link-campus<?= qgc_nav_active('news') ?>" href="news.php">News</a>
                 <a class="nav-link-campus<?= qgc_nav_active('contact') ?>" href="contact.php">Contact</a>
             </div>
