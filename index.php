@@ -2079,6 +2079,43 @@ unset($slide);
 </div>
 
 <!-- ─── STATS BANNER ──────────────────────────────────────────── -->
+<section class="premium-story-board lazy-section" id="experience">
+    <div class="container">
+        <div class="premium-bento-grid">
+            <article class="premium-bento-card wide">
+                <span class="premium-bento-kicker"><i class="fas fa-wand-magic-sparkles"></i> Student Journey</span>
+                <h2>From classroom discipline to career confidence.</h2>
+                <p>QGC brings admissions, academic planning, board preparation, skills training, and parent communication into one connected education experience.</p>
+                <div class="premium-bento-meta">
+                    <span>Board preparation</span>
+                    <span>Degree pathways</span>
+                    <span>NAVTTC skills</span>
+                </div>
+            </article>
+            <article class="premium-bento-card">
+                <span class="premium-bento-kicker"><i class="fas fa-chart-line"></i> Outcomes</span>
+                <h3>Progress that parents can trust</h3>
+                <p>Regular tests, attendance follow-up, student records, and exam updates help families stay aligned with performance.</p>
+            </article>
+            <article class="premium-bento-card">
+                <span class="premium-bento-kicker"><i class="fas fa-laptop-code"></i> Digital Layer</span>
+                <h3>Modern ERP-backed campus operations</h3>
+                <p>Admissions, attendance, LMS, fees, notices, library, and communication modules support a cleaner student experience.</p>
+            </article>
+            <article class="premium-bento-card">
+                <span class="premium-bento-kicker"><i class="fas fa-users"></i> Mentorship</span>
+                <h3>Faculty-guided academic decisions</h3>
+                <p>Students choose programs with guidance, then receive structured support from experienced teachers and campus offices.</p>
+            </article>
+            <article class="premium-bento-card">
+                <span class="premium-bento-kicker"><i class="fas fa-location-dot"></i> Access</span>
+                <h3>Three campuses, one standard</h3>
+                <p>Rajanpur, Fazilpur, and Kot Mithan campuses share one education vision with local access for South Punjab families.</p>
+            </article>
+        </div>
+    </div>
+</section>
+
 <div class="stats-banner" id="stats">
     <div class="container">
         <div class="row align-items-center g-4">

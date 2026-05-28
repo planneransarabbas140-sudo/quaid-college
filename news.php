@@ -56,6 +56,20 @@ $public_nav_active = 'news';
                     </div>
                 </div>
 
+                <div class="premium-search-panel">
+                    <label for="newsSearch">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input id="newsSearch" type="search" placeholder="Search admissions, exams, campus life, or skills" autocomplete="off">
+                    </label>
+                    <span class="premium-filter-count" id="newsMatchCount">3 updates found</span>
+                </div>
+                <div class="program-tabs" role="tablist" aria-label="News categories">
+                    <button class="program-tab active" type="button" data-news-filter="all">All Updates</button>
+                    <button class="program-tab" type="button" data-news-filter="campus">Campus Life</button>
+                    <button class="program-tab" type="button" data-news-filter="academic">Academics</button>
+                    <button class="program-tab" type="button" data-news-filter="skills">Skills</button>
+                </div>
+
                 <div class="row g-4 news-grid">
                     <div class="col-lg-7">
                         <article class="premium-feature-card">
@@ -87,7 +101,7 @@ $public_nav_active = 'news';
                 </div>
 
                 <div class="row g-4 news-grid">
-                    <div class="col-md-6 col-xl-4">
+                    <div class="col-md-6 col-xl-4 news-item" data-news-category="campus">
                         <article class="premium-news-card">
                             <span class="badge rounded-pill px-3 py-2">Campus Life</span>
                             <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>All Campuses</span></div>
@@ -96,7 +110,7 @@ $public_nav_active = 'news';
                             <a href="contact.php" class="program-apply">Contact Campus <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="col-md-6 col-xl-4 news-item" data-news-category="academic">
                         <article class="premium-news-card">
                             <span class="badge rounded-pill px-3 py-2">Academics</span>
                             <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>Exam Desk</span></div>
@@ -105,7 +119,7 @@ $public_nav_active = 'news';
                             <a href="programs.php" class="program-apply">View Programs <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>
-                    <div class="col-md-6 col-xl-4">
+                    <div class="col-md-6 col-xl-4 news-item" data-news-category="skills">
                         <article class="premium-news-card">
                             <span class="badge rounded-pill px-3 py-2">Skills</span>
                             <div class="news-meta"><span><i class="fa-regular fa-calendar"></i> May 2026</span><span>NAVTTC</span></div>
@@ -114,6 +128,9 @@ $public_nav_active = 'news';
                             <a href="programs.php#program-list" class="program-apply">Find Skills <i class="fa-solid fa-arrow-right"></i></a>
                         </article>
                     </div>
+                </div>
+                <div id="newsNoResults" class="program-no-results d-none">
+                    No updates matched your search. Try admissions, exam, campus, or skills.
                 </div>
             </div>
         </section>

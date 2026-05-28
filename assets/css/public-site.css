@@ -792,6 +792,32 @@ body.modern-ui::after {
     white-space: nowrap;
 }
 
+.program-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.program-tab {
+    border: 1px solid rgba(15,45,72,.12);
+    background: rgba(255,255,255,.78);
+    color: var(--navy);
+    border-radius: 999px;
+    padding: 10px 16px;
+    font-weight: 900;
+    font-size: .82rem;
+    transition: transform 220ms ease, border-color 220ms ease, background 220ms ease, color 220ms ease;
+}
+
+.program-tab:hover,
+.program-tab.active {
+    background: var(--navy);
+    color: #fff;
+    border-color: var(--navy);
+    transform: translateY(-1px);
+}
+
 .btn-outline-darkish {
     display: inline-flex;
     align-items: center;
@@ -1095,6 +1121,270 @@ body.modern-ui::after {
     transform: translateY(0);
 }
 
+.qgc-hero .qs-hero-wrap {
+    background: #061827;
+}
+
+.qgc-hero .qs-slide::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background:
+        linear-gradient(90deg, rgba(6,24,39,.94) 0%, rgba(6,24,39,.72) 45%, rgba(6,24,39,.24) 100%),
+        linear-gradient(180deg, rgba(6,24,39,.18), rgba(6,24,39,.86));
+    pointer-events: none;
+}
+
+.qgc-hero .qs-content,
+.qgc-hero .qs-tab-switcher,
+.qgc-hero .qs-nav-arrows,
+.qgc-hero .qs-progress-bar,
+.qgc-hero .qs-slide-indicator {
+    position: relative;
+    z-index: 3;
+}
+
+.qgc-hero .qs-campus-tag,
+.qgc-hero .qs-stat,
+.qgc-hero .qs-tab {
+    backdrop-filter: blur(18px) saturate(145%);
+}
+
+.qgc-hero .qs-headline {
+    letter-spacing: 0;
+    text-wrap: balance;
+}
+
+.qgc-hero .qs-tagline {
+    max-width: 690px;
+}
+
+.premium-story-board {
+    position: relative;
+    padding: 84px 0;
+    background:
+        linear-gradient(180deg, rgba(248,250,252,.96), rgba(255,255,255,1)),
+        radial-gradient(900px 420px at 12% 0%, rgba(42,181,160,.12), transparent 58%);
+    overflow: hidden;
+}
+
+.premium-story-board::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+        linear-gradient(115deg, rgba(42,181,160,.12), transparent 28%, rgba(245,166,35,.1) 72%, transparent),
+        repeating-linear-gradient(120deg, rgba(15,45,72,.035) 0 1px, transparent 1px 22px);
+    pointer-events: none;
+}
+
+.premium-story-board .container {
+    position: relative;
+    z-index: 1;
+}
+
+.premium-bento-grid {
+    display: grid;
+    grid-template-columns: 1.15fr .85fr .85fr;
+    gap: 16px;
+}
+
+.premium-bento-card {
+    min-height: 220px;
+    border: 1px solid rgba(15,45,72,.1);
+    border-radius: 18px;
+    padding: 24px;
+    background: rgba(255,255,255,.78);
+    box-shadow: 0 22px 70px rgba(15,45,72,.1);
+    backdrop-filter: blur(18px);
+    overflow: hidden;
+    transition: transform 260ms ease, box-shadow 260ms ease, border-color 260ms ease;
+}
+
+.premium-bento-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(42,181,160,.32);
+    box-shadow: 0 30px 92px rgba(15,45,72,.14);
+}
+
+.premium-bento-card.wide {
+    grid-row: span 2;
+    min-height: 456px;
+    color: #fff;
+    background:
+        linear-gradient(135deg, rgba(6,24,39,.95), rgba(13,84,87,.82)),
+        url('../images/hero-slide-fazilpur.jpg') center/cover;
+}
+
+.premium-bento-card.wide p,
+.premium-bento-card.wide .premium-bento-meta {
+    color: rgba(255,255,255,.72);
+}
+
+.premium-bento-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 14px;
+    color: var(--teal);
+    font-size: .74rem;
+    font-weight: 900;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.premium-bento-card h2,
+.premium-bento-card h3 {
+    margin: 0 0 12px;
+    color: inherit;
+    font-weight: 900;
+    line-height: 1.08;
+}
+
+.premium-bento-card h2 {
+    font-size: clamp(2rem, 4vw, 3.45rem);
+}
+
+.premium-bento-card h3 {
+    color: var(--navy);
+    font-size: 1.12rem;
+}
+
+.premium-bento-card p {
+    color: var(--muted);
+    line-height: 1.78;
+    margin: 0;
+}
+
+.premium-bento-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 24px;
+    color: var(--muted);
+    font-size: .8rem;
+    font-weight: 800;
+}
+
+.premium-bento-meta span {
+    border-radius: 999px;
+    padding: 8px 12px;
+    background: rgba(42,181,160,.12);
+    color: #177d70;
+}
+
+.campus-story-lab {
+    background:
+        linear-gradient(180deg, rgba(255,255,255,1), rgba(248,250,252,.98)),
+        radial-gradient(900px 420px at 92% 0%, rgba(42,181,160,.12), transparent 62%);
+}
+
+.campus-story-grid {
+    display: grid;
+    grid-template-columns: 1.1fr .9fr;
+    gap: 18px;
+    align-items: stretch;
+}
+
+.campus-story-card {
+    border: 1px solid rgba(15,45,72,.1);
+    border-radius: 18px;
+    padding: 24px;
+    background: rgba(255,255,255,.78);
+    box-shadow: 0 22px 70px rgba(15,45,72,.1);
+    backdrop-filter: blur(18px);
+    transition: transform 260ms ease, box-shadow 260ms ease;
+}
+
+.campus-story-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 30px 92px rgba(15,45,72,.14);
+}
+
+.campus-story-card.media {
+    min-height: 420px;
+    color: #fff;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.campus-story-card.media::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(6,24,39,.22), rgba(6,24,39,.88));
+}
+
+.campus-story-card.media > * {
+    position: relative;
+    z-index: 1;
+}
+
+.campus-story-card.media h2,
+.campus-story-card.media p {
+    color: #fff;
+}
+
+.campus-story-card.media p {
+    color: rgba(255,255,255,.74);
+}
+
+.campus-story-list {
+    display: grid;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.campus-story-list span {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--navy);
+    font-weight: 800;
+}
+
+.campus-story-list i {
+    color: var(--teal);
+}
+
+.campus-program-tools {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 12px;
+    margin-bottom: 22px;
+}
+
+.campus-program-tools input {
+    min-height: 48px;
+    border: 1px solid rgba(15,45,72,.12);
+    border-radius: 999px;
+    padding: 0 18px;
+    outline: 0;
+    background: rgba(255,255,255,.88);
+    font-weight: 800;
+}
+
+.campus-program-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0 16px;
+    background: var(--soft);
+    color: #217d71;
+    font-size: .78rem;
+    font-weight: 900;
+}
+
+.campus-program-empty {
+    margin-top: 18px;
+    color: var(--muted);
+    text-align: center;
+}
+
 @media (max-width: 991px) {
     .footer-cta-panel {
         display: block;
@@ -1113,6 +1403,16 @@ body.modern-ui::after {
         align-items: flex-start;
         border-radius: 18px;
         flex-direction: column;
+    }
+    .premium-bento-grid,
+    .campus-story-grid {
+        grid-template-columns: 1fr;
+    }
+    .premium-bento-card.wide {
+        min-height: 340px;
+    }
+    .campus-program-tools {
+        grid-template-columns: 1fr;
     }
 }
 

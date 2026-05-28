@@ -114,6 +114,33 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
         </div>
     </section>
 
+    <section class="campus-story-lab" id="student-life">
+        <div class="container">
+            <div class="campus-story-grid">
+                <article class="campus-story-card media reveal" style="background-image: url('<?= htmlspecialchars($c['video_poster']) ?>');">
+                    <span class="premium-bento-kicker"><i class="fa-solid fa-camera"></i> Campus Story</span>
+                    <h2>Life at <?= htmlspecialchars($c['name']) ?></h2>
+                    <p><?= htmlspecialchars($c['welcome_text']) ?></p>
+                    <div class="premium-bento-meta">
+                        <span><?= htmlspecialchars($c['students']) ?> students</span>
+                        <span><?= htmlspecialchars($c['faculty']) ?> faculty</span>
+                        <span><?= htmlspecialchars($c['programs']) ?> programs</span>
+                    </div>
+                </article>
+                <article class="campus-story-card reveal">
+                    <span class="premium-bento-kicker"><i class="fa-solid fa-compass"></i> Student Support Model</span>
+                    <h2>Built around guidance, discipline, and measurable progress.</h2>
+                    <p>Students receive academic direction, regular follow-up, and access to campus services from admission to examination preparation.</p>
+                    <div class="campus-story-list">
+                        <?php foreach ($c['highlights'] as $item): ?>
+                        <span><i class="fa-solid fa-circle-check"></i><?= htmlspecialchars($item) ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
     <section class="leadership" id="leadership">
         <div class="container">
             <div class="section-heading reveal">
@@ -146,6 +173,10 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
                 <p>Choose your path to success</p>
                 <div class="teal-line"></div>
             </div>
+            <div class="campus-program-tools reveal">
+                <input type="search" id="campusProgramSearch" placeholder="Search this campus programs" autocomplete="off">
+                <span class="campus-program-count" id="campusProgramCount"><?= (int)$program_counts['all'] ?> programs</span>
+            </div>
             <div class="filter-tabs reveal">
                 <button type="button" class="filter-btn active" data-filter="all">All (<?= (int)$program_counts['all'] ?>)</button>
                 <?php if (!empty($c['show_matric_filter']) && $program_counts['matric'] > 0): ?>
@@ -170,6 +201,7 @@ $hero_bg = htmlspecialchars($c['image'] ?? 'assets/images/image1.png', ENT_QUOTE
                 </div>
                 <?php endforeach; ?>
             </div>
+            <div class="campus-program-empty hidden" id="campusProgramEmpty">No campus programs matched your search.</div>
         </div>
     </section>
 
