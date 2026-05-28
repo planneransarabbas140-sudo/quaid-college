@@ -14,7 +14,7 @@ $visibilities = ['private', 'shared', 'all_staff'];
 $defaultCategories = ['General', 'Office', 'Academic', 'Finance', 'HR', 'Meeting', 'Policy', 'Forms'];
 $uploadRoot = __DIR__ . '/../../uploads/internal';
 $uploadPublicRoot = 'uploads/internal';
-$allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'jpg', 'jpeg', 'png', 'txt'];
+$allowedExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'jpg', 'jpeg', 'png', 'txt'];
 $maxFileSize = 10 * 1024 * 1024;
 
 function internal_h($value): string {
@@ -93,13 +93,14 @@ function internal_store_file(array $file, string $uploadRoot, string $uploadPubl
     $originalName = (string)($file['name'] ?? '');
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
     if (!in_array($extension, $allowedExtensions, true)) {
-        throw new Exception('Allowed files: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, TXT.');
+        throw new Exception('Allowed files: PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, JPG, PNG, TXT.');
     }
 
     $allowedMimes = [
         'application/pdf', 'application/msword',
         'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
         'image/jpeg', 'image/png', 'text/plain',
     ];
     $mime = function_exists('mime_content_type') ? (string)@mime_content_type((string)$file['tmp_name']) : '';
@@ -377,7 +378,7 @@ $renderForm = function (string $prefix) use ($types, $statuses, $visibilities, $
         <div class="col-md-4"><label class="form-label">Visibility</label><select name="visibility" id="<?= $prefix ?>visibility" class="form-select"><?php foreach ($visibilities as $visibility): ?><option value="<?= internal_h($visibility) ?>"><?= internal_h(ucwords(str_replace('_', ' ', $visibility))) ?></option><?php endforeach; ?></select></div>
         <div class="col-md-4"><label class="form-label">Assign To</label><select name="assigned_to" id="<?= $prefix ?>assigned_to" class="form-select"><option value="">None</option><?php foreach ($staffList as $staff): ?><option value="<?= (int)$staff['id'] ?>"><?= internal_h($staff['full_name'] . ' - ' . ($staff['designation'] ?: 'Staff')) ?></option><?php endforeach; ?></select></div>
         <div class="col-md-6"><label class="form-label">Status</label><select name="status" id="<?= $prefix ?>status" class="form-select"><?php foreach ($statuses as $status): ?><option value="<?= internal_h($status) ?>"><?= internal_h(ucfirst($status)) ?></option><?php endforeach; ?></select></div>
-        <div class="col-md-6"><label class="form-label">File Attachment</label><input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt"><small class="text-muted">Max 10 MB.</small></div>
+        <div class="col-md-6"><label class="form-label">File Attachment</label><input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt"><small class="text-muted">Max 10 MB.</small></div>
         <div class="col-12"><label class="form-label">Description</label><textarea name="description" id="<?= $prefix ?>description" class="form-control" rows="4"></textarea></div>
     </div>
 <?php

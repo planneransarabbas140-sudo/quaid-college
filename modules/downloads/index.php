@@ -12,7 +12,7 @@ $userId = getUserId();
 $isAdmin = in_array($role, ['admin', 'owner'], true);
 $uploadRoot = __DIR__ . '/../../uploads/downloads';
 $uploadPublicRoot = 'uploads/downloads';
-$allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+$allowedExtensions = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png', 'ppt', 'pptx'];
 $maxFileSize = 10 * 1024 * 1024;
 
 function dl_h($value) {
@@ -27,6 +27,7 @@ function dl_icon(string $type): array {
     $type = strtolower($type);
     if ($type === 'pdf') return ['fa-file-pdf', 'text-danger'];
     if (in_array($type, ['doc', 'docx'], true)) return ['fa-file-word', 'text-primary'];
+    if (in_array($type, ['ppt', 'pptx'], true)) return ['fa-file-powerpoint', 'text-warning'];
     if (in_array($type, ['jpg', 'jpeg', 'png'], true)) return ['fa-file-image', 'text-success'];
     return ['fa-file', 'text-secondary'];
 }
@@ -89,7 +90,7 @@ function dl_store_file(array $file, string $uploadRoot, string $uploadPublicRoot
     $originalName = (string)($file['name'] ?? '');
     $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
     if (!in_array($extension, $allowedExtensions, true)) {
-        throw new Exception('Invalid file type. Allowed: PDF, DOC, DOCX, JPG, PNG.');
+        throw new Exception('Invalid file type. Allowed: PDF, DOC, DOCX, PPT, PPTX, JPG, PNG.');
     }
     if (in_array($extension, ['jpg', 'jpeg', 'png'], true) && !@getimagesize((string)$file['tmp_name'])) {
         throw new Exception('Image file is not valid.');
@@ -102,6 +103,8 @@ function dl_store_file(array $file, string $uploadRoot, string $uploadPublicRoot
             'application/pdf',
             'application/msword',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-powerpoint',
+            'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             'application/octet-stream',
             'application/zip',
             'image/jpeg',
@@ -356,7 +359,7 @@ include '../../includes/header.php';
                 <div class="col-12"><label class="form-label">Description</label><textarea name="description" class="form-control" rows="3"></textarea></div>
                 <div class="col-md-4"><label class="form-label">Status</label><select name="status" class="form-select"><option value="active">Active</option><option value="inactive">Inactive</option></select></div>
                 <div class="col-md-4"><label class="form-label">Visibility</label><select name="visibility" class="form-select"><option value="public">Public</option><option value="private">Private</option></select></div>
-                <div class="col-md-4"><label class="form-label">File *</label><input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required></div>
+                <div class="col-md-4"><label class="form-label">File *</label><input type="file" name="file" class="form-control" accept=".pdf,.doc,.docx,.ppt,.pptx,.jpg,.jpeg,.png" required></div>
                 <div class="col-12"><div class="form-text">Allowed: PDF, DOC, DOCX, JPG, PNG. Maximum size: 10 MB.</div></div>
             </div>
             <div class="modal-footer bg-light"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary"><i class="fas fa-upload me-1"></i>Upload</button></div>

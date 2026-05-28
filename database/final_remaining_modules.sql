@@ -15,6 +15,19 @@ CREATE TABLE IF NOT EXISTS staff_attendance (
     INDEX idx_staff_attendance_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS hr_attendance (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_id INT NOT NULL,
+    attendance_date DATE NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'present',
+    marked_by INT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_hr_staff_date (staff_id, attendance_date),
+    INDEX idx_hr_attendance_date (attendance_date),
+    INDEX idx_hr_attendance_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS leave_applications (
     id INT AUTO_INCREMENT PRIMARY KEY,
     staff_id INT NOT NULL,
@@ -30,6 +43,23 @@ CREATE TABLE IF NOT EXISTS leave_applications (
     INDEX idx_leave_staff (staff_id),
     INDEX idx_leave_status (status),
     INDEX idx_leave_dates (start_date, end_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS hr_leaves (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_id INT NOT NULL,
+    leave_type VARCHAR(50) NOT NULL,
+    start_date DATE NOT NULL,
+    end_date DATE NOT NULL,
+    total_days INT NOT NULL DEFAULT 1,
+    reason TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    approved_by INT DEFAULT NULL,
+    reviewed_at DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_hr_leaves_staff (staff_id),
+    INDEX idx_hr_leaves_status (status),
+    INDEX idx_hr_leaves_dates (start_date, end_date)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS payroll (
@@ -50,6 +80,26 @@ CREATE TABLE IF NOT EXISTS payroll (
     UNIQUE KEY unique_payroll_month (staff_id, salary_month),
     INDEX idx_payroll_month (salary_month),
     INDEX idx_payroll_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS hr_payroll (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    staff_id INT NOT NULL,
+    salary_month VARCHAR(20) NOT NULL,
+    basic_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
+    allowances DECIMAL(12,2) NOT NULL DEFAULT 0,
+    gross_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
+    tax_amount DECIMAL(12,2) NOT NULL DEFAULT 0,
+    deductions DECIMAL(12,2) NOT NULL DEFAULT 0,
+    net_salary DECIMAL(12,2) NOT NULL DEFAULT 0,
+    payment_date DATE DEFAULT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
+    generated_by INT DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY unique_hr_payroll_month (staff_id, salary_month),
+    INDEX idx_hr_payroll_month (salary_month),
+    INDEX idx_hr_payroll_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS transport_routes (
@@ -306,6 +356,29 @@ CREATE TABLE IF NOT EXISTS pos_sale_items (
     INDEX idx_pos_sale_items_product (product_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+CREATE TABLE IF NOT EXISTS expenses (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    module_name VARCHAR(100),
+    reference_id INT NULL,
+    campus VARCHAR(255),
+    category VARCHAR(255),
+    description TEXT,
+    amount DECIMAL(12,2) DEFAULT 0,
+    expense_type VARCHAR(20) DEFAULT 'manual',
+    status VARCHAR(20) DEFAULT 'pending',
+    created_by INT,
+    approved_by INT NULL,
+    expense_date DATE DEFAULT NULL,
+    payment_method VARCHAR(50) DEFAULT 'Cash',
+    receipt_no VARCHAR(120) DEFAULT NULL,
+    month VARCHAR(7) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_expenses_module (module_name, reference_id),
+    INDEX idx_expenses_status (status),
+    INDEX idx_expenses_campus (campus),
+    INDEX idx_expenses_category (category)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS account_expenses (
     id INT AUTO_INCREMENT PRIMARY KEY,
     expense_title VARCHAR(220) DEFAULT NULL,
@@ -376,6 +449,21 @@ CREATE TABLE IF NOT EXISTS library_issues (
     INDEX idx_library_issues_student (student_id),
     INDEX idx_library_issues_status (status),
     INDEX idx_library_issues_due (return_date)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS library_fines (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    issue_id INT DEFAULT NULL,
+    student_id INT DEFAULT NULL,
+    book_id INT DEFAULT NULL,
+    fine_amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+    fine_date DATE DEFAULT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'unpaid',
+    paid_at DATETIME DEFAULT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_library_fines_issue (issue_id),
+    INDEX idx_library_fines_student (student_id),
+    INDEX idx_library_fines_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS internal_management (
