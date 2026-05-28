@@ -1141,8 +1141,38 @@ body.modern-ui::after {
 .qgc-hero .qs-nav-arrows,
 .qgc-hero .qs-progress-bar,
 .qgc-hero .qs-slide-indicator {
-    position: relative;
     z-index: 3;
+}
+
+.qgc-hero .qs-content {
+    position: relative;
+    z-index: 4;
+}
+
+.qgc-hero .qs-tab-switcher {
+    position: absolute;
+    left: 80px;
+    bottom: 22px;
+    z-index: 5;
+}
+
+.qgc-hero .qs-nav-arrows {
+    position: absolute;
+    right: 28px;
+    bottom: 16px;
+    z-index: 5;
+}
+
+.qgc-hero .qs-progress-bar {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 5;
+}
+
+.qgc-hero .qs-slide-indicator {
+    position: absolute;
+    z-index: 5;
 }
 
 .qgc-hero .qs-campus-tag,
@@ -1404,6 +1434,10 @@ body.modern-ui::after {
         border-radius: 18px;
         flex-direction: column;
     }
+    .qgc-hero .qs-tab-switcher {
+        left: 40px;
+        bottom: 22px;
+    }
     .premium-bento-grid,
     .campus-story-grid {
         grid-template-columns: 1fr;
@@ -1424,5 +1458,17 @@ body.modern-ui::after {
         left: 16px;
         right: 16px;
         justify-content: center;
+    }
+    .qgc-hero .qs-tab-switcher {
+        left: 50%;
+        right: auto;
+        bottom: 18px;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 360px;
+        justify-content: center;
+    }
+    .qgc-hero .qs-progress-bar {
+        bottom: 0;
     }
 }
