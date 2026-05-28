@@ -60,6 +60,7 @@ include '../../includes/header.php';
             <h2 class="page-title mb-0"><i class="fas fa-users-cog me-2" style="color: var(--teal);"></i>HR Management</h2>
             <div class="btn-group">
                 <a href="staff.php" class="btn btn-outline-primary"><i class="fas fa-user-plus me-1"></i> Add Staff</a>
+                <a href="attendance.php" class="btn btn-outline-primary"><i class="fas fa-calendar-check me-1"></i> Attendance</a>
                 <a href="leave.php" class="btn btn-outline-primary"><i class="fas fa-calendar-alt me-1"></i> Leaves</a>
                 <a href="payroll.php" class="btn btn-outline-primary"><i class="fas fa-file-invoice-dollar me-1"></i> Payroll</a>
             </div>

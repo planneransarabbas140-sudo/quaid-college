@@ -48,6 +48,7 @@ $success = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
+        requireCsrfToken();
         $action = $_POST['action'] ?? '';
 
         if ($action === 'add_expense') {
@@ -127,6 +128,7 @@ if ($isTeacher) {
                 <div class="card-header bg-white border-0 p-4"><h5 class="fw-bold mb-0">Submit Expense Request</h5></div>
                 <div class="card-body p-4">
                     <form method="POST" class="row g-3">
+                        <?= csrfTokenInput() ?>
                         <input type="hidden" name="action" value="add_expense">
                         <div class="col-12">
                             <label class="form-label fw-bold small">Campus</label>
@@ -632,6 +634,7 @@ include '../../includes/header.php';
                         <td><span class="badge rounded-pill text-capitalize <?= $expense['status'] === 'rejected' ? 'bg-danger' : ($expense['status'] === 'paid' ? 'bg-success' : 'bg-warning text-dark') ?>"><?= htmlspecialchars($expense['status']) ?></span></td>
                         <td class="text-end pe-4">
                             <form method="POST" class="d-inline-flex gap-2">
+                                <?= csrfTokenInput() ?>
                                 <input type="hidden" name="expense_id" value="<?= (int)$expense['id'] ?>">
                                 <button name="action" value="update_status" formaction="?status_action=approve" class="btn btn-sm btn-outline-primary" onclick="this.form.status.value='approved'">Approve</button>
                                 <button name="action" value="update_status" class="btn btn-sm btn-outline-success" onclick="this.form.status.value='paid'">Paid</button>
@@ -650,6 +653,7 @@ include '../../includes/header.php';
     <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg">
             <form method="POST">
+                <?= csrfTokenInput() ?>
                 <input type="hidden" name="action" value="add_expense">
                 <div class="modal-header">
                     <div>

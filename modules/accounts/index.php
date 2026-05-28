@@ -5,7 +5,7 @@ require_once '../../config/db.php';
 if (!isLoggedIn()) {
     redirect('../../index.php');
 }
-requireRole(['admin', 'owner']);
+requireRole(['admin', 'owner', 'accounts', 'accountant']);
 
 $database = new Database();
 $db = $database->getConnection();
@@ -415,9 +415,15 @@ include '../../includes/header.php';
         <h2 class="page-title mb-1">Accounts & Finance</h2>
         <div class="text-muted">Manual income, expenses, balances, and finance reports.</div>
     </div>
-    <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="offcanvas" data-bs-target="#addTransactionModal" aria-controls="addTransactionModal">
-        <i class="fas fa-plus me-2"></i>Add Transaction
-    </button>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="reports.php" class="btn btn-outline-primary rounded-pill px-3"><i class="fas fa-chart-column me-2"></i>Reports</a>
+        <a href="ledger.php" class="btn btn-outline-primary rounded-pill px-3"><i class="fas fa-book me-2"></i>Ledger</a>
+        <a href="balance-sheet.php" class="btn btn-outline-primary rounded-pill px-3"><i class="fas fa-scale-balanced me-2"></i>Balance Sheet</a>
+        <a href="expenses.php" class="btn btn-outline-danger rounded-pill px-3"><i class="fas fa-file-invoice-dollar me-2"></i>Expenses</a>
+        <button type="button" class="btn btn-primary rounded-pill px-4" data-bs-toggle="offcanvas" data-bs-target="#addTransactionModal" aria-controls="addTransactionModal">
+            <i class="fas fa-plus me-2"></i>Add Transaction
+        </button>
+    </div>
 </div>
 
 <ul class="nav nav-tabs mb-4" id="accountsTabs" role="tablist">

@@ -362,6 +362,69 @@ function ensureFinanceTables(PDO $db): void {
         KEY idx_expenses_campus (campus),
         KEY idx_expenses_category (category)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4");
+
+    $optionalColumns = [
+        'expense_date' => "ALTER TABLE expenses ADD COLUMN expense_date DATE DEFAULT NULL",
+        'payment_method' => "ALTER TABLE expenses ADD COLUMN payment_method VARCHAR(50) DEFAULT 'Cash'",
+        'receipt_no' => "ALTER TABLE expenses ADD COLUMN receipt_no VARCHAR(120) DEFAULT NULL",
+        'month' => "ALTER TABLE expenses ADD COLUMN month VARCHAR(7) DEFAULT NULL",
+    ];
+    foreach ($optionalColumns as $column => $sql) {
+        if (!columnExists($db, 'expenses', $column)) {
+            $db->exec($sql);
+        }
+    }
+}
+
+function normalizeFinanceStatus($status): string {
+    $status = strtolower(trim((string)$status));
+    $status = str_replace([' ', '-'], '_', $status);
+    $allowed = ['pending', 'approved', 'rejected', 'paid'];
+    return in_array($status, $allowed, true) ? $status : 'pending';
+}
+
+function recordExpense(PDO $db, array $data): int {
+    ensureFinanceTables($db);
+
+    $amount = (float)($data['amount'] ?? 0);
+    if ($amount <= 0) {
+        throw new Exception('Expense amount must be greater than zero.');
+    }
+
+    $expenseDate = $data['expense_date'] ?? date('Y-m-d');
+    $parsedDate = DateTime::createFromFormat('Y-m-d', (string)$expenseDate);
+    if (!$parsedDate || $parsedDate->format('Y-m-d') !== (string)$expenseDate) {
+        $expenseDate = date('Y-m-d');
+    }
+
+    $month = $data['month'] ?? date('Y-m', strtotime((string)$expenseDate));
+    if (!preg_match('/^\d{4}-\d{2}$/', (string)$month)) {
+        $month = date('Y-m', strtotime((string)$expenseDate));
+    }
+
+    $stmt = $db->prepare("
+        INSERT INTO expenses
+            (module_name, reference_id, campus, category, description, amount, expense_type, status, created_by, expense_date, payment_method, receipt_no, month)
+        VALUES
+            (:module_name, :reference_id, :campus, :category, :description, :amount, :expense_type, :status, :created_by, :expense_date, :payment_method, :receipt_no, :month)
+    ");
+    $stmt->execute([
+        ':module_name' => sanitizeInput($data['module_name'] ?? 'manual') ?: 'manual',
+        ':reference_id' => isset($data['reference_id']) && $data['reference_id'] !== '' ? (int)$data['reference_id'] : null,
+        ':campus' => sanitizeInput($data['campus'] ?? ''),
+        ':category' => sanitizeInput($data['category'] ?? 'Miscellaneous') ?: 'Miscellaneous',
+        ':description' => sanitizeInput($data['description'] ?? ''),
+        ':amount' => $amount,
+        ':expense_type' => in_array(($data['expense_type'] ?? 'manual'), ['manual', 'auto'], true) ? $data['expense_type'] : 'manual',
+        ':status' => normalizeFinanceStatus($data['status'] ?? 'pending'),
+        ':created_by' => isset($data['created_by']) && $data['created_by'] !== '' ? (int)$data['created_by'] : null,
+        ':expense_date' => $expenseDate,
+        ':payment_method' => sanitizeInput($data['payment_method'] ?? 'Cash') ?: 'Cash',
+        ':receipt_no' => sanitizeInput($data['receipt_no'] ?? ''),
+        ':month' => $month,
+    ]);
+
+    return (int)$db->lastInsertId();
 }
 
 function syncFinancialModuleData(PDO $db): void {
